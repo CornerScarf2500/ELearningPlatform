@@ -20,10 +20,6 @@ const itemVariants = {
   visible: { opacity: 1, x: 0 },
 };
 
-function isYouTube(url: string) {
-  return /youtube\.com|youtu\.be/i.test(url);
-}
-
 export const LessonItem = ({ lesson, isActive, index, onSelect, onMutate }: Props) => {
   const isAdmin = useAdmin();
   const { user, toggleFavoriteLesson } = useAuthStore();

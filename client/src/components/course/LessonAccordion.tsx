@@ -186,9 +186,10 @@ export const LessonAccordion = ({
             onSave={async (vals) => {
               await lessonApi.create({
                 ...vals,
+                courseId: section.courseId,
                 sectionId: section._id,
                 type: (vals.type as "video" | "pdf") || "video",
-              } as Partial<Lesson> & { sectionId: string });
+              } as Partial<Lesson> & { courseId: string; sectionId: string });
               onMutate();
             }}
           />
