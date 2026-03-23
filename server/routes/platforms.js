@@ -20,8 +20,8 @@ router.get("/", verifyToken, async (_req, res, next) => {
 // ──────────────────────────────────────────────────────────────
 router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const { name } = req.body;
-    const platform = await Platform.create({ name });
+    const { name, logoUrl } = req.body;
+    const platform = await Platform.create({ name, logoUrl });
     res.status(201).json({ success: true, data: platform });
   } catch (error) {
     next(error);
@@ -33,10 +33,10 @@ router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
 // ──────────────────────────────────────────────────────────────
 router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, logoUrl } = req.body;
     const platform = await Platform.findByIdAndUpdate(
       req.params.id,
-      { name },
+      { name, logoUrl },
       { new: true, runValidators: true }
     );
 

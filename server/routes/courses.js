@@ -71,36 +71,81 @@ router.get("/:id", verifyToken, async (req, res, next) => {
 });
 
 // ──────────────────────────────────────────────────────────────
-// POST /api/courses/import — bulk import course from JSON (Admin)
-// Supports platform by name (auto creates if not found) or falls back to "Unknown"
+// POST /api/courses/import — import a course from sample JSON (Admin)
+// JSON shape: { title, grade, subject, teacher, platform, videos[], pdfs[] }
+// Each video becomes one lesson. PDFs with matching title → fileUrls[].
+// Admin organises sections manually afterwards.
 // ──────────────────────────────────────────────────────────────
 router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const { title, subject, teacher, grade, platform: platformName, platformId: rawPlatformId, sections } = req.body;
-    
-    // Resolve platform: by provided name, then existing id, else auto-create/find "Unknown"
+    const {
+      title, subject, teacher, grade,
+      platform: platformName,
+      platformId: rawPlatformId,
+      videos = [],
+      pdfs = [],
+      sections,         // legacy backwards-compat
+      importedFilename,
+    } = req.body;
+
+    // ── Resolve platform ────────────────────────────────────────
     let resolvedPlatformId = rawPlatformId;
     if (!resolvedPlatformId) {
       const lookupName = (platformName || "Unknown").trim();
-      // findOrCreate
       let found = await Platform.findOne({ name: lookupName });
-      if (!found) {
-        found = await Platform.create({ name: lookupName });
-      }
+      if (!found) found = await Platform.create({ name: lookupName });
       resolvedPlatformId = found._id;
     }
 
-    // Create course
+    // ── Create course ───────────────────────────────────────────
     const course = await Course.create({
       title: title || "Untitled Course",
       subject: subject || "Unknown",
       teacher: teacher || "Unknown",
       grade: grade || "Unknown",
       platformId: resolvedPlatformId,
+      importedFilename: importedFilename || "",
     });
 
-    // Create sections and lessons if provided
-    if (sections && Array.isArray(sections)) {
+    // ── Build a PDF title → url[] map for quick lookup ──────────
+    const pdfMap = {};        // title → [url, ...]
+    for (const p of pdfs) {
+      const key = (p.title || "").trim();
+      if (!pdfMap[key]) pdfMap[key] = [];
+      if (p.url) pdfMap[key].push(p.url);
+    }
+
+    if (videos.length > 0) {
+      // One default section per import run — admin can split/rename later
+      const defaultSection = await Section.create({
+        title: "Uncategorized",
+        courseId: course._id,
+        order: 0,
+      });
+
+      // Sort videos by order field, then map to lesson docs
+      const sortedVideos = [...videos].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+      const lessonDocs = sortedVideos.map((v, idx) => {
+        const lessonTitle = (v.title || `Video ${idx + 1}`).trim();
+        // Gather all PDFs whose title matches this video's title
+        const matchedUrls = pdfMap[lessonTitle] || [];
+
+        return {
+          title: lessonTitle,
+          videoUrl: v.url || "",
+          fileUrl: matchedUrls[0] || "",    // legacy compat field
+          fileUrls: matchedUrls,            // full list of materials
+          sectionId: defaultSection._id,
+          order: idx,
+          type: "video",
+        };
+      });
+
+      if (lessonDocs.length > 0) await Lesson.insertMany(lessonDocs);
+
+    } else if (sections && Array.isArray(sections)) {
+      // ── Legacy sections[] backwards compat ──────────────────────
       for (let i = 0; i < sections.length; i++) {
         const secData = sections[i];
         const section = await Section.create({
@@ -108,36 +153,52 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
           courseId: course._id,
           order: i,
         });
-
         if (secData.lessons && Array.isArray(secData.lessons)) {
-          const lessonDocs = secData.lessons.map((lesData, j) => {
-            const videoUrl = lesData.url || "";
-            const fileUrl = (lesData.files && lesData.files[0]) ? lesData.files[0] : "";
-            const isPdf = fileUrl.toLowerCase().endsWith(".pdf");
-            
+          const lessonDocs = secData.lessons.map((ld, j) => {
+            const videoUrl = ld.url || "";
+            const fileUrls = Array.isArray(ld.files) ? ld.files : (ld.files ? [ld.files] : []);
             return {
-              title: lesData.title || `Lesson ${j + 1}`,
+              title: ld.title || `Lesson ${j + 1}`,
               videoUrl,
-              fileUrl,
+              fileUrl: fileUrls[0] || "",
+              fileUrls,
               sectionId: section._id,
               order: j,
-              type: isPdf ? "pdf" : "video",
+              type: videoUrl ? "video" : "pdf",
             };
           });
-
-          if (lessonDocs.length > 0) {
-            await Lesson.insertMany(lessonDocs);
-          }
+          if (lessonDocs.length > 0) await Lesson.insertMany(lessonDocs);
         }
       }
     }
 
-    const populated = await Course.findById(course._id).populate("platformId", "name");
+    const populated = await Course.findById(course._id).populate("platformId", "name logoUrl");
     res.status(201).json({ success: true, data: populated });
   } catch (error) {
     next(error);
   }
 });
+
+
+
+// ──────────────────────────────────────────────────────────────
+// PUT /api/courses/bulk-platform — set platform on many courses
+// Body: { courseIds: [], platformId }
+// ──────────────────────────────────────────────────────────────
+router.put("/bulk-platform", verifyToken, requireAdmin, async (req, res, next) => {
+  try {
+    const { courseIds, platformId } = req.body;
+    if (!Array.isArray(courseIds) || courseIds.length === 0 || !platformId) {
+      return res.status(400).json({ success: false, message: "courseIds[] and platformId are required." });
+    }
+    await Course.updateMany({ _id: { $in: courseIds } }, { platformId });
+    res.json({ success: true, message: `Updated ${courseIds.length} courses.` });
+  } catch (error) {
+    next(error);
+  }
+});
+
+
 
 // ──────────────────────────────────────────────────────────────
 // POST /api/courses — create course (Admin)

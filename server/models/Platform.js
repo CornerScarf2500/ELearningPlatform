@@ -8,6 +8,11 @@ const platformSchema = new mongoose.Schema(
       trim: true,
       unique: true,
     },
+    logoUrl: {
+      type: String,
+      trim: true,
+      default: "",
+    },
   },
   {
     timestamps: true,

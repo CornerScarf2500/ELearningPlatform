@@ -14,6 +14,7 @@ export interface User {
 export interface Platform {
   _id: string;
   name: string;
+  logoUrl?: string;
 }
 
 /* ── Lesson ───────────────────────────────────────────────── */
@@ -22,10 +23,10 @@ export interface Lesson {
   title: string;
   videoUrl: string;
   fileUrl: string;
+  fileUrls?: string[];   // multiple material files (PDFs, docs, etc.)
   sectionId: string;
   order: number;
   type: "video" | "pdf";
-  /* populated context (from search/favorites) */
   _type?: "lesson";
 }
 
@@ -46,6 +47,7 @@ export interface Course {
   teacher: string;
   grade?: string;
   platformId: Platform | string;
+  importedFilename?: string;
   createdAt?: string;
   sections?: Section[];
   _type?: "course";

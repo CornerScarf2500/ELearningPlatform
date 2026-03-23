@@ -27,6 +27,10 @@ const courseSchema = new mongoose.Schema(
       ref: "Platform",
       required: [true, "Platform reference is required"],
     },
+    importedFilename: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,

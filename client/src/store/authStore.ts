@@ -1,6 +1,52 @@
 import { create } from "zustand";
+import Cookies from "js-cookie";
+import CryptoJS from "crypto-js";
 import type { User } from "../types";
 import { authApi, favoriteApi } from "../api";
+
+const COOKIE_KEY = "el_token";
+const ENC_SECRET = import.meta.env.VITE_ENC_SECRET || "el_platform_secret_2024";
+const COOKIE_EXPIRES = 30; // days
+
+function encryptToken(token: string): string {
+  return CryptoJS.AES.encrypt(token, ENC_SECRET).toString();
+}
+
+function decryptToken(cipher: string): string | null {
+  try {
+    const bytes = CryptoJS.AES.decrypt(cipher, ENC_SECRET);
+    const plain = bytes.toString(CryptoJS.enc.Utf8);
+    return plain || null;
+  } catch {
+    return null;
+  }
+}
+
+function saveToken(token: string) {
+  const encrypted = encryptToken(token);
+  Cookies.set(COOKIE_KEY, encrypted, { expires: COOKIE_EXPIRES, sameSite: "Lax" });
+  // Keep localStorage in sync as fallback for the API interceptor
+  localStorage.setItem("token", token);
+}
+
+function clearToken() {
+  Cookies.remove(COOKIE_KEY);
+  localStorage.removeItem("token");
+}
+
+function readToken(): string | null {
+  const encrypted = Cookies.get(COOKIE_KEY);
+  if (encrypted) {
+    const plain = decryptToken(encrypted);
+    if (plain) {
+      // Sync localStorage for the Axios interceptor
+      localStorage.setItem("token", plain);
+      return plain;
+    }
+  }
+  // Fallback to localStorage (legacy sessions)
+  return localStorage.getItem("token");
+}
 
 interface AuthState {
   token: string | null;
@@ -13,7 +59,6 @@ interface AuthState {
   fetchMe: () => Promise<void>;
   hydrate: () => void;
 
-  /* favourites helpers (kept in auth store so user obj stays in sync) */
   toggleFavoriteCourse: (courseId: string) => Promise<void>;
   toggleFavoriteLesson: (lessonId: string) => Promise<void>;
 }
@@ -28,7 +73,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (accessCode) => {
     const { data } = await authApi.login(accessCode);
     if (data.token && data.user) {
-      localStorage.setItem("token", data.token);
+      saveToken(data.token);
       set({
         token: data.token,
         user: {
@@ -40,7 +85,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAdmin: data.user.role === "admin",
         loading: false,
       });
-      // Fetch full profile in background
       get().fetchMe();
     }
   },
@@ -50,9 +94,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       await authApi.logout();
     } catch {
-      /* ignore — token might already be invalid */
+      /* ignore */
     }
-    localStorage.removeItem("token");
+    clearToken();
     set({ token: null, user: null, isAdmin: false, loading: false });
   },
 
@@ -68,14 +112,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
       }
     } catch {
-      localStorage.removeItem("token");
+      clearToken();
       set({ token: null, user: null, isAdmin: false, loading: false });
     }
   },
 
-  /* ── Hydrate from localStorage on app boot ──────────────── */
+  /* ── Hydrate from cookie/localStorage on app boot ─────────── */
   hydrate: () => {
-    const token = localStorage.getItem("token");
+    const token = readToken();
     if (token) {
       set({ token, loading: true });
       get().fetchMe();

@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const jwt = require("jsonwebtoken");
 const connectDB = require("./config/db");
 
 // ── Route imports ────────────────────────────────────────────
@@ -33,12 +34,24 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "10mb" }));
 
-// Rate limiter — 100 requests per 15 minutes per IP
+// Rate limiter — 500 req/15 min per IP; admins are bypassed entirely
+const isAdminRequest = (req) => {
+  try {
+    const auth = req.headers.authorization || "";
+    if (!auth.startsWith("Bearer ")) return false;
+    const decoded = jwt.verify(auth.slice(7), process.env.JWT_SECRET);
+    return decoded?.role === "admin";
+  } catch {
+    return false;
+  }
+};
+
 const limiter = rateLimit({
+  skip: isAdminRequest,
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 500,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: "Too many requests, please try again later." },
