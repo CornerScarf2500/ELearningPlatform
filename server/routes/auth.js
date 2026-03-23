@@ -4,6 +4,33 @@ const User = require("../models/User");
 const verifyToken = require("../middleware/auth");
 
 // ──────────────────────────────────────────────────────────────
+// GET /api/auth/seed (Manual trigger to seed admin user)
+// ──────────────────────────────────────────────────────────────
+router.get("/seed", async (_req, res, next) => {
+  try {
+    const existing = await User.findOne({ role: "admin" });
+    if (existing) {
+      return res.json({ success: false, message: "Admin already exists." });
+    }
+
+    const admin = new User({
+      name: "CNSF2500", // "Username" as requested
+      accessCode: "Admin1234", // "Password" as requested (saved in plaintext)
+      role: "admin",
+    });
+
+    await admin.save();
+    res.json({
+      success: true,
+      message: "Admin created successfully. You can now log in.",
+      admin: { name: admin.name, accessCode: admin.accessCode }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────
 // POST /api/auth/login
 // Body: { accessCode: "plain-text-code" }
 // ──────────────────────────────────────────────────────────────

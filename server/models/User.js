@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
@@ -48,20 +47,10 @@ const userSchema = new mongoose.Schema(
 );
 
 // ---------------------------------------------------------------------------
-// Middleware — hash the accessCode before saving (only when modified)
-// ---------------------------------------------------------------------------
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("accessCode")) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.accessCode = await bcrypt.hash(this.accessCode, salt);
-  next();
-});
-
-// ---------------------------------------------------------------------------
-// Instance method — compare a plain-text code against the stored hash
+// Instance method — compare a plain-text code
 // ---------------------------------------------------------------------------
 userSchema.methods.compareAccessCode = async function (candidateCode) {
-  return bcrypt.compare(candidateCode, this.accessCode);
+  return candidateCode === this.accessCode;
 };
 
 // ---------------------------------------------------------------------------
