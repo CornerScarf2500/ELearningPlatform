@@ -50,6 +50,7 @@ export interface Course {
   importedFilename?: string;
   createdAt?: string;
   sections?: Section[];
+  unsectioned?: Lesson[];   // flat lessons with no section (from import)
   _type?: "course";
 }
 

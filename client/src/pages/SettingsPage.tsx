@@ -11,6 +11,7 @@ import {
   LogOut,
   Plus,
   UserX,
+  Archive,
 } from "lucide-react";
 import { PageTransition } from "../components/ui/PageTransition";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
@@ -18,6 +19,52 @@ import { useAdmin } from "../hooks/useAdmin";
 import { useAuthStore } from "../store/authStore";
 import { userApi } from "../api";
 import type { AdminUser } from "../types";
+
+
+// ── Backup button (admin only) ────────────────────────────────
+const BackupButton = () => {
+  const token = useAuthStore((s) => s.token);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleBackup = async () => {
+    if (!token) return;
+    setDownloading(true);
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/admin/backup`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!resp.ok) throw new Error("Backup failed");
+      const data = await resp.json();
+      // Download as JSON file
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Backup failed. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  return (
+    <motion.button
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={handleBackup}
+      disabled={downloading}
+      className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 hover:bg-green-50 dark:hover:bg-green-500/10 transition-colors disabled:opacity-60"
+    >
+      {downloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Archive className="w-4 h-4" />}
+      {downloading ? "Creating backup…" : "Download Backup JSON"}
+    </motion.button>
+  );
+};
 
 export const SettingsPage = () => {
   const isAdmin = useAdmin();
@@ -352,6 +399,24 @@ export const SettingsPage = () => {
                 ))}
               </div>
             )}
+          </section>
+        )}
+
+        {/* ── Admin: Backup ──────────────────────────── */}
+        {isAdmin && (
+          <section>
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-500/10 flex items-center justify-center shrink-0">
+                <Archive className="w-4 h-4 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Backup</h2>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  Download all courses as a structured JSON file, grouped by platform.
+                </p>
+              </div>
+            </div>
+            <BackupButton />
           </section>
         )}
 

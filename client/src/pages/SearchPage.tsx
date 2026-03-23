@@ -37,7 +37,11 @@ export const SearchPage = () => {
 
   const handleSearch = useCallback(async () => {
     const q = query.trim();
-    if (!q) return;
+    if (!q) {
+      setResults({ courses: allCourses as unknown as SearchResults["courses"], lessons: [] });
+      setSearched(true);
+      return;
+    }
     setLoading(true);
     setSearched(true);
     try {
@@ -48,7 +52,15 @@ export const SearchPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [query]);
+  }, [query, allCourses]);
+
+  // Auto-run filter when filter values change (even without explicit search)
+  useEffect(() => {
+    if (selectedPlatformId || selectedGrade || selectedSubject) {
+      setResults({ courses: allCourses as unknown as SearchResults["courses"], lessons: [] });
+      setSearched(true);
+    }
+  }, [selectedPlatformId, selectedGrade, selectedSubject, allCourses]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSearch();

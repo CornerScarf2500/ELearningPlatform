@@ -1,11 +1,12 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plus, Loader2, Download, FolderDown, FileText } from "lucide-react";
+import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
 import { PageTransition } from "../components/ui/PageTransition";
 import { LessonAccordion } from "../components/course/LessonAccordion";
+import { LessonItem } from "../components/course/LessonItem";
 import { VideoPlayer } from "../components/course/VideoPlayer";
 import { AdminEditModal } from "../components/admin/AdminEditModal";
 import { DownloadModal, type DownloadMode } from "../components/ui/DownloadModal";
@@ -15,14 +16,47 @@ import { useDownloads } from "../hooks/useDownloads";
 import { courseApi, sectionApi, lessonApi } from "../api";
 import type { Course, Section, Lesson } from "../types";
 
+// ── YouTube helpers ─────────────────────────────────────────────
+function isYouTubeUrl(url: string) {
+  return /youtube\.com|youtu\.be/i.test(url);
+}
+function getYouTubeEmbedUrl(url: string): string {
+  const match = url.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1` : url;
+}
+function isExternalUrl(url: string) {
+  return isYouTubeUrl(url) || /vimeo\.com/i.test(url);
+}
+
 export const CourseViewerPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isAdmin = useAdmin();
-  const [course, setCourse] = useState<(Course & { sections: Section[] }) | null>(null);
+  const [course, setCourse] = useState<(Course & { sections: Section[]; unsectioned: Lesson[] }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [addSectionOpen, setAddSectionOpen] = useState(false);
+  const [showReorderHandle, setShowReorderHandle] = useState(true);
+
+  // Resizable sidebar
+  const [sidebarWidth, setSidebarWidth] = useState(320);
+  const isResizing = useRef(false);
+
+  const startResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isResizing.current = true;
+    const startX = e.clientX;
+    const startW = sidebarWidth;
+    const onMove = (ev: MouseEvent) => {
+      if (!isResizing.current) return;
+      const delta = startX - ev.clientX; // dragging left = bigger sidebar
+      const next = Math.max(220, Math.min(520, startW + delta));
+      setSidebarWidth(next);
+    };
+    const onUp = () => { isResizing.current = false; window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [sidebarWidth]);
 
   // ── Downloads ───────────────────────────────────────────────
   const { items: downloads, progress: dlProgress, saveInApp, deleteItem: deleteDl, openItem: openDl } = useDownloads();
@@ -30,18 +64,37 @@ export const CourseViewerPage = () => {
   const [dlDrawerOpen, setDlDrawerOpen] = useState(false);
   const [pendingDownload, setPendingDownload] = useState<{ url: string; title: string } | null>(null);
   const [dlInProgress, setDlInProgress] = useState(false);
-  const inProgressId = pendingDownload ? Array.from(dlProgress.entries())[0]?.[0] : undefined;
+  const inProgressId = Array.from(dlProgress.keys())[0];
   const inProgressPct = inProgressId ? dlProgress.get(inProgressId) : undefined;
 
-  const triggerDownload = (url: string, title: string) => {
+  // "Unsupported download" info modal (YouTube / external URLs)
+  const [noDownloadOpen, setNoDownloadOpen] = useState(false);
+
+  const triggerVideoDownload = (url: string, title: string) => {
+    if (isExternalUrl(url)) {
+      window.open(url, "_blank", "noopener,noreferrer");
+      setNoDownloadOpen(true);
+      return;
+    }
     setPendingDownload({ url, title });
     setDlModalOpen(true);
+  };
+
+  const triggerMaterialDownload = (url: string) => {
+    // Materials: local download only (or open link if external)
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = url.split("/").pop()?.split("?")[0] || "file";
+    a.target = "_blank";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleDownloadModeSelect = async (mode: DownloadMode) => {
     if (!pendingDownload) return;
     if (mode === "local") {
-      // Native browser download
       const a = document.createElement("a");
       a.href = pendingDownload.url;
       a.download = pendingDownload.title;
@@ -53,17 +106,10 @@ export const CourseViewerPage = () => {
       setDlModalOpen(false);
       setPendingDownload(null);
     } else {
-      // In-app: fetch + IndexedDB
       setDlInProgress(true);
-      try {
-        await saveInApp(pendingDownload.title, pendingDownload.url);
-      } catch (e) {
-        alert("Download failed. The file may not allow cross-origin access.");
-      } finally {
-        setDlInProgress(false);
-        setDlModalOpen(false);
-        setPendingDownload(null);
-      }
+      try { await saveInApp(pendingDownload.title, pendingDownload.url); }
+      catch { alert("In-app save failed. The file may not allow cross-origin access."); }
+      finally { setDlInProgress(false); setDlModalOpen(false); setPendingDownload(null); }
     }
   };
 
@@ -71,11 +117,12 @@ export const CourseViewerPage = () => {
     if (!id) return;
     try {
       const { data } = await courseApi.get(id);
-      const c = data.data as Course & { sections: Section[] };
+      const c = data.data as Course & { sections: Section[]; unsectioned: Lesson[] };
       setCourse(c);
-      if (!activeLesson && c.sections?.length) {
-        for (const s of c.sections) {
-          if (s.lessons?.length) { setActiveLesson(s.lessons[0]); break; }
+      if (!activeLesson) {
+        if (c.unsectioned?.length) setActiveLesson(c.unsectioned[0]);
+        else if (c.sections?.length) {
+          for (const s of c.sections) { if (s.lessons?.length) { setActiveLesson(s.lessons[0]); break; } }
         }
       }
     } catch { /* handle */ }
@@ -87,7 +134,6 @@ export const CourseViewerPage = () => {
     const { source, destination, type, draggableId } = result;
     if (!destination) return;
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-
     if (type === "section") {
       const newSections = Array.from(course.sections);
       const [moved] = newSections.splice(source.index, 1);
@@ -96,72 +142,93 @@ export const CourseViewerPage = () => {
       await sectionApi.reorder(newSections.map((s) => s._id));
     } else if (type === "lesson") {
       const newSections = Array.from(course.sections);
-      const sIndex = newSections.findIndex((s) => s._id === source.droppableId);
-      const dIndex = newSections.findIndex((s) => s._id === destination.droppableId);
-      if (sIndex === -1 || dIndex === -1) return;
-      const sourceLessons = Array.from(newSections[sIndex].lessons);
-      const destLessons = sIndex === dIndex ? sourceLessons : Array.from(newSections[dIndex].lessons);
-      const [moved] = sourceLessons.splice(source.index, 1);
-      destLessons.splice(destination.index, 0, moved);
-      newSections[sIndex] = { ...newSections[sIndex], lessons: sourceLessons };
-      if (sIndex !== dIndex) newSections[dIndex] = { ...newSections[dIndex], lessons: destLessons };
+      const si = newSections.findIndex((s) => s._id === source.droppableId);
+      const di = newSections.findIndex((s) => s._id === destination.droppableId);
+      if (si === -1 || di === -1) return;
+      const sLessons = Array.from(newSections[si].lessons);
+      const dLessons = si === di ? sLessons : Array.from(newSections[di].lessons);
+      const [moved] = sLessons.splice(source.index, 1);
+      dLessons.splice(destination.index, 0, moved);
+      newSections[si] = { ...newSections[si], lessons: sLessons };
+      if (si !== di) newSections[di] = { ...newSections[di], lessons: dLessons };
       setCourse({ ...course, sections: newSections });
-      if (sIndex !== dIndex) await lessonApi.update(draggableId, { sectionId: destination.droppableId });
-      await lessonApi.reorder(destLessons.map((l) => l._id));
+      if (si !== di) await lessonApi.update(draggableId, { sectionId: destination.droppableId });
+      await lessonApi.reorder(dLessons.map((l) => l._id));
     }
   };
 
   useEffect(() => { fetchCourse(); }, [fetchCourse]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
+    </div>
+  );
 
-  if (!course) {
-    return (
-      <PageTransition className="max-w-3xl mx-auto px-4 py-8">
-        <p className="text-zinc-500">Course not found.</p>
-      </PageTransition>
-    );
-  }
+  if (!course) return (
+    <PageTransition className="max-w-3xl mx-auto px-4 py-8">
+      <p className="text-zinc-500">Course not found.</p>
+    </PageTransition>
+  );
 
   const isVideo = activeLesson?.type === "video";
   const videoUrl = activeLesson?.videoUrl || "";
   const pdfUrl = activeLesson?.fileUrl || "";
-  // All material URLs for this lesson
   const materialUrls: string[] = activeLesson?.fileUrls?.length
     ? activeLesson.fileUrls
     : activeLesson?.fileUrl ? [activeLesson.fileUrl] : [];
 
+  const renderPlayer = () => {
+    if (!activeLesson) return <p className="text-zinc-500 text-sm">Select a lesson to begin</p>;
+    if (isVideo && videoUrl) {
+      if (isYouTubeUrl(videoUrl)) {
+        return (
+          <iframe
+            key={videoUrl}
+            src={getYouTubeEmbedUrl(videoUrl)}
+            title={activeLesson.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="w-full h-full min-h-[50vw] md:min-h-0"
+          />
+        );
+      }
+      return (
+        <VideoPlayer
+          key={videoUrl}
+          src={videoUrl}
+          title={activeLesson.title}
+          className="w-full h-full"
+          onDownload={() => triggerVideoDownload(videoUrl, activeLesson.title)}
+        />
+      );
+    }
+    if (!isVideo && pdfUrl) {
+      return (
+        <iframe key={pdfUrl} src={pdfUrl} title={activeLesson.title}
+          className="w-full h-full min-h-[60vh] md:min-h-full bg-white" />
+      );
+    }
+    return <p className="text-zinc-500 text-sm">No media available</p>;
+  };
+
   return (
     <PageTransition className="h-full">
       <div className="flex flex-col md:flex-row md:h-screen">
-        {/* ── Left: Player (70% on desktop) ───────────── */}
-        <div className="w-full md:w-[70%] flex flex-col">
+
+        {/* ── Left: Player ─────────────────────────────── */}
+        <div className="flex flex-col" style={{ flex: "1 1 0", minWidth: 0 }}>
           {/* Top bar */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sticky top-0 z-50 md:static">
-            <button
-              onClick={() => navigate("/")}
-              className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            >
+            <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
               <ArrowLeft className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
             </button>
             <div className="min-w-0 flex-1">
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">{course.title}</h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
-                {activeLesson?.title || "Select a lesson"}
-              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{activeLesson?.title || "Select a lesson"}</p>
             </div>
             {/* Downloads drawer trigger */}
-            <button
-              onClick={() => setDlDrawerOpen(true)}
-              className="relative p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-500"
-              title="In-app downloads"
-            >
+            <button onClick={() => setDlDrawerOpen(true)} className="relative p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-500" title="In-app downloads">
               <FolderDown className="w-4 h-4" />
               {downloads.length > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-indigo-600 text-white text-[9px] flex items-center justify-center">
@@ -171,33 +238,12 @@ export const CourseViewerPage = () => {
             </button>
           </div>
 
-          {/* Player area */}
+          {/* Player */}
           <div className="flex-1 bg-black flex items-center justify-center min-h-[240px] md:min-h-0">
-            {activeLesson ? (
-              isVideo && videoUrl ? (
-                <VideoPlayer
-                  key={videoUrl}
-                  src={videoUrl}
-                  title={activeLesson.title}
-                  className="w-full h-full"
-                  onDownload={() => triggerDownload(videoUrl, activeLesson.title)}
-                />
-              ) : !isVideo && pdfUrl ? (
-                <iframe
-                  key={pdfUrl}
-                  src={pdfUrl}
-                  title={activeLesson.title}
-                  className="w-full h-full min-h-[60vh] md:min-h-full bg-white"
-                />
-              ) : (
-                <p className="text-zinc-500 text-sm">No media available</p>
-              )
-            ) : (
-              <p className="text-zinc-500 text-sm">Select a lesson to begin</p>
-            )}
+            {renderPlayer()}
           </div>
 
-          {/* Materials bar (below player) */}
+          {/* Materials bar — local download only */}
           {activeLesson && materialUrls.length > 0 && (
             <div className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
               <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
@@ -205,16 +251,17 @@ export const CourseViewerPage = () => {
               </p>
               <div className="flex flex-wrap gap-2">
                 {materialUrls.map((url, i) => {
-                  const filename = url.split("/").pop()?.split("?")[0] || `Material ${i + 1}`;
+                  const filename = url.split("/").pop()?.split("?")[0] || `File ${i + 1}`;
+                  const isExt = /youtube\.com|youtu\.be|vimeo\.com/i.test(url);
                   return (
                     <motion.button
                       key={i}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.97 }}
-                      onClick={() => triggerDownload(url, filename)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300 text-xs font-medium hover:border-indigo-400 dark:hover:border-indigo-500/40 transition-colors"
+                      onClick={() => triggerMaterialDownload(url)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:border-indigo-400 transition-colors"
                     >
-                      <FileText className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      {isExt ? <ExternalLink className="w-3 h-3 text-amber-500 shrink-0" /> : <FileText className="w-3 h-3 text-amber-500 shrink-0" />}
                       <span className="truncate max-w-[120px]">{filename}</span>
                       <Download className="w-3 h-3 text-zinc-400 shrink-0" />
                     </motion.button>
@@ -225,48 +272,92 @@ export const CourseViewerPage = () => {
           )}
         </div>
 
-        {/* ── Right: Lesson list (30% on desktop) ────── */}
-        <div className="w-full md:w-[30%] md:h-screen md:overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+        {/* Resize handle (desktop only) */}
+        <div
+          onMouseDown={startResize}
+          className="hidden md:flex w-1 cursor-col-resize hover:bg-indigo-400 bg-zinc-200 dark:bg-zinc-800 transition-colors active:bg-indigo-500 items-center justify-center"
+        >
+          <GripVertical className="w-3 h-3 text-zinc-400 opacity-0 hover:opacity-100 transition-opacity" />
+        </div>
+
+        {/* ── Right: Lesson list ────────────────────── */}
+        <div
+          className="w-full md:h-screen md:overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+          style={{ width: `${sidebarWidth}px`, flexShrink: 0 }}
+        >
+          {/* Sidebar header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Content</h3>
-            {isAdmin && (
-              <motion.button
-                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                onClick={() => setAddSectionOpen(true)}
-                className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
-                title="Add section"
-              >
-                <Plus className="w-4 h-4" />
-              </motion.button>
-            )}
+            <div className="flex items-center gap-1">
+              {/* Toggle reorder handles */}
+              {isAdmin && (
+                <button
+                  onClick={() => setShowReorderHandle((v) => !v)}
+                  className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
+                  title={showReorderHandle ? "Hide reorder handles" : "Show reorder handles"}
+                >
+                  {showReorderHandle ? <ToggleRight className="w-4 h-4 text-indigo-500" /> : <ToggleLeft className="w-4 h-4" />}
+                </button>
+              )}
+              {isAdmin && (
+                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                  onClick={() => setAddSectionOpen(true)}
+                  className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-colors" title="Add section">
+                  <Plus className="w-4 h-4" />
+                </motion.button>
+              )}
+            </div>
           </div>
 
+              {/* Unsectioned lessons (flat import, no sections) */}
+              {course.unsectioned && course.unsectioned.length > 0 && (
+                <div className="border-b border-zinc-100 dark:border-zinc-800/60">
+                  <div className="px-4 py-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">All Lessons</span>
+                  </div>
+                  <div className="pb-1">
+                    {course.unsectioned.map((lesson, i) => (
+                      <LessonItem
+                        key={lesson._id}
+                        lesson={lesson}
+                        isActive={activeLesson?._id === lesson._id}
+                        index={i}
+                        onSelect={() => setActiveLesson(lesson)}
+                        onMutate={fetchCourse}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+          {/* Sectioned content */}
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="sections-list" type="section">
               {(provided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef}>
                   {course.sections?.map((section, index) => (
-                    <Draggable key={section._id} draggableId={section._id} index={index} isDragDisabled={!isAdmin}>
+                    <Draggable key={section._id} draggableId={section._id} index={index} isDragDisabled={!isAdmin || !showReorderHandle}>
                       {(provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
-                          className={snapshot.isDragging ? "opacity-90 shadow-lg relative z-50 ring-2 ring-indigo-500 rounded-xl bg-white dark:bg-zinc-900" : ""}
+                          className={snapshot.isDragging ? "opacity-90 shadow-lg z-50 ring-2 ring-indigo-500 rounded-xl bg-white dark:bg-zinc-900" : ""}
                         >
                           <LessonAccordion
                             section={section}
                             activeLesson={activeLesson}
                             onSelectLesson={setActiveLesson}
                             onMutate={fetchCourse}
-                            dragHandleProps={provided.dragHandleProps}
+                            dragHandleProps={showReorderHandle ? provided.dragHandleProps : null}
+                            showLessonGrips={showReorderHandle}
                           />
                         </div>
                       )}
                     </Draggable>
                   ))}
                   {provided.placeholder}
-                  {(!course.sections || course.sections.length === 0) && (
-                    <p className="px-4 py-8 text-sm text-zinc-400 italic text-center">No sections yet</p>
+                  {(!course.sections || course.sections.length === 0) && (!course.unsectioned || course.unsectioned.length === 0) && (
+                    <p className="px-4 py-8 text-sm text-zinc-400 italic text-center">No content yet</p>
                   )}
                 </div>
               )}
@@ -277,19 +368,47 @@ export const CourseViewerPage = () => {
 
       {/* Admin add section modal */}
       {isAdmin && (
-        <AdminEditModal
-          open={addSectionOpen}
-          onClose={() => setAddSectionOpen(false)}
-          title="New Section"
+        <AdminEditModal open={addSectionOpen} onClose={() => setAddSectionOpen(false)} title="New Section"
           fields={[{ label: "Title", key: "title", value: "", placeholder: "Section title" }]}
-          onSave={async (vals) => {
-            await sectionApi.create({ title: vals.title, courseId: course._id });
-            fetchCourse();
-          }}
+          onSave={async (vals) => { await sectionApi.create({ title: vals.title, courseId: course._id }); fetchCourse(); }}
         />
       )}
 
-      {/* Download mode prompt */}
+      {/* Unsupported download info modal */}
+      {noDownloadOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+          onClick={() => setNoDownloadOpen(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 p-6"
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
+                <ExternalLink className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <p className="font-semibold text-zinc-900 dark:text-zinc-100">Download not supported</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                  This video is hosted on an external platform (e.g. YouTube) and cannot be downloaded. It has been opened in a new tab.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setNoDownloadOpen(false)}
+              className="w-full py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+            >
+              Got it
+            </button>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Download mode prompt — local video only */}
       <DownloadModal
         open={dlModalOpen}
         filename={pendingDownload?.title || ""}
@@ -300,13 +419,7 @@ export const CourseViewerPage = () => {
       />
 
       {/* In-app downloads manager */}
-      <DownloadsDrawer
-        open={dlDrawerOpen}
-        onClose={() => setDlDrawerOpen(false)}
-        items={downloads}
-        onDelete={deleteDl}
-        onOpen={openDl}
-      />
+      <DownloadsDrawer open={dlDrawerOpen} onClose={() => setDlDrawerOpen(false)} items={downloads} onDelete={deleteDl} onOpen={openDl} />
     </PageTransition>
   );
 };

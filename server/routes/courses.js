@@ -12,10 +12,9 @@ const requireAdmin = require("../middleware/admin");
 router.get("/", verifyToken, async (req, res, next) => {
   try {
     const courses = await Course.find()
-      .populate("platformId", "name")
+      .populate("platformId", "name logoUrl")
       .sort({ createdAt: -1 })
       .lean();
-
     res.json({ success: true, data: courses });
   } catch (error) {
     next(error);
@@ -28,43 +27,22 @@ router.get("/", verifyToken, async (req, res, next) => {
 router.get("/:id", verifyToken, async (req, res, next) => {
   try {
     const course = await Course.findById(req.params.id)
-      .populate("platformId", "name")
+      .populate("platformId", "name logoUrl")
       .lean();
+    if (!course) return res.status(404).json({ success: false, message: "Course not found." });
 
-    if (!course) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Course not found." });
-    }
-
-    // Fetch sections sorted by order
-    const sections = await Section.find({ courseId: course._id })
-      .sort({ order: 1 })
-      .lean();
-
-    // Fetch all lessons for this course's sections in a single query
+    // Sections with their lessons
+    const sections = await Section.find({ courseId: course._id }).sort({ order: 1 }).lean();
     const sectionIds = sections.map((s) => s._id);
-    const lessons = await Lesson.find({ sectionId: { $in: sectionIds } })
-      .sort({ order: 1 })
-      .lean();
-
-    // Group lessons under their section
+    const sectioned = await Lesson.find({ sectionId: { $in: sectionIds } }).sort({ order: 1 }).lean();
     const lessonMap = {};
-    for (const lesson of lessons) {
-      const key = lesson.sectionId.toString();
-      if (!lessonMap[key]) lessonMap[key] = [];
-      lessonMap[key].push(lesson);
-    }
+    for (const l of sectioned) { const k = l.sectionId.toString(); if (!lessonMap[k]) lessonMap[k] = []; lessonMap[k].push(l); }
+    const sectionsWithLessons = sections.map((s) => ({ ...s, lessons: lessonMap[s._id.toString()] || [] }));
 
-    const sectionsWithLessons = sections.map((section) => ({
-      ...section,
-      lessons: lessonMap[section._id.toString()] || [],
-    }));
+    // Sectionless lessons (order by order asc)
+    const unsectioned = await Lesson.find({ courseId: course._id, sectionId: null }).sort({ order: 1 }).lean();
 
-    res.json({
-      success: true,
-      data: { ...course, sections: sectionsWithLessons },
-    });
+    res.json({ success: true, data: { ...course, sections: sectionsWithLessons, unsectioned } });
   } catch (error) {
     next(error);
   }
@@ -108,7 +86,7 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
     });
 
     // ── Build a PDF title → url[] map for quick lookup ──────────
-    const pdfMap = {};        // title → [url, ...]
+    const pdfMap = {};
     for (const p of pdfs) {
       const key = (p.title || "").trim();
       if (!pdfMap[key]) pdfMap[key] = [];
@@ -116,56 +94,35 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
     }
 
     if (videos.length > 0) {
-      // One default section per import run — admin can split/rename later
-      const defaultSection = await Section.create({
-        title: "Uncategorized",
-        courseId: course._id,
-        order: 0,
-      });
-
-      // Sort videos by order field, then map to lesson docs
+      // NO sections created — flat lessons stored directly on course.
+      // Admin can create and reorganise sections manually.
       const sortedVideos = [...videos].sort((a, b) => (a.order || 0) - (b.order || 0));
-
       const lessonDocs = sortedVideos.map((v, idx) => {
         const lessonTitle = (v.title || `Video ${idx + 1}`).trim();
-        // Gather all PDFs whose title matches this video's title
         const matchedUrls = pdfMap[lessonTitle] || [];
-
         return {
           title: lessonTitle,
           videoUrl: v.url || "",
-          fileUrl: matchedUrls[0] || "",    // legacy compat field
-          fileUrls: matchedUrls,            // full list of materials
-          sectionId: defaultSection._id,
+          fileUrl: matchedUrls[0] || "",
+          fileUrls: matchedUrls,
+          sectionId: null,
+          courseId: course._id,
           order: idx,
           type: "video",
         };
       });
-
       if (lessonDocs.length > 0) await Lesson.insertMany(lessonDocs);
 
     } else if (sections && Array.isArray(sections)) {
-      // ── Legacy sections[] backwards compat ──────────────────────
+      // Legacy sections[] backwards compat (existing data)
       for (let i = 0; i < sections.length; i++) {
         const secData = sections[i];
-        const section = await Section.create({
-          title: secData.title || `Section ${i + 1}`,
-          courseId: course._id,
-          order: i,
-        });
+        const section = await Section.create({ title: secData.title || `Section ${i + 1}`, courseId: course._id, order: i });
         if (secData.lessons && Array.isArray(secData.lessons)) {
           const lessonDocs = secData.lessons.map((ld, j) => {
             const videoUrl = ld.url || "";
             const fileUrls = Array.isArray(ld.files) ? ld.files : (ld.files ? [ld.files] : []);
-            return {
-              title: ld.title || `Lesson ${j + 1}`,
-              videoUrl,
-              fileUrl: fileUrls[0] || "",
-              fileUrls,
-              sectionId: section._id,
-              order: j,
-              type: videoUrl ? "video" : "pdf",
-            };
+            return { title: ld.title || `Lesson ${j + 1}`, videoUrl, fileUrl: fileUrls[0] || "", fileUrls, sectionId: section._id, courseId: course._id, order: j, type: videoUrl ? "video" : "pdf" };
           });
           if (lessonDocs.length > 0) await Lesson.insertMany(lessonDocs);
         }
@@ -178,6 +135,8 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
     next(error);
   }
 });
+
+
 
 
 

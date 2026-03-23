@@ -16,6 +16,7 @@ const platformRoutes = require("./routes/platforms");
 const favoriteRoutes = require("./routes/favorites");
 const searchRoutes = require("./routes/search");
 const userRoutes = require("./routes/users");
+const adminRoutes = require("./routes/admin");
 
 // ── Middleware imports ───────────────────────────────────────
 const errorHandler = require("./middleware/errorHandler");
@@ -91,6 +92,8 @@ app.use("/api/platforms", platformRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
+
 
 // ── 404 catch-all ────────────────────────────────────────────
 app.use((_req, res) => {

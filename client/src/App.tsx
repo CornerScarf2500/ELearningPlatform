@@ -16,12 +16,12 @@ import { CourseViewerPage } from "./pages/CourseViewerPage";
 import { FavoritesPage } from "./pages/FavoritesPage";
 import { SearchPage } from "./pages/SearchPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { DownloadsPage } from "./pages/DownloadsPage";
 
 /* ── Route guard ──────────────────────────────────────────── */
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const token = useAuthStore((s) => s.token);
   const loading = useAuthStore((s) => s.loading);
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
@@ -29,8 +29,22 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       </div>
     );
   }
-
   if (!token) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+};
+
+/* ── Redirect already-logged-in users away from /login ─────── */
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const token = useAuthStore((s) => s.token);
+  const loading = useAuthStore((s) => s.loading);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  if (token) return <Navigate to="/" replace />;
   return <>{children}</>;
 };
 
@@ -41,7 +55,7 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route
           element={
             <ProtectedRoute>
@@ -53,6 +67,7 @@ const AnimatedRoutes = () => {
           <Route path="course/:id" element={<CourseViewerPage />} />
           <Route path="favorites" element={<FavoritesPage />} />
           <Route path="search" element={<SearchPage />} />
+          <Route path="downloads" element={<DownloadsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

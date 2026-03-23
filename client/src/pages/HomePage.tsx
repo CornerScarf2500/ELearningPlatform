@@ -188,40 +188,37 @@ export const HomePage = () => {
         </div>
 
         {isAdmin && (
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+          <div className="flex items-center gap-2">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setIsSelectMode(!isSelectMode);
-                setSelectedIds(new Set());
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              onClick={() => { setIsSelectMode(!isSelectMode); setSelectedIds(new Set()); }}
+              title={isSelectMode ? "Cancel selection" : "Multi-select courses"}
+              className={`p-2 rounded-lg text-sm font-medium border transition-colors ${
                 isSelectMode
                   ? "bg-zinc-100 border-zinc-200 text-zinc-900 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100"
                   : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800"
               }`}
             >
               <CheckSquare className="w-4 h-4" />
-              {isSelectMode ? "Cancel" : "Select"}
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
               onClick={() => { setFileQueue([]); setImportOpen(true); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 text-sm font-medium transition-colors"
+              title="Import JSON"
+              className="p-2 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 transition-colors"
             >
               <UploadCloud className="w-4 h-4" />
-              Import
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
               onClick={openAdd}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm"
+              title="Add course"
+              className="p-2 rounded-lg bg-indigo-600 dark:bg-indigo-500 text-white hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm"
             >
               <Plus className="w-4 h-4" />
-              Add Course
             </motion.button>
           </div>
         )}

@@ -15,6 +15,7 @@ interface Props {
   onSelectLesson: (lesson: Lesson) => void;
   onMutate: () => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
+  showLessonGrips?: boolean;
 }
 
 export const LessonAccordion = ({
@@ -23,6 +24,7 @@ export const LessonAccordion = ({
   onSelectLesson,
   onMutate,
   dragHandleProps,
+  showLessonGrips = true,
 }: Props) => {
   const [open, setOpen] = useState(true);
   const isAdmin = useAdmin();
@@ -109,7 +111,7 @@ export const LessonAccordion = ({
                     className="pb-1"
                   >
                     {section.lessons.map((lesson, i) => (
-                      <Draggable key={lesson._id} draggableId={lesson._id} index={i} isDragDisabled={!isAdmin}>
+                      <Draggable key={lesson._id} draggableId={lesson._id} index={i} isDragDisabled={!isAdmin || !showLessonGrips}>
                         {(provided, snapshot) => (
                           <div
                             ref={provided.innerRef}
@@ -117,7 +119,7 @@ export const LessonAccordion = ({
                             className={snapshot.isDragging ? "opacity-90 shadow-lg relative z-50 bg-white dark:bg-zinc-900 rounded-lg ring-1 ring-indigo-500" : ""}
                           >
                             <div className="flex items-center">
-                              {isAdmin && (
+                              {isAdmin && showLessonGrips && (
                                 <div {...provided.dragHandleProps} className="p-1 ml-1 cursor-grab text-zinc-300 hover:text-zinc-500 dark:text-zinc-700 dark:hover:text-zinc-500">
                                   <GripVertical className="w-3.5 h-3.5" />
                                 </div>
@@ -127,6 +129,7 @@ export const LessonAccordion = ({
                                   key={lesson._id}
                                   lesson={lesson}
                                   isActive={activeLesson?._id === lesson._id}
+                                  index={i}
                                   onSelect={() => onSelectLesson(lesson)}
                                   onMutate={onMutate}
                                 />

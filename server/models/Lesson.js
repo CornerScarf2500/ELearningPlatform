@@ -24,7 +24,12 @@ const lessonSchema = new mongoose.Schema(
     sectionId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Section",
-      required: [true, "Section reference is required"],
+      default: null,
+    },
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      default: null,
     },
     order: {
       type: Number,
