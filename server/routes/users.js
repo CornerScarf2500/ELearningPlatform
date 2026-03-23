@@ -179,4 +179,24 @@ router.post(
   }
 );
 
+// ──────────────────────────────────────────────────────────────
+// DELETE /api/users/:id — permanently delete a user (Admin)
+// ──────────────────────────────────────────────────────────────
+router.delete("/:id", verifyToken, requireAdmin, async (req, res, next) => {
+  try {
+    if (req.user._id.toString() === req.params.id) {
+      return res.status(400).json({ success: false, message: "Cannot delete yourself." });
+    }
+
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    res.json({ success: true, message: "User deleted." });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

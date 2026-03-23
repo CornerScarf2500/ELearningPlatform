@@ -119,6 +119,7 @@ export const userApi = {
   revokeSession: (id: string, sessionId: string) =>
     api.delete<ApiResponse>(`/users/${id}/sessions/${sessionId}`),
   toggleBan: (id: string) => api.post<ApiResponse>(`/users/${id}/ban`),
+  deleteUser: (id: string) => api.delete<ApiResponse>(`/users/${id}`),
 };
 
 export default api;

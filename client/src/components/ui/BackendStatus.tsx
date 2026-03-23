@@ -125,11 +125,6 @@ export const BackendStatus = () => {
             >
               {dbLabel}
             </span>
-            {health.adminSeeded !== undefined && (
-              <span>
-                Admin: {health.adminSeeded ? "✓" : "✗ not seeded"}
-              </span>
-            )}
           </div>
         )}
 

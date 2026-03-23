@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
-import { Plus, Loader2, UploadCloud, CheckSquare, Trash2, X } from "lucide-react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Loader2, UploadCloud, CheckSquare, Trash2, X, FileJson } from "lucide-react";
 import { PageTransition } from "../components/ui/PageTransition";
 import { CourseCard } from "../components/course/CourseCard";
 import { AdminEditModal } from "../components/admin/AdminEditModal";
@@ -10,12 +10,20 @@ import { courseApi, platformApi } from "../api";
 import { BackendStatus } from "../components/ui/BackendStatus";
 import type { Course, Platform } from "../types";
 
+interface QueuedFile {
+  name: string;
+  status: "pending" | "importing" | "done" | "error";
+  parsed: any;
+  error?: string;
+}
+
 export const HomePage = () => {
   const isAdmin = useAdmin();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [platforms, setPlatforms] = useState<Platform[]>([]);
+  const [activePlatformId, setActivePlatformId] = useState<string | null>(null);
   
   // Multi-select state
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -23,14 +31,19 @@ export const HomePage = () => {
 
   // Import state
   const [importOpen, setImportOpen] = useState(false);
-  const [jsonInput, setJsonInput] = useState("");
+  const [fileQueue, setFileQueue] = useState<QueuedFile[]>([]);
   const [importing, setImporting] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchCourses = useCallback(async () => {
+  const fetchCoursesAndPlatforms = useCallback(async () => {
     try {
-      const { data } = await courseApi.list();
-      setCourses(data.data || []);
-      // Reset selections if courses change significantly
+      const [coursesRes, platformsRes] = await Promise.all([
+        courseApi.list(),
+        platformApi.list(),
+      ]);
+      setCourses(coursesRes.data.data || []);
+      setPlatforms(platformsRes.data.data || []);
       setSelectedIds(new Set());
     } catch {
       /* silently handle */
@@ -40,17 +53,18 @@ export const HomePage = () => {
   }, []);
 
   useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
+    fetchCoursesAndPlatforms();
+  }, [fetchCoursesAndPlatforms]);
+
+  // Derived: filter courses by selected platform
+  const filteredCourses = activePlatformId
+    ? courses.filter((c) => {
+        const pid = typeof c.platformId === "object" ? (c.platformId as Platform)._id : c.platformId;
+        return pid === activePlatformId;
+      })
+    : courses;
 
   const openAdd = async () => {
-    // Prefetch platforms for the dropdown
-    try {
-      const { data } = await platformApi.list();
-      setPlatforms(data.data || []);
-    } catch {
-      /* continue */
-    }
     setAddOpen(true);
   };
 
@@ -62,10 +76,10 @@ export const HomePage = () => {
   };
 
   const handleSelectAll = () => {
-    if (selectedIds.size === courses.length) {
+    if (selectedIds.size === filteredCourses.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(courses.map((c) => c._id)));
+      setSelectedIds(new Set(filteredCourses.map((c) => c._id)));
     }
   };
 
@@ -77,45 +91,96 @@ export const HomePage = () => {
       await Promise.all(Array.from(selectedIds).map((id) => courseApi.delete(id)));
       setIsSelectMode(false);
       setSelectedIds(new Set());
-      await fetchCourses();
-    } catch (e) {
+      await fetchCoursesAndPlatforms();
+    } catch {
       alert("Error deleting courses.");
       setLoading(false);
     }
   };
 
-  const handleImport = async () => {
-    if (!jsonInput.trim()) return;
-    try {
-      let parsed;
-      try {
-        parsed = JSON.parse(jsonInput);
-      } catch {
-        alert("Invalid JSON format.");
-        return;
-      }
-      setImporting(true);
-      await courseApi.import(parsed);
-      setImportOpen(false);
-      setJsonInput("");
-      await fetchCourses();
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to import course");
-    } finally {
-      setImporting(false);
-    }
+  const parseFiles = (fileList: FileList) => {
+    const readers: Promise<QueuedFile>[] = Array.from(fileList).map((file) =>
+      new Promise<QueuedFile>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const parsed = JSON.parse(e.target?.result as string);
+            resolve({ name: file.name, status: "pending", parsed });
+          } catch {
+            resolve({ name: file.name, status: "error", parsed: null, error: "Invalid JSON" });
+          }
+        };
+        reader.readAsText(file);
+      })
+    );
+    Promise.all(readers).then((results) => {
+      setFileQueue((prev) => [...prev, ...results]);
+    });
   };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) parseFiles(files);
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) parseFiles(e.target.files);
+    e.target.value = "";
+  };
+
+  const removeQueuedFile = (idx: number) => {
+    setFileQueue((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleImportAll = async () => {
+    const pending = fileQueue.filter((f) => f.status === "pending" && f.parsed);
+    if (pending.length === 0) return;
+    setImporting(true);
+    for (let i = 0; i < fileQueue.length; i++) {
+      const f = fileQueue[i];
+      if (f.status !== "pending" || !f.parsed) continue;
+      setFileQueue((prev) =>
+        prev.map((item, idx) => (idx === i ? { ...item, status: "importing" } : item))
+      );
+      try {
+        await courseApi.import(f.parsed);
+        setFileQueue((prev) =>
+          prev.map((item, idx) => (idx === i ? { ...item, status: "done" } : item))
+        );
+      } catch (err: any) {
+        setFileQueue((prev) =>
+          prev.map((item, idx) =>
+            idx === i
+              ? { ...item, status: "error", error: err.response?.data?.message || "Import failed" }
+              : item
+          )
+        );
+      }
+    }
+    setImporting(false);
+    await fetchCoursesAndPlatforms();
+  };
+
+  const statusColor = (s: QueuedFile["status"]) => {
+    if (s === "done") return "text-emerald-600 dark:text-emerald-400";
+    if (s === "error") return "text-red-500";
+    if (s === "importing") return "text-indigo-500";
+    return "text-zinc-500 dark:text-zinc-400";
+  };
+  const statusLabel = (s: QueuedFile["status"]) =>
+    s === "done" ? "✓" : s === "error" ? "✗" : s === "importing" ? "…" : "Queued";
 
   return (
     <PageTransition className="max-w-3xl mx-auto px-4 md:px-8 py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <div>
-          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-            Courses
-          </h1>
+          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Courses</h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-            {courses.length} course{courses.length !== 1 && "s"} available
+            {filteredCourses.length} course{filteredCourses.length !== 1 && "s"}
+            {activePlatformId ? " in this platform" : " available"}
           </p>
           <div className="mt-2">
             <BackendStatus />
@@ -138,12 +203,12 @@ export const HomePage = () => {
               }`}
             >
               <CheckSquare className="w-4 h-4" />
-              {isSelectMode ? "Cancel Select" : "Select"}
+              {isSelectMode ? "Cancel" : "Select"}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setImportOpen(true)}
+              onClick={() => { setFileQueue([]); setImportOpen(true); }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 text-sm font-medium transition-colors"
             >
               <UploadCloud className="w-4 h-4" />
@@ -162,33 +227,65 @@ export const HomePage = () => {
         )}
       </div>
 
-      {isSelectMode && courses.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-4 p-3 rounded-xl border border-indigo-200 dark:border-indigo-900/40 bg-indigo-50 dark:bg-indigo-900/10 flex items-center justify-between"
-        >
-          <div className="flex items-center gap-3">
+      {/* Platform filter pills */}
+      {platforms.length > 0 && (
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <button
+            onClick={() => setActivePlatformId(null)}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              activePlatformId === null
+                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+            }`}
+          >
+            All
+          </button>
+          {platforms.map((p) => (
             <button
-              onClick={handleSelectAll}
-              className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+              key={p._id}
+              onClick={() => setActivePlatformId(activePlatformId === p._id ? null : p._id)}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                activePlatformId === p._id
+                  ? "bg-indigo-600 text-white dark:bg-indigo-500"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+              }`}
             >
-              {selectedIds.size === courses.length ? "Deselect All" : "Select All"}
+              {p.name}
             </button>
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">
-              {selectedIds.size} selected
-            </span>
-          </div>
-          {selectedIds.size > 0 && (
-            <button
-              onClick={handleBulkDelete}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 text-sm font-medium transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete Selected
-            </button>
-          )}
-        </motion.div>
+          ))}
+        </div>
+      )}
+
+      {isSelectMode && filteredCourses.length > 0 && (
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4 p-3 rounded-xl border border-indigo-200 dark:border-indigo-900/40 bg-indigo-50 dark:bg-indigo-900/10 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSelectAll}
+                className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                {selectedIds.size === filteredCourses.length ? "Deselect All" : "Select All"}
+              </button>
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                {selectedIds.size} selected
+              </span>
+            </div>
+            {selectedIds.size > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 text-sm font-medium transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </button>
+            )}
+          </motion.div>
+        </AnimatePresence>
       )}
 
       {/* Course list */}
@@ -196,23 +293,27 @@ export const HomePage = () => {
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
         </div>
-      ) : courses.length === 0 ? (
+      ) : filteredCourses.length === 0 ? (
         <div className="text-center py-20 text-zinc-400 dark:text-zinc-500">
-          <p className="text-lg font-medium">No courses yet</p>
+          <p className="text-lg font-medium">
+            {courses.length === 0 ? "No courses yet" : "No courses in this platform"}
+          </p>
           <p className="text-sm mt-1">
-            {isAdmin
-              ? 'Click "Add Course" to get started.'
+            {isAdmin && courses.length === 0
+              ? 'Click "Add Course" or "Import" to get started.'
+              : activePlatformId
+              ? "Try selecting a different platform."
               : "Check back later for new content."}
           </p>
         </div>
       ) : (
         <div className="space-y-2">
-          {courses.map((course, i) => (
+          {filteredCourses.map((course, i) => (
             <CourseCard
               key={course._id}
               course={course}
               index={i}
-              onMutate={fetchCourses}
+              onMutate={fetchCoursesAndPlatforms}
               isSelectMode={isSelectMode}
               selected={selectedIds.has(course._id)}
               onToggleSelect={() => handleToggleSelect(course._id)}
@@ -240,7 +341,7 @@ export const HomePage = () => {
           ]}
           onSave={async (vals) => {
             await courseApi.create(vals);
-            fetchCourses();
+            fetchCoursesAndPlatforms();
           }}
         />
       )}
@@ -249,7 +350,7 @@ export const HomePage = () => {
       <Modal open={importOpen} onClose={() => !importing && setImportOpen(false)}>
         <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Import JSON Course
+            Import JSON Courses
           </h2>
           <button
             onClick={() => !importing && setImportOpen(false)}
@@ -258,33 +359,100 @@ export const HomePage = () => {
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-4">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3 block">
-            Paste your complete course JSON below mapping <code>title</code>, <code>grade</code>, <code>teacher</code>, and the <code>sections</code> arrays.
-          </p>
-          <textarea
-            value={jsonInput}
-            onChange={(e) => setJsonInput(e.target.value)}
-            className="w-full h-64 p-3 font-mono text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-            placeholder='{&#10;  "title": "Science 101",&#10;  "sections": [...]&#10;}'
-          />
+        <div className="p-4 space-y-4">
+          {/* Drop Zone */}
+          <div
+            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`relative border-2 border-dashed rounded-xl p-8 cursor-pointer text-center transition-colors ${
+              isDragOver
+                ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/10"
+                : "border-zinc-300 dark:border-zinc-700 hover:border-indigo-400 dark:hover:border-indigo-600 bg-zinc-50 dark:bg-zinc-900/50"
+            }`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json"
+              multiple
+              onChange={handleFileInput}
+              className="hidden"
+            />
+            <UploadCloud className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <span className="font-medium text-indigo-600 dark:text-indigo-400">Click to browse</span> or drag & drop
+            </p>
+            <p className="text-xs text-zinc-400 mt-1">Accepts multiple .json files</p>
+          </div>
+
+          {/* File Queue */}
+          {fileQueue.length > 0 && (
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              {fileQueue.map((f, i) => (
+                <div
+                  key={i}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg border transition-colors ${
+                    f.status === "done"
+                      ? "border-emerald-200 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-900/10"
+                      : f.status === "error"
+                      ? "border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/10"
+                      : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+                  }`}
+                >
+                  <FileJson className={`w-4 h-4 shrink-0 ${statusColor(f.status)}`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate">
+                      {f.name}
+                    </p>
+                    {f.error && (
+                      <p className="text-[10px] text-red-500">{f.error}</p>
+                    )}
+                  </div>
+                  <span className={`text-xs font-semibold shrink-0 ${statusColor(f.status)}`}>
+                    {statusLabel(f.status)}
+                  </span>
+                  {f.status !== "importing" && (
+                    <button
+                      onClick={() => removeQueuedFile(i)}
+                      className="p-0.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 shrink-0"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="flex justify-end gap-2 p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+        <div className="flex justify-between gap-2 p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
           <button
-            onClick={() => setImportOpen(false)}
-            disabled={importing}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            onClick={() => setFileQueue([])}
+            disabled={importing || fileQueue.length === 0}
+            className="px-4 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors disabled:opacity-40"
           >
-            Cancel
+            Clear
           </button>
-          <button
-            onClick={handleImport}
-            disabled={importing || !jsonInput.trim()}
-            className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
-          >
-            {importing && <Loader2 className="w-4 h-4 animate-spin" />}
-            {importing ? "Importing..." : "Run Import"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setImportOpen(false)}
+              disabled={importing}
+              className="px-4 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            >
+              Close
+            </button>
+            <button
+              onClick={handleImportAll}
+              disabled={importing || fileQueue.filter((f) => f.status === "pending").length === 0}
+              className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {importing && <Loader2 className="w-4 h-4 animate-spin" />}
+              {importing
+                ? "Importing…"
+                : `Import ${fileQueue.filter((f) => f.status === "pending").length} File${fileQueue.filter((f) => f.status === "pending").length !== 1 ? "s" : ""}`}
+            </button>
+          </div>
         </div>
       </Modal>
     </PageTransition>

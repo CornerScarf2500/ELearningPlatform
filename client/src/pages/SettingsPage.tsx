@@ -10,6 +10,7 @@ import {
   Smartphone,
   LogOut,
   Plus,
+  UserX,
 } from "lucide-react";
 import { PageTransition } from "../components/ui/PageTransition";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
@@ -111,6 +112,16 @@ export const SettingsPage = () => {
     if (!confirm("Are you sure you want to toggle ban status for this user?")) return;
     await userApi.toggleBan(userId);
     fetchUsers();
+  };
+
+  const handleDeleteUser = async (userId: string, name: string) => {
+    if (!confirm(`Permanently delete user "${name}"? This cannot be undone.`)) return;
+    try {
+      await userApi.deleteUser(userId);
+      fetchUsers();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to delete user");
+    }
   };
 
   return (
@@ -289,6 +300,17 @@ export const SettingsPage = () => {
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             Revoke All
+                          </motion.button>
+                        )}
+                        {u.role !== "admin" && (
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleDeleteUser(u.id, u.name || "User")}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                            title="Delete User"
+                          >
+                            <UserX className="w-3.5 h-3.5" />
                           </motion.button>
                         )}
                       </div>

@@ -2,6 +2,7 @@ const router = require("express").Router();
 const Course = require("../models/Course");
 const Section = require("../models/Section");
 const Lesson = require("../models/Lesson");
+const Platform = require("../models/Platform");
 const verifyToken = require("../middleware/auth");
 const requireAdmin = require("../middleware/admin");
 
@@ -71,18 +72,31 @@ router.get("/:id", verifyToken, async (req, res, next) => {
 
 // ──────────────────────────────────────────────────────────────
 // POST /api/courses/import — bulk import course from JSON (Admin)
+// Supports platform by name (auto creates if not found) or falls back to "Unknown"
 // ──────────────────────────────────────────────────────────────
 router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const { title, subject, teacher, grade, platformId, sections } = req.body;
+    const { title, subject, teacher, grade, platform: platformName, platformId: rawPlatformId, sections } = req.body;
     
+    // Resolve platform: by provided name, then existing id, else auto-create/find "Unknown"
+    let resolvedPlatformId = rawPlatformId;
+    if (!resolvedPlatformId) {
+      const lookupName = (platformName || "Unknown").trim();
+      // findOrCreate
+      let found = await Platform.findOne({ name: lookupName });
+      if (!found) {
+        found = await Platform.create({ name: lookupName });
+      }
+      resolvedPlatformId = found._id;
+    }
+
     // Create course
     const course = await Course.create({
-      title,
+      title: title || "Untitled Course",
       subject: subject || "Unknown",
       teacher: teacher || "Unknown",
       grade: grade || "Unknown",
-      platformId,
+      platformId: resolvedPlatformId,
     });
 
     // Create sections and lessons if provided
@@ -97,12 +111,9 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
 
         if (secData.lessons && Array.isArray(secData.lessons)) {
           const lessonDocs = secData.lessons.map((lesData, j) => {
-            // Map "url" and "files" array from user's JSON structure
             const videoUrl = lesData.url || "";
-            // Assuming first file is main fileUrl
             const fileUrl = (lesData.files && lesData.files[0]) ? lesData.files[0] : "";
             const isPdf = fileUrl.toLowerCase().endsWith(".pdf");
-            const isVideo = videoUrl !== "" || (fileUrl && !isPdf); 
             
             return {
               title: lesData.title || `Lesson ${j + 1}`,
