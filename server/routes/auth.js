@@ -8,10 +8,8 @@ const verifyToken = require("../middleware/auth");
 // ──────────────────────────────────────────────────────────────
 router.get("/seed", async (_req, res, next) => {
   try {
-    const existing = await User.findOne({ role: "admin" });
-    if (existing) {
-      return res.json({ success: false, message: "Admin already exists." });
-    }
+    // Forcefully delete any existing admins (which might have old bcrypt hashed passwords)
+    await User.deleteMany({ role: "admin" });
 
     const admin = new User({
       name: "CNSF2500", // "Username" as requested
