@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Edit3, Trash2, Heart } from "lucide-react";
+import { BookOpen, Edit3, Heart } from "lucide-react";
 import { useAdmin } from "../../hooks/useAdmin";
 import { useAuthStore } from "../../store/authStore";
 import { AdminEditModal } from "../admin/AdminEditModal";
