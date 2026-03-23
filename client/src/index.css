@@ -1,0 +1,47 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Base reset & design tokens ──────────────────────────── */
+@layer base {
+  :root {
+    --color-accent: #4f46e5;        /* indigo-600 */
+    --color-accent-light: #818cf8;  /* indigo-400 */
+  }
+
+  html {
+    @apply scroll-smooth antialiased;
+  }
+
+  body {
+    @apply bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100
+           transition-colors duration-200;
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-zinc-300 dark:bg-zinc-700 rounded-full;
+  }
+}
+
+/* ── Utility helpers ─────────────────────────────────────── */
+@layer utilities {
+  .text-accent {
+    color: var(--color-accent);
+  }
+  .dark .text-accent {
+    color: var(--color-accent-light);
+  }
+  .bg-accent {
+    background-color: var(--color-accent);
+  }
+  .dark .bg-accent {
+    background-color: var(--color-accent-light);
+  }
+}

@@ -1,0 +1,122 @@
+import axios from "axios";
+import type {
+  ApiResponse,
+  Course,
+  Section,
+  Lesson,
+  Platform,
+  SearchResults,
+  FavoriteData,
+  User,
+} from "../types";
+
+/* ── Axios instance ──────────────────────────────────────── */
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "/api",
+  headers: { "Content-Type": "application/json" },
+});
+
+// Attach JWT from localStorage on every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// On 401 clear the stored token so the UI redirects to login
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    return Promise.reject(err);
+  }
+);
+
+/* ── Auth ─────────────────────────────────────────────────── */
+export const authApi = {
+  login: (accessCode: string) =>
+    api.post<ApiResponse>("/auth/login", { accessCode }),
+  logout: () => api.post<ApiResponse>("/auth/logout"),
+  me: () => api.get<ApiResponse<never> & { user: User }>("/auth/me"),
+};
+
+/* ── Courses ──────────────────────────────────────────────── */
+export const courseApi = {
+  list: () => api.get<ApiResponse<Course[]>>("/courses"),
+  get: (id: string) =>
+    api.get<ApiResponse<Course & { sections: Section[] }>>(`/courses/${id}`),
+  create: (data: Partial<Course>) =>
+    api.post<ApiResponse<Course>>("/courses", data),
+  update: (id: string, data: Partial<Course>) =>
+    api.put<ApiResponse<Course>>(`/courses/${id}`, data),
+  delete: (id: string) => api.delete<ApiResponse>(`/courses/${id}`),
+};
+
+/* ── Sections ─────────────────────────────────────────────── */
+export const sectionApi = {
+  create: (data: { title: string; courseId: string; order?: number }) =>
+    api.post<ApiResponse<Section>>("/sections", data),
+  update: (id: string, data: Partial<Section>) =>
+    api.put<ApiResponse<Section>>(`/sections/${id}`, data),
+  delete: (id: string) => api.delete<ApiResponse>(`/sections/${id}`),
+  reorder: (orderedIds: string[]) =>
+    api.put<ApiResponse>("/sections/reorder", { orderedIds }),
+};
+
+/* ── Lessons ──────────────────────────────────────────────── */
+export const lessonApi = {
+  create: (data: Partial<Lesson> & { sectionId: string }) =>
+    api.post<ApiResponse<Lesson>>("/lessons", data),
+  update: (id: string, data: Partial<Lesson>) =>
+    api.put<ApiResponse<Lesson>>(`/lessons/${id}`, data),
+  delete: (id: string) => api.delete<ApiResponse>(`/lessons/${id}`),
+  reorder: (orderedIds: string[]) =>
+    api.put<ApiResponse>("/lessons/reorder", { orderedIds }),
+};
+
+/* ── Platforms ────────────────────────────────────────────── */
+export const platformApi = {
+  list: () => api.get<ApiResponse<Platform[]>>("/platforms"),
+  create: (name: string) =>
+    api.post<ApiResponse<Platform>>("/platforms", { name }),
+  update: (id: string, name: string) =>
+    api.put<ApiResponse<Platform>>(`/platforms/${id}`, { name }),
+  delete: (id: string) => api.delete<ApiResponse>(`/platforms/${id}`),
+};
+
+/* ── Favorites ────────────────────────────────────────────── */
+export const favoriteApi = {
+  list: () => api.get<ApiResponse<FavoriteData>>("/favorites"),
+  toggleCourse: (id: string) =>
+    api.post<ApiResponse & { favoriteCourses: string[] }>(
+      `/favorites/course/${id}`
+    ),
+  toggleLesson: (id: string) =>
+    api.post<ApiResponse & { favoriteLessons: string[] }>(
+      `/favorites/lesson/${id}`
+    ),
+};
+
+/* ── Search ───────────────────────────────────────────────── */
+export const searchApi = {
+  query: (q: string) => api.get<ApiResponse<SearchResults>>(`/search?q=${encodeURIComponent(q)}`),
+};
+
+/* ── Users (admin) ────────────────────────────────────────── */
+export const userApi = {
+  list: () =>
+    api.get<
+      ApiResponse<
+        { id: string; role: string; activeSessions: number; createdAt: string }[]
+      >
+    >("/users"),
+  revokeSessions: (id: string) =>
+    api.delete<ApiResponse>(`/users/${id}/sessions`),
+  revokeSession: (id: string, index: number) =>
+    api.delete<ApiResponse>(`/users/${id}/sessions/${index}`),
+};
+
+export default api;
