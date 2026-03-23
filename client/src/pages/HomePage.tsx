@@ -1,14 +1,24 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Loader2, UploadCloud, CheckSquare, Trash2, X, FileJson } from "lucide-react";
+import { Plus, Loader2, UploadCloud, CheckSquare, Trash2, X, FileJson, Edit3 } from "lucide-react";
 import { PageTransition } from "../components/ui/PageTransition";
 import { CourseCard } from "../components/course/CourseCard";
 import { AdminEditModal } from "../components/admin/AdminEditModal";
 import { Modal } from "../components/ui/Modal";
 import { useAdmin } from "../hooks/useAdmin";
-import { courseApi, platformApi } from "../api";
+import { courseApi } from "../api";
 import { BackendStatus } from "../components/ui/BackendStatus";
-import type { Course, Platform } from "../types";
+import type { Course } from "../types";
+
+// ── localStorage platform registry helpers ────────────────────
+interface LocalPlatform { name: string; logoUrl: string; }
+const PLAT_KEY = "elearn-platforms";
+const loadPlatforms = (): LocalPlatform[] => {
+  try { return JSON.parse(localStorage.getItem(PLAT_KEY) || "[]"); } catch { return []; }
+};
+const savePlatforms = (p: LocalPlatform[]) => {
+  try { localStorage.setItem(PLAT_KEY, JSON.stringify(p)); } catch {}
+};
 
 interface QueuedFile {
   name: string;
@@ -22,8 +32,16 @@ export const HomePage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
-  const [platforms, setPlatforms] = useState<Platform[]>([]);
-  const [activePlatformId, setActivePlatformId] = useState<string | null>(null);
+  const [activePlatformName, setActivePlatformName] = useState<string | null>(null);
+
+  // Platform registry — localStorage-persisted list of known platforms
+  const [localPlatforms, setLocalPlatforms] = useState<LocalPlatform[]>(loadPlatforms);
+  const [addPlatformOpen, setAddPlatformOpen] = useState(false);
+  const [editPlatformTarget, setEditPlatformTarget] = useState<LocalPlatform | null>(null);
+
+  // Bulk-assign platform — shown when in select mode and platforms exist
+  const [assignPlatformOpen, setAssignPlatformOpen] = useState(false);
+  const [assignTarget, setAssignTarget] = useState<LocalPlatform | null>(null);
   
   // Multi-select state
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -38,31 +56,45 @@ export const HomePage = () => {
 
   const fetchCoursesAndPlatforms = useCallback(async () => {
     try {
-      const [coursesRes, platformsRes] = await Promise.all([
-        courseApi.list(),
-        platformApi.list(),
-      ]);
-      setCourses(coursesRes.data.data || []);
-      setPlatforms(platformsRes.data.data || []);
+      const res = await courseApi.list();
+      setCourses(res.data.data || []);
       setSelectedIds(new Set());
-    } catch {
-      /* silently handle */
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* silently handle */ }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
     fetchCoursesAndPlatforms();
   }, [fetchCoursesAndPlatforms]);
 
-  // Derived: filter courses by selected platform
-  const filteredCourses = activePlatformId
-    ? courses.filter((c) => {
-        const pid = typeof c.platformId === "object" ? (c.platformId as Platform)._id : c.platformId;
-        return pid === activePlatformId;
-      })
+  // Derived: merge localStorage platforms with course-inferred platform names
+  const courseNames = [...new Set(courses.map((c) => c.platformName).filter(Boolean))] as string[];
+  const localNames = localPlatforms.map((p) => p.name);
+  const platformNames = [...new Set([...localNames, ...courseNames])];
+  const filteredCourses = activePlatformName
+    ? courses.filter((c) => (c.platformName || "Unknown") === activePlatformName)
     : courses;
+
+  const savePlatform = (p: LocalPlatform, oldName?: string) => {
+    setLocalPlatforms((prev) => {
+      const next = oldName
+        ? prev.map((x) => x.name === oldName ? p : x)
+        : [...prev.filter((x) => x.name !== p.name), p];
+      savePlatforms(next);
+      return next;
+    });
+  };
+
+  const handleBulkAssignPlatform = async () => {
+    if (!assignTarget || selectedIds.size === 0) return;
+    try {
+      await courseApi.bulkSetPlatform([...selectedIds], assignTarget.name, assignTarget.logoUrl);
+      setAssignPlatformOpen(false);
+      setAssignTarget(null);
+      setIsSelectMode(false);
+      fetchCoursesAndPlatforms();
+    } catch { alert("Error assigning platform."); }
+  };
 
   const openAdd = async () => {
     setAddOpen(true);
@@ -180,7 +212,7 @@ export const HomePage = () => {
           <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Courses</h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
             {filteredCourses.length} course{filteredCourses.length !== 1 && "s"}
-            {activePlatformId ? " in this platform" : " available"}
+            {activePlatformName ? " in this platform" : " available"}
           </p>
           <div className="mt-2">
             <BackendStatus />
@@ -225,33 +257,60 @@ export const HomePage = () => {
       </div>
 
       {/* Platform filter pills */}
-      {platforms.length > 0 && (
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <button
+          onClick={() => setActivePlatformName(null)}
+          className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+            activePlatformName === null
+              ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+              : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+          }`}
+        >
+          All
+        </button>
+
+        {platformNames.map((name) => {
+          const plat = localPlatforms.find((p) => p.name === name);
+          const isActive = activePlatformName === name;
+          return (
+            <div key={name} className="relative group flex items-center gap-1">
+              <button
+                onClick={() => setActivePlatformName(isActive ? null : name)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                  isActive
+                    ? "bg-indigo-600 text-white dark:bg-indigo-500"
+                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                }`}
+              >
+                {plat?.logoUrl && (
+                  <img src={plat.logoUrl} alt="" className="w-3.5 h-3.5 rounded-sm object-contain" />
+                )}
+                {name}
+              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => setEditPlatformTarget(plat || { name, logoUrl: "" })}
+                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-zinc-400 hover:text-indigo-500 transition-all"
+                  title="Edit platform"
+                >
+                  <Edit3 className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          );
+        })}
+
+        {/* + Add new platform pill */}
+        {isAdmin && (
           <button
-            onClick={() => setActivePlatformId(null)}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-              activePlatformId === null
-                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-            }`}
+            onClick={() => setAddPlatformOpen(true)}
+            className="flex items-center justify-center w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-indigo-100 hover:text-indigo-600 dark:hover:bg-indigo-500/20 dark:hover:text-indigo-400 transition-colors"
+            title="Add platform"
           >
-            All
+            <Plus className="w-3.5 h-3.5" />
           </button>
-          {platforms.map((p) => (
-            <button
-              key={p._id}
-              onClick={() => setActivePlatformId(activePlatformId === p._id ? null : p._id)}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                activePlatformId === p._id
-                  ? "bg-indigo-600 text-white dark:bg-indigo-500"
-                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-              }`}
-            >
-              {p.name}
-            </button>
-          ))}
-        </div>
-      )}
+        )}
+      </div>
 
       {isSelectMode && filteredCourses.length > 0 && (
         <AnimatePresence>
@@ -262,24 +321,27 @@ export const HomePage = () => {
             className="mb-4 p-3 rounded-xl border border-indigo-200 dark:border-indigo-900/40 bg-indigo-50 dark:bg-indigo-900/10 flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <button
-                onClick={handleSelectAll}
-                className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
-              >
+              <button onClick={handleSelectAll}
+                className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
                 {selectedIds.size === filteredCourses.length ? "Deselect All" : "Select All"}
               </button>
-              <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                {selectedIds.size} selected
-              </span>
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">{selectedIds.size} selected</span>
             </div>
             {selectedIds.size > 0 && (
-              <button
-                onClick={handleBulkDelete}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 text-sm font-medium transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete
-              </button>
+              <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <button
+                    onClick={() => setAssignPlatformOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 text-sm font-medium transition-colors"
+                  >
+                    Set Platform
+                  </button>
+                )}
+                <button onClick={handleBulkDelete}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 text-sm font-medium transition-colors">
+                  <Trash2 className="w-4 h-4" />Delete
+                </button>
+              </div>
             )}
           </motion.div>
         </AnimatePresence>
@@ -298,24 +360,33 @@ export const HomePage = () => {
           <p className="text-sm mt-1">
             {isAdmin && courses.length === 0
               ? 'Click "Add Course" or "Import" to get started.'
-              : activePlatformId
+              : activePlatformName
               ? "Try selecting a different platform."
               : "Check back later for new content."}
           </p>
         </div>
       ) : (
         <div className="space-y-2">
-          {filteredCourses.map((course, i) => (
-            <CourseCard
-              key={course._id}
-              course={course}
-              index={i}
-              onMutate={fetchCoursesAndPlatforms}
-              isSelectMode={isSelectMode}
-              selected={selectedIds.has(course._id)}
-              onToggleSelect={() => handleToggleSelect(course._id)}
-            />
-          ))}
+          {filteredCourses.map((course, i) => {
+            const sug = {
+              teachers: [...new Set(courses.map((c) => c.teacher).filter(Boolean))] as string[],
+              subjects: [...new Set(courses.map((c) => c.subject).filter(Boolean))] as string[],
+              grades: [...new Set(courses.map((c) => c.grade).filter(Boolean))] as string[],
+              platformNames,
+            };
+            return (
+              <CourseCard
+                key={course._id}
+                course={course}
+                index={i}
+                onMutate={fetchCoursesAndPlatforms}
+                isSelectMode={isSelectMode}
+                selected={selectedIds.has(course._id)}
+                onToggleSelect={() => handleToggleSelect(course._id)}
+                suggestions={sug}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -327,14 +398,11 @@ export const HomePage = () => {
           title="New Course"
           fields={[
             { label: "Title", key: "title", value: "", placeholder: "Course title" },
-            { label: "Subject", key: "subject", value: "", placeholder: "Mathematics, Physics…" },
-            { label: "Teacher", key: "teacher", value: "", placeholder: "Teacher name" },
-            {
-              label: `Platform ID ${platforms.length ? `(${platforms.map((p) => `${p.name}: ${p._id}`).join(", ")})` : ""}`,
-              key: "platformId",
-              value: platforms[0]?._id || "",
-              placeholder: "Platform ObjectId",
-            },
+            { label: "Subject", key: "subject", value: "", placeholder: "Mathematics…", type: "suggest", suggestions: [...new Set(courses.map((c) => c.subject).filter(Boolean))] as string[] },
+            { label: "Teacher", key: "teacher", value: "", placeholder: "Teacher name", type: "suggest", suggestions: [...new Set(courses.map((c) => c.teacher).filter(Boolean))] as string[] },
+            { label: "Grade", key: "grade", value: "", placeholder: "Grade 10", type: "suggest", suggestions: [...new Set(courses.map((c) => c.grade).filter(Boolean))] as string[] },
+            { label: "Platform Name", key: "platformName", value: "", placeholder: "YouTube…", type: "suggest", suggestions: platformNames },
+            { label: "Platform Logo URL (optional)", key: "platformLogoUrl", value: "", placeholder: "https://" },
           ]}
           onSave={async (vals) => {
             await courseApi.create(vals);
@@ -452,6 +520,90 @@ export const HomePage = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Add Platform modal */}
+      {isAdmin && (
+        <AdminEditModal
+          open={addPlatformOpen}
+          onClose={() => setAddPlatformOpen(false)}
+          title="Add Platform"
+          fields={[
+            { label: "Platform Name", key: "name", value: "", placeholder: "YouTube, Khan Academy…" },
+            { label: "Logo URL (optional)", key: "logoUrl", value: "", placeholder: "https://…" },
+          ]}
+          onSave={async (vals) => {
+            if (!vals.name.trim()) return;
+            savePlatform({ name: vals.name.trim(), logoUrl: vals.logoUrl.trim() });
+          }}
+        />
+      )}
+
+      {/* Edit Platform modal */}
+      {isAdmin && editPlatformTarget && (
+        <AdminEditModal
+          open={!!editPlatformTarget}
+          onClose={() => setEditPlatformTarget(null)}
+          title={`Edit Platform: ${editPlatformTarget.name}`}
+          fields={[
+            { label: "Platform Name", key: "name", value: editPlatformTarget.name, placeholder: "YouTube…" },
+            { label: "Logo URL (optional)", key: "logoUrl", value: editPlatformTarget.logoUrl, placeholder: "https://…" },
+          ]}
+          onSave={async (vals) => {
+            savePlatform({ name: vals.name.trim(), logoUrl: vals.logoUrl.trim() }, editPlatformTarget.name);
+            if (activePlatformName === editPlatformTarget.name) setActivePlatformName(vals.name.trim());
+          }}
+          onDelete={async () => {
+            setLocalPlatforms((prev) => {
+              const next = prev.filter((p) => p.name !== editPlatformTarget!.name);
+              savePlatforms(next);
+              return next;
+            });
+            if (activePlatformName === editPlatformTarget.name) setActivePlatformName(null);
+          }}
+        />
+      )}
+
+      {/* Assign Platform to selected courses */}
+      {isAdmin && assignPlatformOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setAssignPlatformOpen(false)}>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Assign Platform</h2>
+            <p className="text-sm text-zinc-500 mb-4">{selectedIds.size} course{selectedIds.size !== 1 && "s"} selected</p>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {platformNames.map((name) => {
+                const plat = localPlatforms.find((p) => p.name === name);
+                return (
+                  <button
+                    key={name}
+                    onClick={() => setAssignTarget({ name, logoUrl: plat?.logoUrl || "" })}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
+                      assignTarget?.name === name
+                        ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300"
+                        : "border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-indigo-400"
+                    }`}
+                  >
+                    {plat?.logoUrl && <img src={plat.logoUrl} alt="" className="w-5 h-5 rounded object-contain" />}
+                    {name}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={handleBulkAssignPlatform}
+                disabled={!assignTarget}
+                className="flex-1 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-40 transition-colors"
+              >
+                Assign
+              </button>
+              <button onClick={() => { setAssignPlatformOpen(false); setAssignTarget(null); }}
+                className="px-4 py-2 rounded-xl text-sm text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageTransition>
   );
 };

@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, BookOpen, Play, FileText, Loader2, SlidersHorizontal, X } from "lucide-react";
 import { PageTransition } from "../components/ui/PageTransition";
-import { searchApi, platformApi, courseApi } from "../api";
-import type { SearchResults, Platform, Course } from "../types";
+import { searchApi, courseApi } from "../api";
+import type { SearchResults, Course } from "../types";
 
 type FilterType = "all" | "courses" | "lessons";
 
@@ -17,10 +17,8 @@ export const SearchPage = () => {
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [showFilterPanel, setShowFilterPanel] = useState(false);
 
-  // Extended filters
-  const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [allCourses, setAllCourses] = useState<Course[]>([]);
-  const [selectedPlatformId, setSelectedPlatformId] = useState<string>("");
+  const [selectedPlatformName, setSelectedPlatformName] = useState<string>("");
   const [selectedGrade, setSelectedGrade] = useState<string>("");
   const [selectedSubject, setSelectedSubject] = useState<string>("");
 
@@ -28,10 +26,10 @@ export const SearchPage = () => {
 
   // Load filter options on mount
   useEffect(() => {
-    platformApi.list().then((r) => setPlatforms(r.data.data || [])).catch(() => {});
     courseApi.list().then((r) => setAllCourses(r.data.data || [])).catch(() => {});
   }, []);
 
+  const platformNames = [...new Set(allCourses.map((c) => c.platformName || "").filter(Boolean))];
   const grades = [...new Set(allCourses.map((c) => c.grade).filter(Boolean))] as string[];
   const subjects = [...new Set(allCourses.map((c) => c.subject).filter(Boolean))] as string[];
 
@@ -56,11 +54,11 @@ export const SearchPage = () => {
 
   // Auto-run filter when filter values change (even without explicit search)
   useEffect(() => {
-    if (selectedPlatformId || selectedGrade || selectedSubject) {
+    if (selectedPlatformName || selectedGrade || selectedSubject) {
       setResults({ courses: allCourses as unknown as SearchResults["courses"], lessons: [] });
       setSearched(true);
     }
-  }, [selectedPlatformId, selectedGrade, selectedSubject, allCourses]);
+  }, [selectedPlatformName, selectedGrade, selectedSubject, allCourses]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSearch();
@@ -72,12 +70,7 @@ export const SearchPage = () => {
     let courses = results.courses;
     let lessons = results.lessons;
 
-    if (selectedPlatformId) {
-      courses = courses.filter((c) => {
-        const pid = typeof c.platformId === "object" ? c.platformId._id : c.platformId;
-        return pid === selectedPlatformId;
-      });
-    }
+    if (selectedPlatformName) courses = courses.filter((c) => (c.platformName || "") === selectedPlatformName);
     if (selectedGrade) {
       courses = courses.filter((c) => c.grade === selectedGrade);
     }
@@ -90,7 +83,7 @@ export const SearchPage = () => {
 
   const total = (filteredResults?.courses.length || 0) + (filteredResults?.lessons.length || 0);
 
-  const activeFiltersCount = [selectedPlatformId, selectedGrade, selectedSubject].filter(Boolean).length;
+  const activeFiltersCount = [selectedPlatformName, selectedGrade, selectedSubject].filter(Boolean).length;
 
   return (
     <PageTransition className="max-w-3xl mx-auto px-4 md:px-8 py-8">
@@ -132,13 +125,13 @@ export const SearchPage = () => {
                 <div>
                   <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-1 block">Platform</label>
                   <select
-                    value={selectedPlatformId}
-                    onChange={(e) => setSelectedPlatformId(e.target.value)}
+                    value={selectedPlatformName}
+                    onChange={(e) => setSelectedPlatformName(e.target.value)}
                     className="w-full text-sm px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                   >
                     <option value="">All Platforms</option>
-                    {platforms.map((p) => (
-                      <option key={p._id} value={p._id}>{p.name}</option>
+                    {platformNames.map((name) => (
+                      <option key={name} value={name}>{name}</option>
                     ))}
                   </select>
                 </div>
@@ -173,7 +166,7 @@ export const SearchPage = () => {
               </div>
               {activeFiltersCount > 0 && (
                 <button
-                  onClick={() => { setSelectedPlatformId(""); setSelectedGrade(""); setSelectedSubject(""); }}
+                  onClick={() => { setSelectedPlatformName(""); setSelectedGrade(""); setSelectedSubject(""); }}
                   className="flex items-center gap-1 text-xs text-red-500 dark:text-red-400 hover:underline"
                 >
                   <X className="w-3 h-3" /> Clear filters

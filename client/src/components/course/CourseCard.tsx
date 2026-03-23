@@ -6,7 +6,7 @@ import { useAdmin } from "../../hooks/useAdmin";
 import { useAuthStore } from "../../store/authStore";
 import { AdminEditModal } from "../admin/AdminEditModal";
 import { courseApi } from "../../api";
-import type { Course, Platform } from "../../types";
+import type { Course } from "../../types";
 
 interface Props {
   course: Course;
@@ -15,19 +15,23 @@ interface Props {
   isSelectMode?: boolean;
   selected?: boolean;
   onToggleSelect?: () => void;
+  suggestions?: {
+    teachers: string[];
+    subjects: string[];
+    grades: string[];
+    platformNames: string[];
+  };
 }
 
-export const CourseCard = ({ course, index, onMutate, isSelectMode, selected, onToggleSelect }: Props) => {
+export const CourseCard = ({ course, index, onMutate, isSelectMode, selected, onToggleSelect, suggestions }: Props) => {
   const navigate = useNavigate();
   const isAdmin = useAdmin();
   const { user, toggleFavoriteCourse } = useAuthStore();
   const [editOpen, setEditOpen] = useState(false);
 
   const isFav = user?.favoriteCourses.includes(course._id) ?? false;
-  const platformName =
-    typeof course.platformId === "object"
-      ? (course.platformId as Platform).name
-      : "";
+  const platformName = course.platformName || "";
+  const logoUrl = course.platformLogoUrl || "";
 
   const handleFav = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -69,6 +73,8 @@ export const CourseCard = ({ course, index, onMutate, isSelectMode, selected, on
                 </svg>
               )}
             </div>
+          ) : logoUrl ? (
+            <img src={logoUrl} alt={platformName} className="shrink-0 w-10 h-10 rounded-lg object-contain bg-zinc-100 dark:bg-zinc-800 p-1" />
           ) : (
             <div className="shrink-0 w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -131,8 +137,11 @@ export const CourseCard = ({ course, index, onMutate, isSelectMode, selected, on
           title="Edit Course"
           fields={[
             { label: "Title", key: "title", value: course.title },
-            { label: "Subject", key: "subject", value: course.subject },
-            { label: "Teacher", key: "teacher", value: course.teacher },
+            { label: "Subject", key: "subject", value: course.subject, type: "suggest", suggestions: suggestions?.subjects, placeholder: "Mathematics…" },
+            { label: "Teacher", key: "teacher", value: course.teacher, type: "suggest", suggestions: suggestions?.teachers, placeholder: "Teacher name" },
+            { label: "Grade", key: "grade", value: course.grade || "", type: "suggest", suggestions: suggestions?.grades, placeholder: "Grade 10" },
+            { label: "Platform Name", key: "platformName", value: course.platformName || "", type: "suggest", suggestions: suggestions?.platformNames, placeholder: "YouTube…" },
+            { label: "Platform Logo URL", key: "platformLogoUrl", value: course.platformLogoUrl || "", placeholder: "https://…" },
           ]}
           onSave={async (vals) => {
             await courseApi.update(course._id, vals);

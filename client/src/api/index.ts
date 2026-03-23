@@ -57,8 +57,8 @@ export const courseApi = {
   update: (id: string, data: Partial<Course>) =>
     api.put<ApiResponse<Course>>(`/courses/${id}`, data),
   delete: (id: string) => api.delete<ApiResponse>(`/courses/${id}`),
-  bulkSetPlatform: (courseIds: string[], platformId: string) =>
-    api.put<ApiResponse>("/courses/bulk-platform", { courseIds, platformId }),
+  bulkSetPlatform: (courseIds: string[], platformName: string, platformLogoUrl?: string) =>
+    api.put<ApiResponse>("/courses/bulk-platform", { courseIds, platformName, platformLogoUrl }),
 };
 
 /* ── Sections ─────────────────────────────────────────────── */
@@ -74,7 +74,7 @@ export const sectionApi = {
 
 /* ── Lessons ──────────────────────────────────────────────── */
 export const lessonApi = {
-  create: (data: Partial<Lesson> & { sectionId: string }) =>
+  create: (data: Partial<Lesson> & { courseId: string; sectionId?: string | null }) =>
     api.post<ApiResponse<Lesson>>("/lessons", data),
   update: (id: string, data: Partial<Lesson>) =>
     api.put<ApiResponse<Lesson>>(`/lessons/${id}`, data),

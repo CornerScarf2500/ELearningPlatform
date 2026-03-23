@@ -11,14 +11,9 @@ const requireAdmin = require("../middleware/admin");
 // ──────────────────────────────────────────────────────────────
 router.get("/", verifyToken, async (req, res, next) => {
   try {
-    const courses = await Course.find()
-      .populate("platformId", "name logoUrl")
-      .sort({ createdAt: -1 })
-      .lean();
+    const courses = await Course.find().sort({ createdAt: -1 }).lean();
     res.json({ success: true, data: courses });
-  } catch (error) {
-    next(error);
-  }
+  } catch (error) { next(error); }
 });
 
 // ──────────────────────────────────────────────────────────────
@@ -26,9 +21,7 @@ router.get("/", verifyToken, async (req, res, next) => {
 // ──────────────────────────────────────────────────────────────
 router.get("/:id", verifyToken, async (req, res, next) => {
   try {
-    const course = await Course.findById(req.params.id)
-      .populate("platformId", "name logoUrl")
-      .lean();
+    const course = await Course.findById(req.params.id).lean();
     if (!course) return res.status(404).json({ success: false, message: "Course not found." });
 
     // Sections with their lessons
@@ -58,22 +51,16 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
   try {
     const {
       title, subject, teacher, grade,
-      platform: platformName,
-      platformId: rawPlatformId,
+      platform: incomingPlatformName,
+      platformLogoUrl: incomingLogoUrl,
       videos = [],
       pdfs = [],
-      sections,         // legacy backwards-compat
+      sections,
       importedFilename,
     } = req.body;
 
-    // ── Resolve platform ────────────────────────────────────────
-    let resolvedPlatformId = rawPlatformId;
-    if (!resolvedPlatformId) {
-      const lookupName = (platformName || "Unknown").trim();
-      let found = await Platform.findOne({ name: lookupName });
-      if (!found) found = await Platform.create({ name: lookupName });
-      resolvedPlatformId = found._id;
-    }
+    const platformName = (incomingPlatformName || "Unknown").trim();
+    const platformLogoUrl = (incomingLogoUrl || "").trim();
 
     // ── Create course ───────────────────────────────────────────
     const course = await Course.create({
@@ -81,7 +68,8 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
       subject: subject || "Unknown",
       teacher: teacher || "Unknown",
       grade: grade || "Unknown",
-      platformId: resolvedPlatformId,
+      platformName,
+      platformLogoUrl,
       importedFilename: importedFilename || "",
     });
 

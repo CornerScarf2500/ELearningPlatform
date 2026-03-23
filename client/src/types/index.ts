@@ -46,11 +46,12 @@ export interface Course {
   subject: string;
   teacher: string;
   grade?: string;
-  platformId: Platform | string;
+  platformName?: string;
+  platformLogoUrl?: string;
   importedFilename?: string;
   createdAt?: string;
   sections?: Section[];
-  unsectioned?: Lesson[];   // flat lessons with no section (from import)
+  unsectioned?: Lesson[];
   _type?: "course";
 }
 

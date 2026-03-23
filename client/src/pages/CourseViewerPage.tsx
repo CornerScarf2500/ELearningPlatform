@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight } from "lucide-react";
+import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight, Play } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
 import { PageTransition } from "../components/ui/PageTransition";
@@ -36,7 +36,12 @@ export const CourseViewerPage = () => {
   const [loading, setLoading] = useState(true);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [addSectionOpen, setAddSectionOpen] = useState(false);
-  const [showReorderHandle, setShowReorderHandle] = useState(true);
+  const [addVideoOpen, setAddVideoOpen] = useState(false);
+  const [addChoiceOpen, setAddChoiceOpen] = useState(false);
+  const [showReorderHandle, setShowReorderHandle] = useState(() => {
+    try { return localStorage.getItem("reorder-handle") !== "false"; }
+    catch { return true; }
+  });
 
   // Resizable sidebar
   const [sidebarWidth, setSidebarWidth] = useState(320);
@@ -292,19 +297,55 @@ export const CourseViewerPage = () => {
               {/* Toggle reorder handles */}
               {isAdmin && (
                 <button
-                  onClick={() => setShowReorderHandle((v) => !v)}
+                  onClick={() => {
+                    const next = !showReorderHandle;
+                    setShowReorderHandle(next);
+                    try { localStorage.setItem("reorder-handle", String(next)); } catch {}
+                  }}
                   className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
                   title={showReorderHandle ? "Hide reorder handles" : "Show reorder handles"}
                 >
                   {showReorderHandle ? <ToggleRight className="w-4 h-4 text-indigo-500" /> : <ToggleLeft className="w-4 h-4" />}
                 </button>
               )}
+            {/* + button → choice popup */}
               {isAdmin && (
-                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                  onClick={() => setAddSectionOpen(true)}
-                  className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-colors" title="Add section">
-                  <Plus className="w-4 h-4" />
-                </motion.button>
+                <div className="relative">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setAddChoiceOpen((v) => !v)}
+                    className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
+                    title="Add video or section"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </motion.button>
+
+                  {/* Choice popover */}
+                  {addChoiceOpen && (
+                    <>
+                      {/* Backdrop */}
+                      <div className="fixed inset-0 z-40" onClick={() => setAddChoiceOpen(false)} />
+                      <div className="absolute right-0 top-7 z-50 w-44 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-xl overflow-hidden">
+                        <button
+                          onClick={() => { setAddChoiceOpen(false); setAddVideoOpen(true); }}
+                          className="flex items-center gap-2.5 w-full px-4 py-3 text-sm text-zinc-800 dark:text-zinc-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                        >
+                          <Play className="w-4 h-4 text-indigo-500 shrink-0" />
+                          Add Video
+                        </button>
+                        <div className="h-px bg-zinc-100 dark:bg-zinc-800" />
+                        <button
+                          onClick={() => { setAddChoiceOpen(false); setAddSectionOpen(true); }}
+                          className="flex items-center gap-2.5 w-full px-4 py-3 text-sm text-zinc-800 dark:text-zinc-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                        >
+                          <FolderDown className="w-4 h-4 text-zinc-400 shrink-0" />
+                          Add Section
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -335,7 +376,7 @@ export const CourseViewerPage = () => {
             <Droppable droppableId="sections-list" type="section">
               {(provided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef}>
-                  {course.sections?.map((section, index) => (
+                  {course.sections?.filter((s) => s.lessons?.length > 0).map((section, index) => (
                     <Draggable key={section._id} draggableId={section._id} index={index} isDragDisabled={!isAdmin || !showReorderHandle}>
                       {(provided, snapshot) => (
                         <div
@@ -373,6 +414,48 @@ export const CourseViewerPage = () => {
           onSave={async (vals) => { await sectionApi.create({ title: vals.title, courseId: course._id }); fetchCourse(); }}
         />
       )}
+
+      {/* Add Video modal */}
+      {isAdmin && course && (
+        <AdminEditModal
+          open={addVideoOpen}
+          onClose={() => setAddVideoOpen(false)}
+          title="Add Video"
+          fields={[
+            { label: "Title", key: "title", value: "", placeholder: "Video title" },
+            { label: "Video URL", key: "videoUrl", value: "", placeholder: "https:// or YouTube URL" },
+            {
+              label: "Materials",
+              key: "fileUrls",
+              type: "list",
+              value: "",
+              placeholder: "https://… (PDF, link…)",
+              addLabel: "+ Add Material",
+            },
+          ]}
+          onSave={async (vals) => {
+            const allLessons = [
+              ...(course.unsectioned || []),
+              ...(course.sections || []).flatMap((s) => s.lessons || []),
+            ];
+            const nextOrder = allLessons.length;
+            const fileUrls = String(vals.fileUrls || "").split("\n").map((u) => u.trim()).filter(Boolean);
+            await lessonApi.create({
+              title: vals.title || "Untitled",
+              videoUrl: vals.videoUrl || "",
+              fileUrls,
+              fileUrl: fileUrls[0] || "",
+              courseId: course._id,
+              sectionId: undefined,
+              order: nextOrder,
+              type: "video",
+            });
+            fetchCourse();
+          }}
+        />
+      )}
+
+
 
       {/* Unsupported download info modal */}
       {noDownloadOpen && (

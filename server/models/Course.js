@@ -22,10 +22,16 @@ const courseSchema = new mongoose.Schema(
       default: "Unknown",
       trim: true,
     },
-    platformId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Platform",
-      required: [true, "Platform reference is required"],
+    // Inline platform — no ObjectId ref needed
+    platformName: {
+      type: String,
+      default: "Unknown",
+      trim: true,
+    },
+    platformLogoUrl: {
+      type: String,
+      default: "",
+      trim: true,
     },
     importedFilename: {
       type: String,
@@ -38,6 +44,6 @@ const courseSchema = new mongoose.Schema(
 );
 
 // Text index for global search
-courseSchema.index({ title: "text", subject: "text", teacher: "text" });
+courseSchema.index({ title: "text", subject: "text", teacher: "text", platformName: "text" });
 
 module.exports = mongoose.model("Course", courseSchema);
