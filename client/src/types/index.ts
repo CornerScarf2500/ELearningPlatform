@@ -44,6 +44,7 @@ export interface Course {
   title: string;
   subject: string;
   teacher: string;
+  grade?: string;
   platformId: Platform | string;
   createdAt?: string;
   sections?: Section[];

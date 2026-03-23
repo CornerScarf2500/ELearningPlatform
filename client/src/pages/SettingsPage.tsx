@@ -9,6 +9,7 @@ import {
   ShieldAlert,
   Smartphone,
   LogOut,
+  Plus,
 } from "lucide-react";
 import { PageTransition } from "../components/ui/PageTransition";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
@@ -62,6 +63,33 @@ export const SettingsPage = () => {
       setLoadingUsers(false);
     }
   }, [isAdmin]);
+
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserCode, setNewUserCode] = useState("");
+  const [newUserRole, setNewUserRole] = useState<"admin" | "user">("user");
+  const [addingUser, setAddingUser] = useState(false);
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUserCode.trim()) return;
+    setAddingUser(true);
+    try {
+      await userApi.create({
+        name: newUserName,
+        accessCode: newUserCode,
+        role: newUserRole,
+      });
+      setNewUserName("");
+      setNewUserCode("");
+      setShowAddUser(false);
+      fetchUsers();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to create user");
+    } finally {
+      setAddingUser(false);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -133,10 +161,65 @@ export const SettingsPage = () => {
         {/* ── Admin: User Management ──────────────────── */}
         {isAdmin && (
           <section>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3 flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              User Management
-            </h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                User Management
+              </h2>
+              <button
+                onClick={() => setShowAddUser(!showAddUser)}
+                className="flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                {showAddUser ? "Cancel" : "Add User"}
+              </button>
+            </div>
+
+            {showAddUser && (
+              <motion.form
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                onSubmit={handleCreateUser}
+                className="mb-4 p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/30 bg-indigo-50/50 dark:bg-indigo-900/10 space-y-3"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    placeholder="Name (Optional)"
+                    value={newUserName}
+                    onChange={(e) => setNewUserName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Access Code (Required)"
+                    value={newUserCode}
+                    onChange={(e) => setNewUserCode(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <select
+                    value={newUserRole}
+                    onChange={(e) => setNewUserRole(e.target.value as "admin" | "user")}
+                    className="px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  >
+                    <option value="user">Student / User</option>
+                    <option value="admin">Administrator</option>
+                  </select>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    disabled={addingUser || !newUserCode.trim()}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors flex items-center gap-2"
+                  >
+                    {addingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create"}
+                  </motion.button>
+                </div>
+              </motion.form>
+            )}
 
             {loadingUsers ? (
               <div className="flex items-center justify-center py-8">
@@ -219,10 +302,10 @@ export const SettingsPage = () => {
                             key={s.id}
                             className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/50 p-2 rounded-lg"
                           >
-                            <div className="flex items-center gap-2 overflow-hidden">
+                            <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
                               <Smartphone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                              <div className="truncate text-[11px]">
-                                <p className="text-zinc-700 dark:text-zinc-300 truncate max-w-[200px] md:max-w-xs" title={s.device}>
+                              <div className="truncate text-[11px] flex-1 min-w-0">
+                                <p className="text-zinc-700 dark:text-zinc-300 truncate" title={s.device}>
                                   {s.device}
                                 </p>
                                 <p className="text-zinc-500 dark:text-zinc-500">

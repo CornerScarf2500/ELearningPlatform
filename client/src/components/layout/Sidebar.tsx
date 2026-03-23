@@ -1,7 +1,5 @@
 import { NavLink } from "react-router-dom";
 import { Home, Search, Heart, Settings, BookOpen } from "lucide-react";
-import { ThemeToggle } from "../ui/ThemeToggle";
-
 const links = [
   { to: "/", icon: Home, label: "Home" },
   { to: "/search", icon: Search, label: "Search" },
@@ -43,10 +41,6 @@ export const Sidebar = () => {
         ))}
       </nav>
 
-      {/* Footer with theme toggle */}
-      <div className="px-4 py-4 border-t border-zinc-200 dark:border-zinc-800">
-        <ThemeToggle />
-      </div>
     </aside>
   );
 };

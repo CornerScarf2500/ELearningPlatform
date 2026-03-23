@@ -35,6 +35,45 @@ router.get("/", verifyToken, requireAdmin, async (_req, res, next) => {
 });
 
 // ──────────────────────────────────────────────────────────────
+// POST /api/users — create a new user (Admin)
+// ──────────────────────────────────────────────────────────────
+router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
+  try {
+    const { name, accessCode, role } = req.body;
+    
+    if (!accessCode) {
+      return res.status(400).json({ success: false, message: "Access code is required." });
+    }
+
+    const existing = await User.findOne({ accessCode });
+    if (existing) {
+      return res.status(400).json({ success: false, message: "Access code already exists. Please choose a unique code." });
+    }
+
+    const newUser = await User.create({
+      name: name || "Student",
+      accessCode,
+      role: role === "admin" ? "admin" : "user",
+    });
+
+    res.status(201).json({ 
+      success: true, 
+      message: "User created successfully.",
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        role: newUser.role,
+        isBanned: newUser.isBanned,
+        activeSessions: 0,
+        createdAt: newUser.createdAt,
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────
 // DELETE /api/users/:id/sessions — revoke ALL sessions (Admin)
 // ──────────────────────────────────────────────────────────────
 router.delete(

@@ -70,6 +70,65 @@ router.get("/:id", verifyToken, async (req, res, next) => {
 });
 
 // ──────────────────────────────────────────────────────────────
+// POST /api/courses/import — bulk import course from JSON (Admin)
+// ──────────────────────────────────────────────────────────────
+router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
+  try {
+    const { title, subject, teacher, grade, platformId, sections } = req.body;
+    
+    // Create course
+    const course = await Course.create({
+      title,
+      subject: subject || "Unknown",
+      teacher: teacher || "Unknown",
+      grade: grade || "Unknown",
+      platformId,
+    });
+
+    // Create sections and lessons if provided
+    if (sections && Array.isArray(sections)) {
+      for (let i = 0; i < sections.length; i++) {
+        const secData = sections[i];
+        const section = await Section.create({
+          title: secData.title || `Section ${i + 1}`,
+          courseId: course._id,
+          order: i,
+        });
+
+        if (secData.lessons && Array.isArray(secData.lessons)) {
+          const lessonDocs = secData.lessons.map((lesData, j) => {
+            // Map "url" and "files" array from user's JSON structure
+            const videoUrl = lesData.url || "";
+            // Assuming first file is main fileUrl
+            const fileUrl = (lesData.files && lesData.files[0]) ? lesData.files[0] : "";
+            const isPdf = fileUrl.toLowerCase().endsWith(".pdf");
+            const isVideo = videoUrl !== "" || (fileUrl && !isPdf); 
+            
+            return {
+              title: lesData.title || `Lesson ${j + 1}`,
+              videoUrl,
+              fileUrl,
+              sectionId: section._id,
+              order: j,
+              type: isPdf ? "pdf" : "video",
+            };
+          });
+
+          if (lessonDocs.length > 0) {
+            await Lesson.insertMany(lessonDocs);
+          }
+        }
+      }
+    }
+
+    const populated = await Course.findById(course._id).populate("platformId", "name");
+    res.status(201).json({ success: true, data: populated });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────
 // POST /api/courses — create course (Admin)
 // ──────────────────────────────────────────────────────────────
 router.post("/", verifyToken, requireAdmin, async (req, res, next) => {

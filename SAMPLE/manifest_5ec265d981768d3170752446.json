@@ -1,0 +1,3037 @@
+{
+  "course_id": "5ec265d981768d3170752446",
+  "package_id": "62b0792a606ca16d596c2c32",
+  "title": "ប្រវត្តិវិទ្យា ថ្នាក់ទី១២",
+  "grade": "ថ្នាក់ទី ១២",
+  "subject": "ប្រវត្តិវិទ្យា",
+  "teacher": "ហែម ច័ន្ទតារា",
+  "total_videos": 101,
+  "total_pdfs": 100,
+  "total_size_mb": 11010,
+  "total_size_gb": 10.75,
+  "scanned_at": "2026-02-28T08:41:28.545523",
+  "enriched_at": "2026-03-01T04:06:54.187289",
+  "videos": [
+    {
+      "id": "5ec2660781768d327230d406",
+      "title": "I.ស្ថាប័ននយោបាយ",
+      "order": 1,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-1_720.mp4",
+      "size_mb": 77,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d407",
+      "title": "1.អំណាចប្រធានាធិបតី(អំណាចនីតិប្រតិបត្តិ)",
+      "order": 2,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-2_720.mp4",
+      "size_mb": 118,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d408",
+      "title": "2.អំណាចសភា(នីតិបញ្ញតិ)",
+      "order": 3,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-3_720.mp4",
+      "size_mb": 79,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d40c",
+      "title": "3.តុលាការជាន់ខ្ពស់(ក្រុមប្រឹក្សាធម្មនុញ្ញ) *សំណួរ+ចម្លើយ",
+      "order": 4,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-4_720.mp4",
+      "size_mb": 57,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d40d",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 5,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-5_720.mp4",
+      "size_mb": 32,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d40e",
+      "title": "II.ការកែលំអរ និងការកំណត់កម្មវិធីថ្មី *សំណួរ+ចម្លើយ",
+      "order": 6,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-6_720.mp4",
+      "size_mb": 93,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d40f",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 7,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-7_720.mp4",
+      "size_mb": 40,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d410",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 8,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-8_720.mp4",
+      "size_mb": 90,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d411",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 9,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-9_720.mp4",
+      "size_mb": 92,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d412",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 10,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-10_720.mp4",
+      "size_mb": 60,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d413",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 11,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-11_720.mp4",
+      "size_mb": 65,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d414",
+      "title": "III.សហរដ្ឋអាមេរិកនាទសវត្សន៍ទី៦០-៨០នៃសតវត្សន៍ទី២០",
+      "order": 12,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-12_720.mp4",
+      "size_mb": 79,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d415",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 13,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-13_720.mp4",
+      "size_mb": 93,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d416",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 14,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-14_720.mp4",
+      "size_mb": 74,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d417",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 15,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-15_720.mp4",
+      "size_mb": 39,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d418",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 16,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-16_720.mp4",
+      "size_mb": 32,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d419",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 17,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-17_720.mp4",
+      "size_mb": 81,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d41a",
+      "title": "I.ប្រទេសអង់គ្លេស និងសង្គ្រាមលោកលើកទី២",
+      "order": 18,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-18_720.mp4",
+      "size_mb": 61,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d41b",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 19,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-19_720.mp4",
+      "size_mb": 52,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d41c",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 20,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-20_720.mp4",
+      "size_mb": 55,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d41d",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១)",
+      "order": 21,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-21_720.mp4",
+      "size_mb": 48,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d41e",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១ (ត))",
+      "order": 22,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-22_720.mp4",
+      "size_mb": 42,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d41f",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១ (ត))",
+      "order": 23,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-23_720.mp4",
+      "size_mb": 34,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d420",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១ (តចប់))",
+      "order": 24,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-24_720.mp4",
+      "size_mb": 37,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d421",
+      "title": "III.រដ្ឋាភិបាលអភិរក្សនិយម(១៩៥១-១៩៦៤) IV.រដ្ឋាភិបាល អេវិត ហ៊ីត (១៩៧០-១៩៧៤)",
+      "order": 25,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-25_720.mp4",
+      "size_mb": 257,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d422",
+      "title": "V.គណបក្សការងារនិយម(១៩៦៤-១៩៧៩)",
+      "order": 26,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-26_720.mp4",
+      "size_mb": 93,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d423",
+      "title": "VI.រដ្ឋាភិបាលលោកស្រីម៉ាការ៉េត ថាច់ឆឺ(១៩៧៩-១៩៩០)",
+      "order": 27,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-27_720.mp4",
+      "size_mb": 82,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d424",
+      "title": "VI.រដ្ឋាភិបាលលោកស្រីម៉ាការ៉េត ថាច់ឆឺ(១៩៧៩-១៩៩០ (ត))",
+      "order": 28,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-28_720.mp4",
+      "size_mb": 80,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d425",
+      "title": "VI.រដ្ឋាភិបាលលោកស្រីម៉ាការ៉េត ថាច់ឆឺ(១៩៧៩-១៩៩០ (តចប់)) VII.បញ្ហាអ៊ុលស័្ទរ(អៀឡង់ខាងជើង)",
+      "order": 29,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-29_720.mp4",
+      "size_mb": 84,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d426",
+      "title": "VII.បញ្ហាអ៊ុលស័្ទរ(អៀឡង់ខាងជើង) *កិច្ចការផ្ទះ",
+      "order": 30,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-30_720.mp4",
+      "size_mb": 83,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d427",
+      "title": "**អត្រាកំណែរកិច្ចការផ្ទះ",
+      "order": 31,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-31_720.mp4",
+      "size_mb": 84,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d606",
+      "title": "**អត្រាកំណែរកិច្ចការផ្ទះ",
+      "order": 32,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-43_720.mp4",
+      "size_mb": 125,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d607",
+      "title": "*សិក្សាពីផែនទី *ការវិវត្តនៃសាធារណរដ្ឋបារាំង *សង្គ្រាមលោកលើកទី២",
+      "order": 33,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-44_720.mp4",
+      "size_mb": 181,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d608",
+      "title": "I.ការបង្កើតរដ្ឋាភិបាលបណ្តោះអាសន្ន *សំណួរ+ចម្លើយ",
+      "order": 34,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-45_720.mp4",
+      "size_mb": 141,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d609",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 35,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-46_720.mp4",
+      "size_mb": 84,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d60a",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 36,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-47_720.mp4",
+      "size_mb": 120,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d60b",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 37,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-48_720.mp4",
+      "size_mb": 108,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d626",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤",
+      "order": 38,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-68_720.mp4",
+      "size_mb": 91,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d627",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(ត)",
+      "order": 39,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-69_720.mp4",
+      "size_mb": 151,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d628",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(ត)",
+      "order": 40,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-70_720.mp4",
+      "size_mb": 40,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d629",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(ត)",
+      "order": 41,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-71_720.mp4",
+      "size_mb": 89,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d62a",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(តចប់)",
+      "order": 42,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-72_720.mp4",
+      "size_mb": 96,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d614",
+      "title": "III.កំណើតសាធារណរដ្ឋទី៥ *សំណួរ+ចម្លើយ",
+      "order": 43,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-50_720.mp4",
+      "size_mb": 186,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d615",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 44,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-51_720.mp4",
+      "size_mb": 56,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d616",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 45,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-52_720.mp4",
+      "size_mb": 140,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d617",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 46,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-53_720.mp4",
+      "size_mb": 148,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d618",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 47,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-54_720.mp4",
+      "size_mb": 97,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d619",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 48,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-55_720.mp4",
+      "size_mb": 99,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d61a",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 49,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-56_720.mp4",
+      "size_mb": 124,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d61b",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 50,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-57_720.mp4",
+      "size_mb": 152,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d61c",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 51,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-58_720.mp4",
+      "size_mb": 165,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d61d",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 52,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-59_720.mp4",
+      "size_mb": 148,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d61e",
+      "title": "IV.នយោបាយក្រៅប្រទេសនៃសាធារណរដ្ឋទី៥",
+      "order": 53,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-60_720.mp4",
+      "size_mb": 90,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d61f",
+      "title": "IV.នយោបាយក្រៅប្រទេសនៃសាធារណរដ្ឋទី៥ *កិច្ចការផ្ទះមេរៀនទី៣",
+      "order": 54,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-61_720.mp4",
+      "size_mb": 151,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d620",
+      "title": "**កំណែរកិច្ចការផ្ទះ  មេរៀនទី៣",
+      "order": 55,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-62_720.mp4",
+      "size_mb": 74,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d621",
+      "title": "*សិក្សាពីផែនទីអាឡឺម៉ង់ខាងលិចនិងខាងកើត I.ប្រទេសអាឡឺម៉ង់ក្នុងសង្គ្រាមលោកលើកទី២",
+      "order": 56,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-63_720.mp4",
+      "size_mb": 101,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d622",
+      "title": "I.ប្រទេសអាឡឺម៉ង់ក្នុងសង្គ្រាមលោកលើកទី២(ត)",
+      "order": 57,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-64_720.mp4",
+      "size_mb": 100,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d623",
+      "title": "II.បញ្ហាអាឡឺម៉ង់ជាស្នូលនៃសង្គ្រាមត្រជាក់",
+      "order": 58,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-65_720.mp4",
+      "size_mb": 149,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d624",
+      "title": "II.បញ្ហាអាឡឺម៉ង់ជាស្នូលនៃសង្គ្រាមត្រជាក់(ត)",
+      "order": 59,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-66_720.mp4",
+      "size_mb": 136,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d625",
+      "title": "II.បញ្ហាអាឡឺម៉ង់ជាស្នូលនៃសង្គ្រាមត្រជាក់(តចប់)",
+      "order": 60,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-67_720.mp4",
+      "size_mb": 113,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d62b",
+      "title": "II.វឌ្ឍនភាពសេដ្ឋកិច្ច និងសង្គមសាធារណរដ្ឋអ៊ីតាលី *កិច្ចការផ្ទះមេរៀនទី៥",
+      "order": 61,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-73_720.mp4",
+      "size_mb": 263,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d62c",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "order": 62,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-74_720.mp4",
+      "size_mb": 71,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d62d",
+      "title": "I.សហភាពសូវៀតក្រោយសង្គ្រាមលោកលើកទី២",
+      "order": 63,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-75_720.mp4",
+      "size_mb": 126,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d62e",
+      "title": "I.សហភាពសូវៀតក្រោយសង្គ្រាមលោកលើកទី២(ត)",
+      "order": 64,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-76_720.mp4",
+      "size_mb": 121,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20c81768d28810a5dee",
+      "title": "II.ការស្តារប្រទេសក្រោមការដឹកនាំរបស់ស្តាលីន",
+      "order": 65,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-84_720.mp4",
+      "size_mb": 112,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20c81768d28810a5df1",
+      "title": "III.លទ្ធិគោរពបុគ្គល IV.លោកគ្រូតឆូវ(១៩៥៣-១៩៦៤)",
+      "order": 66,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-85_720.mp4",
+      "size_mb": 128,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20c81768d28810a5df4",
+      "title": "III.លទ្ធិគោរពបុគ្គល IV.លោកគ្រូតឆូវ(១៩៥៣-១៩៦៤)(ត)",
+      "order": 67,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-86_720.mp4",
+      "size_mb": 143,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20c81768d28810a5df7",
+      "title": "V.អ្នកដឹកនាំដោយក្រុមវ័យចាស់",
+      "order": 68,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-87_720.mp4",
+      "size_mb": 175,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20c81768d28810a5dfa",
+      "title": "VI.នយោបាយស្តាឡើងវិញ ឬឱ្យកំណែទំរង់ពេរ៉េស្ត្រូយកា",
+      "order": 69,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-88_720.mp4",
+      "size_mb": 299,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20d81768d28810a5e7b",
+      "title": "VII.ការដួលរលំសហភាពសូវៀត *កិច្ចការផ្ទះ",
+      "order": 70,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-89_720.mp4",
+      "size_mb": 118,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d634",
+      "title": "II.សេដ្ឋកិច្ចអាឡឺម៉ង់ខាងកើត",
+      "order": 71,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-77_720.mp4",
+      "size_mb": 154,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d635",
+      "title": "III.វិស័យសង្គម *កិច្ចការផ្ទះ",
+      "order": 72,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-78_720.mp4",
+      "size_mb": 133,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d636",
+      "title": "*កំណែកិច្ចការផ្ទះ",
+      "order": 73,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-79_720.mp4",
+      "size_mb": 99,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d637",
+      "title": "I.វិស័យនយោបាយ",
+      "order": 74,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-80_720.mp4",
+      "size_mb": 142,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d638",
+      "title": "I.វិស័យនយោបាយ(ត)",
+      "order": 75,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-81_720.mp4",
+      "size_mb": 108,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d639",
+      "title": "II.វិស័យសង្គម",
+      "order": 76,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-82_720.mp4",
+      "size_mb": 114,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d63a",
+      "title": "III.វិស័យសេដ្ឋកិច្ច *កិច្ចការផ្ទះ",
+      "order": 77,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-83_720.mp4",
+      "size_mb": 135,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20d81768d28810a5e7e",
+      "title": "រំលឹកមេរៀនទី៨ ប្រទេសឆេកូស្លូវ៉ាគី កិច្ចការផ្ទះ",
+      "order": 78,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-90_720.mp4",
+      "size_mb": 81,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20d81768d28810a5e81",
+      "title": "I.ប្រទេសប៉ូឡូញក្នុងសង្គ្រាមលោកលើកទី២",
+      "order": 79,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-91_720.mp4",
+      "size_mb": 196,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20d81768d28810a5ea1",
+      "title": "II.ប្រទេសប៉ូឡូញក្រោយសង្គ្រាមលោកលើកទីII *កិច្ចការផ្ទះ",
+      "order": 80,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-92_720.mp4",
+      "size_mb": 203,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20f81768d28810a5f44",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "order": 81,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-93_720.mp4",
+      "size_mb": 145,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20f81768d28810a5f47",
+      "title": "I.ការវិវត្តនៃយូហ្គោស្លាវី II.នយោបាយ",
+      "order": 82,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-94_720.mp4",
+      "size_mb": 103,
+      "completed": false
+    },
+    {
+      "id": "5ef6b21181768d28810a6076",
+      "title": "III.សេនាប្រមុខទីតូ",
+      "order": 83,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-95_720.mp4",
+      "size_mb": 104,
+      "completed": false
+    },
+    {
+      "id": "5ef6b21181768d28810a6079",
+      "title": "III.សេនាប្រមុខទីតូ(ត)",
+      "order": 84,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-96_720.mp4",
+      "size_mb": 83,
+      "completed": false
+    },
+    {
+      "id": "5ef6b21181768d28810a6085",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "order": 85,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-97_720.mp4",
+      "size_mb": 157,
+      "completed": false
+    },
+    {
+      "id": "5ef6b21181768d28810a60a4",
+      "title": "II.បញ្ហាកំណើនប្រជាជន និងបញ្ហាអន្តោប្រវេសន៍",
+      "order": 86,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-99_720.mp4",
+      "size_mb": 194,
+      "completed": false
+    },
+    {
+      "id": "5ef6b21181768d28810a60a7",
+      "title": "III.បញ្ហាសន្តិសុខស្បៀង",
+      "order": 87,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-100_720.mp4",
+      "size_mb": 108,
+      "completed": false
+    },
+    {
+      "id": "5ef6b21181768d28810a60aa",
+      "title": "IV.បញ្ហាសង្គ្រាមនិងអស្ថិរភាពសន្តិសុខសង្គម V.មូលហេតុចំបងនៃការលេចឡើងនូវបញ្ហារួមលើសាកលលោក *កិច្ចការផ្ទះ",
+      "order": 88,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-101_720.mp4",
+      "size_mb": 181,
+      "completed": false
+    },
+    {
+      "id": "5f10434081768d5b1d749ea0",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "order": 89,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-102_720.mp4",
+      "size_mb": 84,
+      "completed": false
+    },
+    {
+      "id": "5f10434081768d5b1d749ea3",
+      "title": "I.សេចក្តីផ្តើម",
+      "order": 90,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-103_720.mp4",
+      "size_mb": 168,
+      "completed": false
+    },
+    {
+      "id": "5f10434081768d5b1d749ee5",
+      "title": "II.ការវិវត្តសកលភាវូបនីយកម្ម",
+      "order": 91,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-104_720.mp4",
+      "size_mb": 158,
+      "completed": false
+    },
+    {
+      "id": "5f10434081768d5b1d749ee8",
+      "title": "III.សន្និដ្ឋាន *កិច្ចការផ្ទះ",
+      "order": 92,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-105_720.mp4",
+      "size_mb": 88,
+      "completed": false
+    },
+    {
+      "id": "5f10434181768d5b1d749f24",
+      "title": "*រំលឹកមេរៀន",
+      "order": 93,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-106_720.mp4",
+      "size_mb": 84,
+      "completed": false
+    },
+    {
+      "id": "5f10434181768d5b1d749f27",
+      "title": "I.មូលហេតុនៃវត្តមានបារាំង",
+      "order": 94,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-107_720.mp4",
+      "size_mb": 101,
+      "completed": false
+    },
+    {
+      "id": "5f277e6f81768d5c1609711e",
+      "title": "II.នយោបាយកំណែទំរង់សង្គមខ្មែរ",
+      "order": 95,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-108_720.mp4",
+      "size_mb": 69,
+      "completed": false
+    },
+    {
+      "id": "5f277e6f81768d5c16097121",
+      "title": "II.នយោបាយកំណែទំរង់សង្គមខ្មែរ(ត)",
+      "order": 96,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-109_720.mp4",
+      "size_mb": 124,
+      "completed": false
+    },
+    {
+      "id": "5f277e6f81768d5c16097124",
+      "title": "II.នយោបាយកំណែទំរង់សង្គមខ្មែរ(តចប់)",
+      "order": 97,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-110_720.mp4",
+      "size_mb": 66,
+      "completed": false
+    },
+    {
+      "id": "5fa4aedbcaf76d6df205e352",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី១",
+      "order": 98,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-111_720.mp4",
+      "size_mb": 75,
+      "completed": false
+    },
+    {
+      "id": "5fa4af0dcaf76d6df205e353",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី១ (ត)",
+      "order": 99,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-112_720.mp4",
+      "size_mb": 94,
+      "completed": false
+    },
+    {
+      "id": "5fa4af1e4631a4625f094462",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី២",
+      "order": 100,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-113_720.mp4",
+      "size_mb": 76,
+      "completed": false
+    },
+    {
+      "id": "5fa4af35caf76d6df205e354",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី២ (តចប់)",
+      "order": 101,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-114_720.mp4",
+      "size_mb": 79,
+      "completed": false
+    }
+  ],
+  "pdfs": [
+    {
+      "id": "pdf_c50cd2de9365",
+      "title": "I.ស្ថាប័ននយោបាយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/c50cd2de9365d93e9b0c67321464ed21.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_f532274f5e2b",
+      "title": "1.អំណាចប្រធានាធិបតី(អំណាចនីតិប្រតិបត្តិ)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/f532274f5e2b7df2d312cac027879927.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_89aa95c061f0",
+      "title": "2.អំណាចសភា(នីតិបញ្ញតិ)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/89aa95c061f03c32deaac757307eedc7.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_4dfacfe076b4",
+      "title": "3.តុលាការជាន់ខ្ពស់(ក្រុមប្រឹក្សាធម្មនុញ្ញ) *សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/4dfacfe076b4bb766c3cf02fff44e87b.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8ac5e45e962c",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8ac5e45e962cfe1002fbf143a541dc3a.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_cea081f8eb98",
+      "title": "II.ការកែលំអរ និងការកំណត់កម្មវិធីថ្មី *សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/cea081f8eb9805d12a81339b93558ab4.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_d18b314443e0",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/d18b314443e047b2bfed502c1cc9fdff.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8fe4c46f8cfe",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8fe4c46f8cfee21924584d1c3abd9bbb.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ec3c321055ec",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ec3c321055ecdea6eafbeecfdf792ad6.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_2218bf46a078",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/2218bf46a0782e3d0e6ba7d5416dd1fa.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_78c667aadf1a",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/78c667aadf1ada8f4437a4aae2db8415.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_abd1b44fa4cc",
+      "title": "III.សហរដ្ឋអាមេរិកនាទសវត្សន៍ទី៦០-៨០នៃសតវត្សន៍ទី២០",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/abd1b44fa4cc6fc09b6620b98a327a24.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_9f7ce4fea122",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/9f7ce4fea12203f1f68efed20a039d33.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_29714e7bd35e",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/29714e7bd35e8e36063f0e8a66d7c7d9.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_f1737a9118d6",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/f1737a9118d64b86765a563669ecd796.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_3a654d735544",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/3a654d7355443410470322c319f19db4.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ce19d83aa2f5",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ce19d83aa2f5ad194a985158a72732e5.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_803ff51cda94",
+      "title": "I.ប្រទេសអង់គ្លេស និងសង្គ្រាមលោកលើកទី២",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/803ff51cda94b11b64de1da6cc12250b.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_22fb5e517154",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/22fb5e51715494f65401e67cb62b8f38.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_9fa79eb2d168",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/9fa79eb2d16829402aa0a459ee4cdebb.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_3a06b583279a",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/3a06b583279a44e67f4a933010d212be.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_e817e92f0910",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១ (ត))",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/e817e92f0910f714dbb664b31b82e5b1.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_351894f62c1f",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១ (ត))",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/351894f62c1f0c3ded4c5e8cf863644f.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_2f1be7749dcb",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១ (តចប់))",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/2f1be7749dcb3d2964394ebd8a818093.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_276ccf20139a",
+      "title": "III.រដ្ឋាភិបាលអភិរក្សនិយម(១៩៥១-១៩៦៤) IV.រដ្ឋាភិបាល អេវិត ហ៊ីត (១៩៧០-១៩៧៤)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/276ccf20139af048e08dd02a3c080b35.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ff8d667bb2c5",
+      "title": "V.គណបក្សការងារនិយម(១៩៦៤-១៩៧៩)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ff8d667bb2c53121d1ddfd521b87478a.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_6222dcadc9b1",
+      "title": "VI.រដ្ឋាភិបាលលោកស្រីម៉ាការ៉េត ថាច់ឆឺ(១៩៧៩-១៩៩០)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/6222dcadc9b1a235d9fff4dcd651003d.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_e9b125efe5cb",
+      "title": "VI.រដ្ឋាភិបាលលោកស្រីម៉ាការ៉េត ថាច់ឆឺ(១៩៧៩-១៩៩០ (ត))",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/e9b125efe5cbe5998191983b80d27767.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_847fd5c1ed6d",
+      "title": "VI.រដ្ឋាភិបាលលោកស្រីម៉ាការ៉េត ថាច់ឆឺ(១៩៧៩-១៩៩០ (តចប់)) VII.បញ្ហាអ៊ុលស័្ទរ(អៀឡង់ខាងជើង)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/847fd5c1ed6dcada462f87052f810ea7.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ba488fbd94c4",
+      "title": "VII.បញ្ហាអ៊ុលស័្ទរ(អៀឡង់ខាងជើង) *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ba488fbd94c4796df1927a0742f610eb.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_e9f36fa973b7",
+      "title": "**អត្រាកំណែរកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/e9f36fa973b7df698aca6e4140365457.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_29e46a06bf86",
+      "title": "**អត្រាកំណែរកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/29e46a06bf86bc199882eb20d06819d4.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_65993ef9c14f",
+      "title": "*សិក្សាពីផែនទី *ការវិវត្តនៃសាធារណរដ្ឋបារាំង *សង្គ្រាមលោកលើកទី២",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/65993ef9c14fe3a43e3a737cf0a413e2.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8436dc5b7b9c",
+      "title": "I.ការបង្កើតរដ្ឋាភិបាលបណ្តោះអាសន្ន *សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8436dc5b7b9c795c0b8e383790358f57.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_c0ac2ac07af3",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/c0ac2ac07af3764e7f0a9c64b07b3068.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_79dab9004480",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/79dab90044805da17ffe08089f424be5.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_7f7bbb0c5fa9",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/7f7bbb0c5fa9d4d4077fe32ae98d13f0.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_0ea93dea0c1e",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/0ea93dea0c1eff9dc8627fc65eebfb6e.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_98ff953f1f57",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/98ff953f1f570786c756d0808882c2a5.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_859f6b9c9ad0",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/859f6b9c9ad0d224ad68d099150749e9.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8f881fedea1b",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8f881fedea1b6617de1fa05266b907a9.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_75697950c341",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(តចប់)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/75697950c34172d825bddf61412add7e.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_7ad30032a8ef",
+      "title": "III.កំណើតសាធារណរដ្ឋទី៥ *សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/7ad30032a8ef277dbd9ff15d8b7c6cc4.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ab28064fc2b9",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ab28064fc2b99d398d12424de9db7a5c.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_413180336294",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/4131803362940a4712a8cdac8a0a41be.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8f6652cf176a",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8f6652cf176a9f25b8e6f1a1e1eee501.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_acad3234fac4",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/acad3234fac401e8d4d6060b534fc113.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_0edd50eebe2b",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/0edd50eebe2b268c0c9f128caf7efdb2.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_4eb84a705c0c",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/4eb84a705c0c783b5ff9f310262b7b50.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8e6ee10894e5",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8e6ee10894e5842667dc68c60e2859ea.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_d3f14d4a360e",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/d3f14d4a360e178b4fde5c648f615036.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_e2fe94c81bf8",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/e2fe94c81bf8009158fc64e278c8f13a.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ac5f9bb12f1e",
+      "title": "IV.នយោបាយក្រៅប្រទេសនៃសាធារណរដ្ឋទី៥",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ac5f9bb12f1ec79b438d25379e5255e6.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_02e3a7f4ff55",
+      "title": "IV.នយោបាយក្រៅប្រទេសនៃសាធារណរដ្ឋទី៥ *កិច្ចការផ្ទះមេរៀនទី៣",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/02e3a7f4ff553025037123300d8f110f.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_b912018561eb",
+      "title": "**កំណែរកិច្ចការផ្ទះ  មេរៀនទី៣",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/b912018561ebf46b6526f38a85adfaec.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_b2a9aecdd319",
+      "title": "*សិក្សាពីផែនទីអាឡឺម៉ង់ខាងលិចនិងខាងកើត I.ប្រទេសអាឡឺម៉ង់ក្នុងសង្គ្រាមលោកលើកទី២",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/b2a9aecdd3191fd60f6fb388eeaabb28.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_0de5d149f51c",
+      "title": "I.ប្រទេសអាឡឺម៉ង់ក្នុងសង្គ្រាមលោកលើកទី២(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/0de5d149f51c0ad87472da04eb2b7339.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_226cf229f5b5",
+      "title": "II.បញ្ហាអាឡឺម៉ង់ជាស្នូលនៃសង្គ្រាមត្រជាក់",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/226cf229f5b52e27f5d53cecbb0b06ee.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_fce1d79a9f46",
+      "title": "II.បញ្ហាអាឡឺម៉ង់ជាស្នូលនៃសង្គ្រាមត្រជាក់(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/fce1d79a9f46724cb2c4409f6a515b4e.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_a496449162df",
+      "title": "II.បញ្ហាអាឡឺម៉ង់ជាស្នូលនៃសង្គ្រាមត្រជាក់(តចប់)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/a496449162dfe8770768b9515835094d.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_bc67849523f6",
+      "title": "II.វឌ្ឍនភាពសេដ្ឋកិច្ច និងសង្គមសាធារណរដ្ឋអ៊ីតាលី *កិច្ចការផ្ទះមេរៀនទី៥",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/bc67849523f6e5c71acbe4a01ce9aaca.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_dd8b012f83f1",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/dd8b012f83f1815c3555b3a9947f5910.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_47226b41fba0",
+      "title": "I.សហភាពសូវៀតក្រោយសង្គ្រាមលោកលើកទី២",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/47226b41fba0deda8774748bea7050f0.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_36d544727dbf",
+      "title": "I.សហភាពសូវៀតក្រោយសង្គ្រាមលោកលើកទី២(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/36d544727dbfc192a5b3fbaf4b6f1ffb.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_e4c87698fc54",
+      "title": "II.ការស្តារប្រទេសក្រោមការដឹកនាំរបស់ស្តាលីន",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/e4c87698fc542f08d13c32b10d8db46e.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_a4f464c3314c",
+      "title": "III.លទ្ធិគោរពបុគ្គល IV.លោកគ្រូតឆូវ(១៩៥៣-១៩៦៤)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/a4f464c3314caea11e95dc4d34990a5b.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_02084e92be27",
+      "title": "III.លទ្ធិគោរពបុគ្គល IV.លោកគ្រូតឆូវ(១៩៥៣-១៩៦៤)(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/02084e92be27e347fd3b9f46f1dfd37e.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_099e9ef61df8",
+      "title": "V.អ្នកដឹកនាំដោយក្រុមវ័យចាស់",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/099e9ef61df8755d92fc11108b39f7fe.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_c213fe2f8af0",
+      "title": "VI.នយោបាយស្តាឡើងវិញ ឬឱ្យកំណែទំរង់ពេរ៉េស្ត្រូយកា",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/c213fe2f8af06d42817ebe87deb10a05.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_7e3010bc9ae8",
+      "title": "VII.ការដួលរលំសហភាពសូវៀត *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/7e3010bc9ae8205240138d6ea58f46bc.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_967a68d0df08",
+      "title": "II.សេដ្ឋកិច្ចអាឡឺម៉ង់ខាងកើត",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/967a68d0df08cc95276b92e9a0d6e7c3.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_49bc29c71ebe",
+      "title": "III.វិស័យសង្គម *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/49bc29c71ebedb837d2de36c06313c28.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_a706cacd9b3e",
+      "title": "*កំណែកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/a706cacd9b3e69825cd9f378d322b345.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_c129fd87976f",
+      "title": "I.វិស័យនយោបាយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/c129fd87976fa01355bfb5738af1cb84.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_f9f71204d61a",
+      "title": "I.វិស័យនយោបាយ(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/f9f71204d61a1ae56c7b185cad071abd.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_bffb26e70e52",
+      "title": "II.វិស័យសង្គម",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/bffb26e70e5218b14536f68942a511fc.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_acb41e3cab5c",
+      "title": "III.វិស័យសេដ្ឋកិច្ច *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/acb41e3cab5c1a332b026ea4b28162a9.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_503e2605fa06",
+      "title": "រំលឹកមេរៀនទី៨ ប្រទេសឆេកូស្លូវ៉ាគី កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/503e2605fa067cac1432fe21e2721fa9.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_b4ea779adcc9",
+      "title": "I.ប្រទេសប៉ូឡូញក្នុងសង្គ្រាមលោកលើកទី២",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/b4ea779adcc946212335f308fc6d285a.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ea3955b35f7a",
+      "title": "II.ប្រទេសប៉ូឡូញក្រោយសង្គ្រាមលោកលើកទីII *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ea3955b35f7acc92d786ef5108b06370.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_a270ef344e37",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/a270ef344e37b436f22fbed700cb21e2.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_478b8d74d735",
+      "title": "I.ការវិវត្តនៃយូហ្គោស្លាវី II.នយោបាយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/478b8d74d73585a2648b15c5ff5812e5.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_4fdc9a889876",
+      "title": "III.សេនាប្រមុខទីតូ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/4fdc9a889876f8a4ba6c47240cac3c3c.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_79cc5877d064",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/79cc5877d064b33c6dd52c2b80995d65.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_be6f54dc72a3",
+      "title": "II.បញ្ហាកំណើនប្រជាជន និងបញ្ហាអន្តោប្រវេសន៍",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/be6f54dc72a328d386926eb496051c21.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_45e5cf004c89",
+      "title": "III.បញ្ហាសន្តិសុខស្បៀង",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/45e5cf004c895f332743070851b40bd3.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_faff86ee4f56",
+      "title": "IV.បញ្ហាសង្គ្រាមនិងអស្ថិរភាពសន្តិសុខសង្គម V.មូលហេតុចំបងនៃការលេចឡើងនូវបញ្ហារួមលើសាកលលោក *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/faff86ee4f56ea43fff08d037c3c0ca6.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_0ecdcd00249c",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/0ecdcd00249c59199e9b8a6a731ea247.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_1b59d5a3cf2d",
+      "title": "I.សេចក្តីផ្តើម",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/1b59d5a3cf2dcec8c3a3b7e6e8c87134.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_9b16775f31c8",
+      "title": "II.ការវិវត្តសកលភាវូបនីយកម្ម",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/9b16775f31c8f35acac86630e2c19350.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_c371d8fd4e8f",
+      "title": "III.សន្និដ្ឋាន *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/c371d8fd4e8f4af53bb5a691b38c576f.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_01854922961d",
+      "title": "*រំលឹកមេរៀន",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/01854922961ddf812f9be9978f814b36.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_9ccfd0f530eb",
+      "title": "I.មូលហេតុនៃវត្តមានបារាំង",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/9ccfd0f530ebb3cf8f75c84d5056269a.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_bb034f96ff80",
+      "title": "II.នយោបាយកំណែទំរង់សង្គមខ្មែរ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/bb034f96ff801ffd083ee5f261a2a248.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8537606b88e4",
+      "title": "II.នយោបាយកំណែទំរង់សង្គមខ្មែរ(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8537606b88e4547e789a09e1b4001025.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_df847ead004d",
+      "title": "II.នយោបាយកំណែទំរង់សង្គមខ្មែរ(តចប់)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/df847ead004d8e41cfe40278a900426d.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_eed60584d39a",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី១",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/eed60584d39a8e22ccf4c112a3e7c3d2.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_40c977985135",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី១ (ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/40c9779851353cb02746ea788f6ef765.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ac2621a642dc",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី២",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ac2621a642dc556b92578bbefb7ef4b5.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_293b3033317f",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី២ (តចប់)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/293b3033317fa368c123668e904c2f3a.pdf",
+      "size_mb": 0,
+      "completed": false
+    }
+  ],
+  "items": [
+    {
+      "id": "5ec2660781768d327230d406",
+      "title": "I.ស្ថាប័ននយោបាយ",
+      "order": 1,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-1_720.mp4",
+      "size_mb": 77,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d407",
+      "title": "1.អំណាចប្រធានាធិបតី(អំណាចនីតិប្រតិបត្តិ)",
+      "order": 2,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-2_720.mp4",
+      "size_mb": 118,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d408",
+      "title": "2.អំណាចសភា(នីតិបញ្ញតិ)",
+      "order": 3,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-3_720.mp4",
+      "size_mb": 79,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d40c",
+      "title": "3.តុលាការជាន់ខ្ពស់(ក្រុមប្រឹក្សាធម្មនុញ្ញ) *សំណួរ+ចម្លើយ",
+      "order": 4,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-4_720.mp4",
+      "size_mb": 57,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d40d",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 5,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-5_720.mp4",
+      "size_mb": 32,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d40e",
+      "title": "II.ការកែលំអរ និងការកំណត់កម្មវិធីថ្មី *សំណួរ+ចម្លើយ",
+      "order": 6,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-6_720.mp4",
+      "size_mb": 93,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d40f",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 7,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-7_720.mp4",
+      "size_mb": 40,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d410",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 8,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-8_720.mp4",
+      "size_mb": 90,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d411",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 9,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-9_720.mp4",
+      "size_mb": 92,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d412",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 10,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-10_720.mp4",
+      "size_mb": 60,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d413",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 11,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-11_720.mp4",
+      "size_mb": 65,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d414",
+      "title": "III.សហរដ្ឋអាមេរិកនាទសវត្សន៍ទី៦០-៨០នៃសតវត្សន៍ទី២០",
+      "order": 12,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-12_720.mp4",
+      "size_mb": 79,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d415",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 13,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-13_720.mp4",
+      "size_mb": 93,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d416",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 14,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-14_720.mp4",
+      "size_mb": 74,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d417",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 15,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-15_720.mp4",
+      "size_mb": 39,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d418",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 16,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-16_720.mp4",
+      "size_mb": 32,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d419",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 17,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-17_720.mp4",
+      "size_mb": 81,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d41a",
+      "title": "I.ប្រទេសអង់គ្លេស និងសង្គ្រាមលោកលើកទី២",
+      "order": 18,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-18_720.mp4",
+      "size_mb": 61,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d41b",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 19,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-19_720.mp4",
+      "size_mb": 52,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d41c",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 20,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-20_720.mp4",
+      "size_mb": 55,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d41d",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១)",
+      "order": 21,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-21_720.mp4",
+      "size_mb": 48,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d41e",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១ (ត))",
+      "order": 22,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-22_720.mp4",
+      "size_mb": 42,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d41f",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១ (ត))",
+      "order": 23,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-23_720.mp4",
+      "size_mb": 34,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d420",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១ (តចប់))",
+      "order": 24,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-24_720.mp4",
+      "size_mb": 37,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d421",
+      "title": "III.រដ្ឋាភិបាលអភិរក្សនិយម(១៩៥១-១៩៦៤) IV.រដ្ឋាភិបាល អេវិត ហ៊ីត (១៩៧០-១៩៧៤)",
+      "order": 25,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-25_720.mp4",
+      "size_mb": 257,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d422",
+      "title": "V.គណបក្សការងារនិយម(១៩៦៤-១៩៧៩)",
+      "order": 26,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-26_720.mp4",
+      "size_mb": 93,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d423",
+      "title": "VI.រដ្ឋាភិបាលលោកស្រីម៉ាការ៉េត ថាច់ឆឺ(១៩៧៩-១៩៩០)",
+      "order": 27,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-27_720.mp4",
+      "size_mb": 82,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d424",
+      "title": "VI.រដ្ឋាភិបាលលោកស្រីម៉ាការ៉េត ថាច់ឆឺ(១៩៧៩-១៩៩០ (ត))",
+      "order": 28,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-28_720.mp4",
+      "size_mb": 80,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d425",
+      "title": "VI.រដ្ឋាភិបាលលោកស្រីម៉ាការ៉េត ថាច់ឆឺ(១៩៧៩-១៩៩០ (តចប់)) VII.បញ្ហាអ៊ុលស័្ទរ(អៀឡង់ខាងជើង)",
+      "order": 29,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-29_720.mp4",
+      "size_mb": 84,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d426",
+      "title": "VII.បញ្ហាអ៊ុលស័្ទរ(អៀឡង់ខាងជើង) *កិច្ចការផ្ទះ",
+      "order": 30,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-30_720.mp4",
+      "size_mb": 83,
+      "completed": false
+    },
+    {
+      "id": "5ec2660781768d327230d427",
+      "title": "**អត្រាកំណែរកិច្ចការផ្ទះ",
+      "order": 31,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-31_720.mp4",
+      "size_mb": 84,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d606",
+      "title": "**អត្រាកំណែរកិច្ចការផ្ទះ",
+      "order": 32,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-43_720.mp4",
+      "size_mb": 125,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d607",
+      "title": "*សិក្សាពីផែនទី *ការវិវត្តនៃសាធារណរដ្ឋបារាំង *សង្គ្រាមលោកលើកទី២",
+      "order": 33,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-44_720.mp4",
+      "size_mb": 181,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d608",
+      "title": "I.ការបង្កើតរដ្ឋាភិបាលបណ្តោះអាសន្ន *សំណួរ+ចម្លើយ",
+      "order": 34,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-45_720.mp4",
+      "size_mb": 141,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d609",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 35,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-46_720.mp4",
+      "size_mb": 84,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d60a",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 36,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-47_720.mp4",
+      "size_mb": 120,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d60b",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 37,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-48_720.mp4",
+      "size_mb": 108,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d626",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤",
+      "order": 38,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-68_720.mp4",
+      "size_mb": 91,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d627",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(ត)",
+      "order": 39,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-69_720.mp4",
+      "size_mb": 151,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d628",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(ត)",
+      "order": 40,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-70_720.mp4",
+      "size_mb": 40,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d629",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(ត)",
+      "order": 41,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-71_720.mp4",
+      "size_mb": 89,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d62a",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(តចប់)",
+      "order": 42,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-72_720.mp4",
+      "size_mb": 96,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d614",
+      "title": "III.កំណើតសាធារណរដ្ឋទី៥ *សំណួរ+ចម្លើយ",
+      "order": 43,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-50_720.mp4",
+      "size_mb": 186,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d615",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 44,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-51_720.mp4",
+      "size_mb": 56,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d616",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 45,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-52_720.mp4",
+      "size_mb": 140,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d617",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 46,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-53_720.mp4",
+      "size_mb": 148,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d618",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 47,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-54_720.mp4",
+      "size_mb": 97,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d619",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 48,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-55_720.mp4",
+      "size_mb": 99,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d61a",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 49,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-56_720.mp4",
+      "size_mb": 124,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d61b",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 50,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-57_720.mp4",
+      "size_mb": 152,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d61c",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 51,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-58_720.mp4",
+      "size_mb": 165,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d61d",
+      "title": "*សំណួរ+ចម្លើយ",
+      "order": 52,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-59_720.mp4",
+      "size_mb": 148,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d61e",
+      "title": "IV.នយោបាយក្រៅប្រទេសនៃសាធារណរដ្ឋទី៥",
+      "order": 53,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-60_720.mp4",
+      "size_mb": 90,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d61f",
+      "title": "IV.នយោបាយក្រៅប្រទេសនៃសាធារណរដ្ឋទី៥ *កិច្ចការផ្ទះមេរៀនទី៣",
+      "order": 54,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-61_720.mp4",
+      "size_mb": 151,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d620",
+      "title": "**កំណែរកិច្ចការផ្ទះ  មេរៀនទី៣",
+      "order": 55,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-62_720.mp4",
+      "size_mb": 74,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d621",
+      "title": "*សិក្សាពីផែនទីអាឡឺម៉ង់ខាងលិចនិងខាងកើត I.ប្រទេសអាឡឺម៉ង់ក្នុងសង្គ្រាមលោកលើកទី២",
+      "order": 56,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-63_720.mp4",
+      "size_mb": 101,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d622",
+      "title": "I.ប្រទេសអាឡឺម៉ង់ក្នុងសង្គ្រាមលោកលើកទី២(ត)",
+      "order": 57,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-64_720.mp4",
+      "size_mb": 100,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d623",
+      "title": "II.បញ្ហាអាឡឺម៉ង់ជាស្នូលនៃសង្គ្រាមត្រជាក់",
+      "order": 58,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-65_720.mp4",
+      "size_mb": 149,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d624",
+      "title": "II.បញ្ហាអាឡឺម៉ង់ជាស្នូលនៃសង្គ្រាមត្រជាក់(ត)",
+      "order": 59,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-66_720.mp4",
+      "size_mb": 136,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d625",
+      "title": "II.បញ្ហាអាឡឺម៉ង់ជាស្នូលនៃសង្គ្រាមត្រជាក់(តចប់)",
+      "order": 60,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-67_720.mp4",
+      "size_mb": 113,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d62b",
+      "title": "II.វឌ្ឍនភាពសេដ្ឋកិច្ច និងសង្គមសាធារណរដ្ឋអ៊ីតាលី *កិច្ចការផ្ទះមេរៀនទី៥",
+      "order": 61,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-73_720.mp4",
+      "size_mb": 263,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d62c",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "order": 62,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-74_720.mp4",
+      "size_mb": 71,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d62d",
+      "title": "I.សហភាពសូវៀតក្រោយសង្គ្រាមលោកលើកទី២",
+      "order": 63,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-75_720.mp4",
+      "size_mb": 126,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d62e",
+      "title": "I.សហភាពសូវៀតក្រោយសង្គ្រាមលោកលើកទី២(ត)",
+      "order": 64,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-76_720.mp4",
+      "size_mb": 121,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20c81768d28810a5dee",
+      "title": "II.ការស្តារប្រទេសក្រោមការដឹកនាំរបស់ស្តាលីន",
+      "order": 65,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-84_720.mp4",
+      "size_mb": 112,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20c81768d28810a5df1",
+      "title": "III.លទ្ធិគោរពបុគ្គល IV.លោកគ្រូតឆូវ(១៩៥៣-១៩៦៤)",
+      "order": 66,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-85_720.mp4",
+      "size_mb": 128,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20c81768d28810a5df4",
+      "title": "III.លទ្ធិគោរពបុគ្គល IV.លោកគ្រូតឆូវ(១៩៥៣-១៩៦៤)(ត)",
+      "order": 67,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-86_720.mp4",
+      "size_mb": 143,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20c81768d28810a5df7",
+      "title": "V.អ្នកដឹកនាំដោយក្រុមវ័យចាស់",
+      "order": 68,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-87_720.mp4",
+      "size_mb": 175,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20c81768d28810a5dfa",
+      "title": "VI.នយោបាយស្តាឡើងវិញ ឬឱ្យកំណែទំរង់ពេរ៉េស្ត្រូយកា",
+      "order": 69,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-88_720.mp4",
+      "size_mb": 299,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20d81768d28810a5e7b",
+      "title": "VII.ការដួលរលំសហភាពសូវៀត *កិច្ចការផ្ទះ",
+      "order": 70,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-89_720.mp4",
+      "size_mb": 118,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d634",
+      "title": "II.សេដ្ឋកិច្ចអាឡឺម៉ង់ខាងកើត",
+      "order": 71,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-77_720.mp4",
+      "size_mb": 154,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d635",
+      "title": "III.វិស័យសង្គម *កិច្ចការផ្ទះ",
+      "order": 72,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-78_720.mp4",
+      "size_mb": 133,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d636",
+      "title": "*កំណែកិច្ចការផ្ទះ",
+      "order": 73,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-79_720.mp4",
+      "size_mb": 99,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d637",
+      "title": "I.វិស័យនយោបាយ",
+      "order": 74,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-80_720.mp4",
+      "size_mb": 142,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d638",
+      "title": "I.វិស័យនយោបាយ(ត)",
+      "order": 75,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-81_720.mp4",
+      "size_mb": 108,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d639",
+      "title": "II.វិស័យសង្គម",
+      "order": 76,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-82_720.mp4",
+      "size_mb": 114,
+      "completed": false
+    },
+    {
+      "id": "5ec2660981768d327230d63a",
+      "title": "III.វិស័យសេដ្ឋកិច្ច *កិច្ចការផ្ទះ",
+      "order": 77,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-83_720.mp4",
+      "size_mb": 135,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20d81768d28810a5e7e",
+      "title": "រំលឹកមេរៀនទី៨ ប្រទេសឆេកូស្លូវ៉ាគី កិច្ចការផ្ទះ",
+      "order": 78,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-90_720.mp4",
+      "size_mb": 81,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20d81768d28810a5e81",
+      "title": "I.ប្រទេសប៉ូឡូញក្នុងសង្គ្រាមលោកលើកទី២",
+      "order": 79,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-91_720.mp4",
+      "size_mb": 196,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20d81768d28810a5ea1",
+      "title": "II.ប្រទេសប៉ូឡូញក្រោយសង្គ្រាមលោកលើកទីII *កិច្ចការផ្ទះ",
+      "order": 80,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-92_720.mp4",
+      "size_mb": 203,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20f81768d28810a5f44",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "order": 81,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-93_720.mp4",
+      "size_mb": 145,
+      "completed": false
+    },
+    {
+      "id": "5ef6b20f81768d28810a5f47",
+      "title": "I.ការវិវត្តនៃយូហ្គោស្លាវី II.នយោបាយ",
+      "order": 82,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-94_720.mp4",
+      "size_mb": 103,
+      "completed": false
+    },
+    {
+      "id": "5ef6b21181768d28810a6076",
+      "title": "III.សេនាប្រមុខទីតូ",
+      "order": 83,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-95_720.mp4",
+      "size_mb": 104,
+      "completed": false
+    },
+    {
+      "id": "5ef6b21181768d28810a6079",
+      "title": "III.សេនាប្រមុខទីតូ(ត)",
+      "order": 84,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-96_720.mp4",
+      "size_mb": 83,
+      "completed": false
+    },
+    {
+      "id": "5ef6b21181768d28810a6085",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "order": 85,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-97_720.mp4",
+      "size_mb": 157,
+      "completed": false
+    },
+    {
+      "id": "5ef6b21181768d28810a60a4",
+      "title": "II.បញ្ហាកំណើនប្រជាជន និងបញ្ហាអន្តោប្រវេសន៍",
+      "order": 86,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-99_720.mp4",
+      "size_mb": 194,
+      "completed": false
+    },
+    {
+      "id": "5ef6b21181768d28810a60a7",
+      "title": "III.បញ្ហាសន្តិសុខស្បៀង",
+      "order": 87,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-100_720.mp4",
+      "size_mb": 108,
+      "completed": false
+    },
+    {
+      "id": "5ef6b21181768d28810a60aa",
+      "title": "IV.បញ្ហាសង្គ្រាមនិងអស្ថិរភាពសន្តិសុខសង្គម V.មូលហេតុចំបងនៃការលេចឡើងនូវបញ្ហារួមលើសាកលលោក *កិច្ចការផ្ទះ",
+      "order": 88,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-101_720.mp4",
+      "size_mb": 181,
+      "completed": false
+    },
+    {
+      "id": "5f10434081768d5b1d749ea0",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "order": 89,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-102_720.mp4",
+      "size_mb": 84,
+      "completed": false
+    },
+    {
+      "id": "5f10434081768d5b1d749ea3",
+      "title": "I.សេចក្តីផ្តើម",
+      "order": 90,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-103_720.mp4",
+      "size_mb": 168,
+      "completed": false
+    },
+    {
+      "id": "5f10434081768d5b1d749ee5",
+      "title": "II.ការវិវត្តសកលភាវូបនីយកម្ម",
+      "order": 91,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-104_720.mp4",
+      "size_mb": 158,
+      "completed": false
+    },
+    {
+      "id": "5f10434081768d5b1d749ee8",
+      "title": "III.សន្និដ្ឋាន *កិច្ចការផ្ទះ",
+      "order": 92,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-105_720.mp4",
+      "size_mb": 88,
+      "completed": false
+    },
+    {
+      "id": "5f10434181768d5b1d749f24",
+      "title": "*រំលឹកមេរៀន",
+      "order": 93,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-106_720.mp4",
+      "size_mb": 84,
+      "completed": false
+    },
+    {
+      "id": "5f10434181768d5b1d749f27",
+      "title": "I.មូលហេតុនៃវត្តមានបារាំង",
+      "order": 94,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-107_720.mp4",
+      "size_mb": 101,
+      "completed": false
+    },
+    {
+      "id": "5f277e6f81768d5c1609711e",
+      "title": "II.នយោបាយកំណែទំរង់សង្គមខ្មែរ",
+      "order": 95,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-108_720.mp4",
+      "size_mb": 69,
+      "completed": false
+    },
+    {
+      "id": "5f277e6f81768d5c16097121",
+      "title": "II.នយោបាយកំណែទំរង់សង្គមខ្មែរ(ត)",
+      "order": 96,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-109_720.mp4",
+      "size_mb": 124,
+      "completed": false
+    },
+    {
+      "id": "5f277e6f81768d5c16097124",
+      "title": "II.នយោបាយកំណែទំរង់សង្គមខ្មែរ(តចប់)",
+      "order": 97,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-110_720.mp4",
+      "size_mb": 66,
+      "completed": false
+    },
+    {
+      "id": "5fa4aedbcaf76d6df205e352",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី១",
+      "order": 98,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-111_720.mp4",
+      "size_mb": 75,
+      "completed": false
+    },
+    {
+      "id": "5fa4af0dcaf76d6df205e353",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី១ (ត)",
+      "order": 99,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-112_720.mp4",
+      "size_mb": 94,
+      "completed": false
+    },
+    {
+      "id": "5fa4af1e4631a4625f094462",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី២",
+      "order": 100,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-113_720.mp4",
+      "size_mb": 76,
+      "completed": false
+    },
+    {
+      "id": "5fa4af35caf76d6df205e354",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី២ (តចប់)",
+      "order": 101,
+      "url": "https://eschool-video.sabay.com/video/G12/History/5ec265d981768d3170752446-114_720.mp4",
+      "size_mb": 79,
+      "completed": false
+    },
+    {
+      "id": "pdf_c50cd2de9365",
+      "title": "I.ស្ថាប័ននយោបាយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/c50cd2de9365d93e9b0c67321464ed21.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_f532274f5e2b",
+      "title": "1.អំណាចប្រធានាធិបតី(អំណាចនីតិប្រតិបត្តិ)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/f532274f5e2b7df2d312cac027879927.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_89aa95c061f0",
+      "title": "2.អំណាចសភា(នីតិបញ្ញតិ)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/89aa95c061f03c32deaac757307eedc7.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_4dfacfe076b4",
+      "title": "3.តុលាការជាន់ខ្ពស់(ក្រុមប្រឹក្សាធម្មនុញ្ញ) *សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/4dfacfe076b4bb766c3cf02fff44e87b.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8ac5e45e962c",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8ac5e45e962cfe1002fbf143a541dc3a.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_cea081f8eb98",
+      "title": "II.ការកែលំអរ និងការកំណត់កម្មវិធីថ្មី *សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/cea081f8eb9805d12a81339b93558ab4.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_d18b314443e0",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/d18b314443e047b2bfed502c1cc9fdff.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8fe4c46f8cfe",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8fe4c46f8cfee21924584d1c3abd9bbb.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ec3c321055ec",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ec3c321055ecdea6eafbeecfdf792ad6.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_2218bf46a078",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/2218bf46a0782e3d0e6ba7d5416dd1fa.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_78c667aadf1a",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/78c667aadf1ada8f4437a4aae2db8415.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_abd1b44fa4cc",
+      "title": "III.សហរដ្ឋអាមេរិកនាទសវត្សន៍ទី៦០-៨០នៃសតវត្សន៍ទី២០",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/abd1b44fa4cc6fc09b6620b98a327a24.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_9f7ce4fea122",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/9f7ce4fea12203f1f68efed20a039d33.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_29714e7bd35e",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/29714e7bd35e8e36063f0e8a66d7c7d9.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_f1737a9118d6",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/f1737a9118d64b86765a563669ecd796.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_3a654d735544",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/3a654d7355443410470322c319f19db4.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ce19d83aa2f5",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ce19d83aa2f5ad194a985158a72732e5.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_803ff51cda94",
+      "title": "I.ប្រទេសអង់គ្លេស និងសង្គ្រាមលោកលើកទី២",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/803ff51cda94b11b64de1da6cc12250b.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_22fb5e517154",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/22fb5e51715494f65401e67cb62b8f38.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_9fa79eb2d168",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/9fa79eb2d16829402aa0a459ee4cdebb.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_3a06b583279a",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/3a06b583279a44e67f4a933010d212be.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_e817e92f0910",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១ (ត))",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/e817e92f0910f714dbb664b31b82e5b1.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_351894f62c1f",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១ (ត))",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/351894f62c1f0c3ded4c5e8cf863644f.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_2f1be7749dcb",
+      "title": "II.គណបក្សការងារនិយម(១៩៤៥-១៩៥១ (តចប់))",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/2f1be7749dcb3d2964394ebd8a818093.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_276ccf20139a",
+      "title": "III.រដ្ឋាភិបាលអភិរក្សនិយម(១៩៥១-១៩៦៤) IV.រដ្ឋាភិបាល អេវិត ហ៊ីត (១៩៧០-១៩៧៤)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/276ccf20139af048e08dd02a3c080b35.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ff8d667bb2c5",
+      "title": "V.គណបក្សការងារនិយម(១៩៦៤-១៩៧៩)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ff8d667bb2c53121d1ddfd521b87478a.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_6222dcadc9b1",
+      "title": "VI.រដ្ឋាភិបាលលោកស្រីម៉ាការ៉េត ថាច់ឆឺ(១៩៧៩-១៩៩០)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/6222dcadc9b1a235d9fff4dcd651003d.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_e9b125efe5cb",
+      "title": "VI.រដ្ឋាភិបាលលោកស្រីម៉ាការ៉េត ថាច់ឆឺ(១៩៧៩-១៩៩០ (ត))",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/e9b125efe5cbe5998191983b80d27767.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_847fd5c1ed6d",
+      "title": "VI.រដ្ឋាភិបាលលោកស្រីម៉ាការ៉េត ថាច់ឆឺ(១៩៧៩-១៩៩០ (តចប់)) VII.បញ្ហាអ៊ុលស័្ទរ(អៀឡង់ខាងជើង)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/847fd5c1ed6dcada462f87052f810ea7.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ba488fbd94c4",
+      "title": "VII.បញ្ហាអ៊ុលស័្ទរ(អៀឡង់ខាងជើង) *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ba488fbd94c4796df1927a0742f610eb.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_e9f36fa973b7",
+      "title": "**អត្រាកំណែរកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/e9f36fa973b7df698aca6e4140365457.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_29e46a06bf86",
+      "title": "**អត្រាកំណែរកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/29e46a06bf86bc199882eb20d06819d4.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_65993ef9c14f",
+      "title": "*សិក្សាពីផែនទី *ការវិវត្តនៃសាធារណរដ្ឋបារាំង *សង្គ្រាមលោកលើកទី២",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/65993ef9c14fe3a43e3a737cf0a413e2.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8436dc5b7b9c",
+      "title": "I.ការបង្កើតរដ្ឋាភិបាលបណ្តោះអាសន្ន *សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8436dc5b7b9c795c0b8e383790358f57.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_c0ac2ac07af3",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/c0ac2ac07af3764e7f0a9c64b07b3068.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_79dab9004480",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/79dab90044805da17ffe08089f424be5.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_7f7bbb0c5fa9",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/7f7bbb0c5fa9d4d4077fe32ae98d13f0.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_0ea93dea0c1e",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/0ea93dea0c1eff9dc8627fc65eebfb6e.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_98ff953f1f57",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/98ff953f1f570786c756d0808882c2a5.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_859f6b9c9ad0",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/859f6b9c9ad0d224ad68d099150749e9.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8f881fedea1b",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8f881fedea1b6617de1fa05266b907a9.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_75697950c341",
+      "title": "II.កំណើតសាធារណរដ្ឋទី៤(តចប់)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/75697950c34172d825bddf61412add7e.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_7ad30032a8ef",
+      "title": "III.កំណើតសាធារណរដ្ឋទី៥ *សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/7ad30032a8ef277dbd9ff15d8b7c6cc4.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ab28064fc2b9",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ab28064fc2b99d398d12424de9db7a5c.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_413180336294",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/4131803362940a4712a8cdac8a0a41be.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8f6652cf176a",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8f6652cf176a9f25b8e6f1a1e1eee501.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_acad3234fac4",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/acad3234fac401e8d4d6060b534fc113.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_0edd50eebe2b",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/0edd50eebe2b268c0c9f128caf7efdb2.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_4eb84a705c0c",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/4eb84a705c0c783b5ff9f310262b7b50.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8e6ee10894e5",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8e6ee10894e5842667dc68c60e2859ea.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_d3f14d4a360e",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/d3f14d4a360e178b4fde5c648f615036.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_e2fe94c81bf8",
+      "title": "*សំណួរ+ចម្លើយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/e2fe94c81bf8009158fc64e278c8f13a.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ac5f9bb12f1e",
+      "title": "IV.នយោបាយក្រៅប្រទេសនៃសាធារណរដ្ឋទី៥",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ac5f9bb12f1ec79b438d25379e5255e6.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_02e3a7f4ff55",
+      "title": "IV.នយោបាយក្រៅប្រទេសនៃសាធារណរដ្ឋទី៥ *កិច្ចការផ្ទះមេរៀនទី៣",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/02e3a7f4ff553025037123300d8f110f.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_b912018561eb",
+      "title": "**កំណែរកិច្ចការផ្ទះ  មេរៀនទី៣",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/b912018561ebf46b6526f38a85adfaec.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_b2a9aecdd319",
+      "title": "*សិក្សាពីផែនទីអាឡឺម៉ង់ខាងលិចនិងខាងកើត I.ប្រទេសអាឡឺម៉ង់ក្នុងសង្គ្រាមលោកលើកទី២",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/b2a9aecdd3191fd60f6fb388eeaabb28.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_0de5d149f51c",
+      "title": "I.ប្រទេសអាឡឺម៉ង់ក្នុងសង្គ្រាមលោកលើកទី២(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/0de5d149f51c0ad87472da04eb2b7339.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_226cf229f5b5",
+      "title": "II.បញ្ហាអាឡឺម៉ង់ជាស្នូលនៃសង្គ្រាមត្រជាក់",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/226cf229f5b52e27f5d53cecbb0b06ee.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_fce1d79a9f46",
+      "title": "II.បញ្ហាអាឡឺម៉ង់ជាស្នូលនៃសង្គ្រាមត្រជាក់(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/fce1d79a9f46724cb2c4409f6a515b4e.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_a496449162df",
+      "title": "II.បញ្ហាអាឡឺម៉ង់ជាស្នូលនៃសង្គ្រាមត្រជាក់(តចប់)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/a496449162dfe8770768b9515835094d.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_bc67849523f6",
+      "title": "II.វឌ្ឍនភាពសេដ្ឋកិច្ច និងសង្គមសាធារណរដ្ឋអ៊ីតាលី *កិច្ចការផ្ទះមេរៀនទី៥",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/bc67849523f6e5c71acbe4a01ce9aaca.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_dd8b012f83f1",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/dd8b012f83f1815c3555b3a9947f5910.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_47226b41fba0",
+      "title": "I.សហភាពសូវៀតក្រោយសង្គ្រាមលោកលើកទី២",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/47226b41fba0deda8774748bea7050f0.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_36d544727dbf",
+      "title": "I.សហភាពសូវៀតក្រោយសង្គ្រាមលោកលើកទី២(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/36d544727dbfc192a5b3fbaf4b6f1ffb.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_e4c87698fc54",
+      "title": "II.ការស្តារប្រទេសក្រោមការដឹកនាំរបស់ស្តាលីន",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/e4c87698fc542f08d13c32b10d8db46e.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_a4f464c3314c",
+      "title": "III.លទ្ធិគោរពបុគ្គល IV.លោកគ្រូតឆូវ(១៩៥៣-១៩៦៤)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/a4f464c3314caea11e95dc4d34990a5b.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_02084e92be27",
+      "title": "III.លទ្ធិគោរពបុគ្គល IV.លោកគ្រូតឆូវ(១៩៥៣-១៩៦៤)(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/02084e92be27e347fd3b9f46f1dfd37e.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_099e9ef61df8",
+      "title": "V.អ្នកដឹកនាំដោយក្រុមវ័យចាស់",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/099e9ef61df8755d92fc11108b39f7fe.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_c213fe2f8af0",
+      "title": "VI.នយោបាយស្តាឡើងវិញ ឬឱ្យកំណែទំរង់ពេរ៉េស្ត្រូយកា",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/c213fe2f8af06d42817ebe87deb10a05.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_7e3010bc9ae8",
+      "title": "VII.ការដួលរលំសហភាពសូវៀត *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/7e3010bc9ae8205240138d6ea58f46bc.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_967a68d0df08",
+      "title": "II.សេដ្ឋកិច្ចអាឡឺម៉ង់ខាងកើត",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/967a68d0df08cc95276b92e9a0d6e7c3.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_49bc29c71ebe",
+      "title": "III.វិស័យសង្គម *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/49bc29c71ebedb837d2de36c06313c28.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_a706cacd9b3e",
+      "title": "*កំណែកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/a706cacd9b3e69825cd9f378d322b345.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_c129fd87976f",
+      "title": "I.វិស័យនយោបាយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/c129fd87976fa01355bfb5738af1cb84.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_f9f71204d61a",
+      "title": "I.វិស័យនយោបាយ(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/f9f71204d61a1ae56c7b185cad071abd.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_bffb26e70e52",
+      "title": "II.វិស័យសង្គម",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/bffb26e70e5218b14536f68942a511fc.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_acb41e3cab5c",
+      "title": "III.វិស័យសេដ្ឋកិច្ច *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/acb41e3cab5c1a332b026ea4b28162a9.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_503e2605fa06",
+      "title": "រំលឹកមេរៀនទី៨ ប្រទេសឆេកូស្លូវ៉ាគី កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/503e2605fa067cac1432fe21e2721fa9.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_b4ea779adcc9",
+      "title": "I.ប្រទេសប៉ូឡូញក្នុងសង្គ្រាមលោកលើកទី២",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/b4ea779adcc946212335f308fc6d285a.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ea3955b35f7a",
+      "title": "II.ប្រទេសប៉ូឡូញក្រោយសង្គ្រាមលោកលើកទីII *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ea3955b35f7acc92d786ef5108b06370.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_a270ef344e37",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/a270ef344e37b436f22fbed700cb21e2.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_478b8d74d735",
+      "title": "I.ការវិវត្តនៃយូហ្គោស្លាវី II.នយោបាយ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/478b8d74d73585a2648b15c5ff5812e5.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_4fdc9a889876",
+      "title": "III.សេនាប្រមុខទីតូ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/4fdc9a889876f8a4ba6c47240cac3c3c.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_79cc5877d064",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/79cc5877d064b33c6dd52c2b80995d65.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_be6f54dc72a3",
+      "title": "II.បញ្ហាកំណើនប្រជាជន និងបញ្ហាអន្តោប្រវេសន៍",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/be6f54dc72a328d386926eb496051c21.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_45e5cf004c89",
+      "title": "III.បញ្ហាសន្តិសុខស្បៀង",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/45e5cf004c895f332743070851b40bd3.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_faff86ee4f56",
+      "title": "IV.បញ្ហាសង្គ្រាមនិងអស្ថិរភាពសន្តិសុខសង្គម V.មូលហេតុចំបងនៃការលេចឡើងនូវបញ្ហារួមលើសាកលលោក *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/faff86ee4f56ea43fff08d037c3c0ca6.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_0ecdcd00249c",
+      "title": "**កំណែរកិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/0ecdcd00249c59199e9b8a6a731ea247.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_1b59d5a3cf2d",
+      "title": "I.សេចក្តីផ្តើម",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/1b59d5a3cf2dcec8c3a3b7e6e8c87134.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_9b16775f31c8",
+      "title": "II.ការវិវត្តសកលភាវូបនីយកម្ម",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/9b16775f31c8f35acac86630e2c19350.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_c371d8fd4e8f",
+      "title": "III.សន្និដ្ឋាន *កិច្ចការផ្ទះ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/c371d8fd4e8f4af53bb5a691b38c576f.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_01854922961d",
+      "title": "*រំលឹកមេរៀន",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/01854922961ddf812f9be9978f814b36.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_9ccfd0f530eb",
+      "title": "I.មូលហេតុនៃវត្តមានបារាំង",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/9ccfd0f530ebb3cf8f75c84d5056269a.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_bb034f96ff80",
+      "title": "II.នយោបាយកំណែទំរង់សង្គមខ្មែរ",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/bb034f96ff801ffd083ee5f261a2a248.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_8537606b88e4",
+      "title": "II.នយោបាយកំណែទំរង់សង្គមខ្មែរ(ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/8537606b88e4547e789a09e1b4001025.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_df847ead004d",
+      "title": "II.នយោបាយកំណែទំរង់សង្គមខ្មែរ(តចប់)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/df847ead004d8e41cfe40278a900426d.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_eed60584d39a",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី១",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/eed60584d39a8e22ccf4c112a3e7c3d2.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_40c977985135",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី១ (ត)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/40c9779851353cb02746ea788f6ef765.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_ac2621a642dc",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី២",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/ac2621a642dc556b92578bbefb7ef4b5.pdf",
+      "size_mb": 0,
+      "completed": false
+    },
+    {
+      "id": "pdf_293b3033317f",
+      "title": "វិញ្ញាសាត្រៀមប្រឡងបាក់ឌុប: វិញ្ញាសាទី២ (តចប់)",
+      "url": "https://space.e-schoolcambodia.com/sys/202108/293b3033317fa368c123668e904c2f3a.pdf",
+      "size_mb": 0,
+      "completed": false
+    }
+  ],
+  "completed": []
+}

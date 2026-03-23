@@ -14,7 +14,12 @@ const courseSchema = new mongoose.Schema(
     },
     teacher: {
       type: String,
-      required: [true, "Teacher name is required"],
+      default: "Unknown",
+      trim: true,
+    },
+    grade: {
+      type: String,
+      default: "Unknown",
       trim: true,
     },
     platformId: {

@@ -12,9 +12,12 @@ interface Props {
   course: Course;
   index: number;
   onMutate: () => void;
+  isSelectMode?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }
 
-export const CourseCard = ({ course, index, onMutate }: Props) => {
+export const CourseCard = ({ course, index, onMutate, isSelectMode, selected, onToggleSelect }: Props) => {
   const navigate = useNavigate();
   const isAdmin = useAdmin();
   const { user, toggleFavoriteCourse } = useAuthStore();
@@ -37,19 +40,47 @@ export const CourseCard = ({ course, index, onMutate }: Props) => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.05, duration: 0.25 }}
-        onClick={() => navigate(`/course/${course._id}`)}
-        className="group flex items-center justify-between px-4 py-3.5 rounded-xl cursor-pointer border border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-500/30 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all duration-150"
+        onClick={() => {
+          if (isSelectMode && onToggleSelect) {
+            onToggleSelect();
+          } else {
+            navigate(`/course/${course._id}`);
+          }
+        }}
+        className={`group flex items-center justify-between px-4 py-3.5 rounded-xl cursor-pointer border transition-all duration-150 ${
+          selected
+            ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 dark:border-indigo-500"
+            : "border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-500/30 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+        }`}
       >
         {/* Left: icon + text */}
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="shrink-0 w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
-            <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          </div>
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {isSelectMode ? (
+            <div
+              className={`shrink-0 w-5 h-5 rounded flex items-center justify-center border transition-colors ${
+                selected
+                  ? "bg-indigo-600 border-indigo-600 text-white"
+                  : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900"
+              }`}
+            >
+              {selected && (
+                <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </div>
+          ) : (
+            <div className="shrink-0 w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            </div>
+          )}
+          
           <div className="min-w-0">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
               {course.title}
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+              {course.grade !== "Unknown" && `${course.grade} · `}
               {course.teacher}
               {platformName && ` · ${platformName}`}
               {course.subject && ` · ${course.subject}`}
@@ -58,7 +89,8 @@ export const CourseCard = ({ course, index, onMutate }: Props) => {
         </div>
 
         {/* Right: actions */}
-        <div className="flex items-center gap-1 shrink-0 ml-3">
+        {!isSelectMode && (
+          <div className="flex items-center gap-1 shrink-0 ml-3">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -88,6 +120,7 @@ export const CourseCard = ({ course, index, onMutate }: Props) => {
             </motion.button>
           )}
         </div>
+        )}
       </motion.div>
 
       {/* Admin edit modal */}

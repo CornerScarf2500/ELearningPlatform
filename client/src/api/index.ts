@@ -46,10 +46,14 @@ export const authApi = {
 /* ── Courses ──────────────────────────────────────────────── */
 export const courseApi = {
   list: () => api.get<ApiResponse<Course[]>>("/courses"),
+  listPlatformCourses: (platformId: string) =>
+    api.get<ApiResponse<Course[]>>(`/platforms/${platformId}/courses`),
   get: (id: string) =>
     api.get<ApiResponse<Course & { sections: Section[] }>>(`/courses/${id}`),
-  create: (data: Partial<Course>) =>
-    api.post<ApiResponse<Course>>("/courses", data),
+
+  // Admin routes
+  create: (data: Partial<Course>) => api.post<ApiResponse<Course>>("/courses", data),
+  import: (data: any) => api.post<ApiResponse<Course>>("/courses/import", data),
   update: (id: string, data: Partial<Course>) =>
     api.put<ApiResponse<Course>>(`/courses/${id}`, data),
   delete: (id: string) => api.delete<ApiResponse>(`/courses/${id}`),
@@ -108,6 +112,8 @@ export const searchApi = {
 /* ── Users (admin) ────────────────────────────────────────── */
 export const userApi = {
   list: () => api.get<ApiResponse<import("../types").AdminUser[]>>("/users"),
+  create: (data: { name: string; accessCode: string; role: "admin" | "user" }) =>
+    api.post<ApiResponse<{ id: string; name: string; role: string; isBanned: boolean; activeSessions: number; createdAt: string }>>("/users", data),
   revokeSessions: (id: string) =>
     api.delete<ApiResponse>(`/users/${id}/sessions`),
   revokeSession: (id: string, sessionId: string) =>

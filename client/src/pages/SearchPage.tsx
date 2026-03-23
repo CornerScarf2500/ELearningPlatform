@@ -12,6 +12,7 @@ export const SearchPage = () => {
   const [results, setResults] = useState<SearchResults | null>(null);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<"all" | "courses" | "lessons">("all");
 
   const handleSearch = useCallback(async () => {
     const q = query.trim();
@@ -54,6 +55,24 @@ export const SearchPage = () => {
         />
       </div>
 
+      {searched && results && total > 0 && (
+        <div className="flex items-center gap-2 mb-6">
+          {(["all", "courses", "lessons"] as const).map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold capitalize transition-colors ${
+                activeFilter === filter
+                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Results */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
@@ -67,7 +86,7 @@ export const SearchPage = () => {
         ) : (
           <div className="space-y-6">
             {/* Course results */}
-            {results.courses.length > 0 && (
+            {(activeFilter === "all" || activeFilter === "courses") && results.courses.length > 0 && (
               <div>
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3">
                   Courses ({results.courses.length})
@@ -100,7 +119,7 @@ export const SearchPage = () => {
             )}
 
             {/* Lesson results */}
-            {results.lessons.length > 0 && (
+            {(activeFilter === "all" || activeFilter === "lessons") && results.lessons.length > 0 && (
               <div>
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3">
                   Lessons ({results.lessons.length})

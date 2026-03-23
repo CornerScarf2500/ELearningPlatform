@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Edit3, Plus } from "lucide-react";
+import { ChevronRight, Edit3, Plus, GripVertical } from "lucide-react";
+import { Droppable, Draggable } from "@hello-pangea/dnd";
+import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
 import { useAdmin } from "../../hooks/useAdmin";
 import { AdminEditModal } from "../admin/AdminEditModal";
 import { LessonItem } from "./LessonItem";
@@ -12,6 +14,7 @@ interface Props {
   activeLesson: Lesson | null;
   onSelectLesson: (lesson: Lesson) => void;
   onMutate: () => void;
+  dragHandleProps?: DraggableProvidedDragHandleProps | null;
 }
 
 export const LessonAccordion = ({
@@ -19,6 +22,7 @@ export const LessonAccordion = ({
   activeLesson,
   onSelectLesson,
   onMutate,
+  dragHandleProps,
 }: Props) => {
   const [open, setOpen] = useState(true);
   const isAdmin = useAdmin();
@@ -28,20 +32,24 @@ export const LessonAccordion = ({
   return (
     <div className="border-b border-zinc-200 dark:border-zinc-800 last:border-b-0">
       {/* Section header */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"
-      >
-        <div className="flex items-center gap-2 min-w-0">
-          <motion.div
-            animate={{ rotate: open ? 90 : 0 }}
-            transition={{ duration: 0.15 }}
-          >
-            <ChevronRight className="w-4 h-4 text-zinc-400" />
-          </motion.div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 truncate">
-            {section.title}
-          </span>
+      <div className="w-full flex items-center justify-between px-2 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group">
+        <div className="flex items-center gap-1 min-w-0">
+          {isAdmin && dragHandleProps && (
+            <div {...dragHandleProps} className="p-1.5 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity">
+              <GripVertical className="w-4 h-4 text-zinc-400" />
+            </div>
+          )}
+          <button onClick={() => setOpen(!open)} className="flex items-center gap-2">
+            <motion.div
+              animate={{ rotate: open ? 90 : 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <ChevronRight className="w-4 h-4 text-zinc-400" />
+            </motion.div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 truncate text-left">
+              {section.title}
+            </span>
+          </button>
         </div>
 
         {isAdmin && (
@@ -72,7 +80,7 @@ export const LessonAccordion = ({
             </motion.button>
           </div>
         )}
-      </button>
+      </div>
 
       {/* Animated lesson list */}
       <AnimatePresence initial={false}>
@@ -92,23 +100,51 @@ export const LessonAccordion = ({
                 visible: { transition: { staggerChildren: 0.05 } },
                 hidden: {},
               }}
-              className="pb-1"
             >
-              {section.lessons.map((lesson) => (
-                <LessonItem
-                  key={lesson._id}
-                  lesson={lesson}
-                  isActive={activeLesson?._id === lesson._id}
-                  onSelect={() => onSelectLesson(lesson)}
-                  onMutate={onMutate}
-                />
-              ))}
-
-              {section.lessons.length === 0 && (
-                <p className="px-10 py-3 text-xs text-zinc-400 italic">
-                  No lessons in this section
-                </p>
-              )}
+              <Droppable droppableId={section._id} type="lesson">
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className="pb-1"
+                  >
+                    {section.lessons.map((lesson, i) => (
+                      <Draggable key={lesson._id} draggableId={lesson._id} index={i} isDragDisabled={!isAdmin}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className={snapshot.isDragging ? "opacity-90 shadow-lg relative z-50 bg-white dark:bg-zinc-900 rounded-lg ring-1 ring-indigo-500" : ""}
+                          >
+                            <div className="flex items-center">
+                              {isAdmin && (
+                                <div {...provided.dragHandleProps} className="p-1 ml-1 cursor-grab text-zinc-300 hover:text-zinc-500 dark:text-zinc-700 dark:hover:text-zinc-500">
+                                  <GripVertical className="w-3.5 h-3.5" />
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                <LessonItem
+                                  key={lesson._id}
+                                  lesson={lesson}
+                                  isActive={activeLesson?._id === lesson._id}
+                                  onSelect={() => onSelectLesson(lesson)}
+                                  onMutate={onMutate}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {section.lessons.length === 0 && (
+                      <p className="px-10 py-3 text-xs text-zinc-400 italic">
+                        No lessons in this section
+                      </p>
+                    )}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
             </motion.div>
           </motion.div>
         )}

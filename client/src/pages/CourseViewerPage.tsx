@@ -2,11 +2,13 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Plus, Loader2 } from "lucide-react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import type { DropResult } from "@hello-pangea/dnd";
 import { PageTransition } from "../components/ui/PageTransition";
 import { LessonAccordion } from "../components/course/LessonAccordion";
 import { AdminEditModal } from "../components/admin/AdminEditModal";
 import { useAdmin } from "../hooks/useAdmin";
-import { courseApi, sectionApi } from "../api";
+import { courseApi, sectionApi, lessonApi } from "../api";
 import type { Course, Section, Lesson } from "../types";
 
 export const CourseViewerPage = () => {
@@ -24,7 +26,6 @@ export const CourseViewerPage = () => {
       const { data } = await courseApi.get(id);
       const c = data.data as Course & { sections: Section[] };
       setCourse(c);
-      // Auto-select first video lesson
       if (!activeLesson && c.sections?.length) {
         for (const s of c.sections) {
           if (s.lessons?.length) {
@@ -39,6 +40,43 @@ export const CourseViewerPage = () => {
       setLoading(false);
     }
   }, [id]);
+
+  const handleDragEnd = async (result: DropResult) => {
+    if (!isAdmin || !course) return;
+    const { source, destination, type, draggableId } = result;
+    if (!destination) return;
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+
+    if (type === "section") {
+      const newSections = Array.from(course.sections);
+      const [moved] = newSections.splice(source.index, 1);
+      newSections.splice(destination.index, 0, moved);
+      setCourse({ ...course, sections: newSections });
+      await sectionApi.reorder(newSections.map((s) => s._id));
+    } else if (type === "lesson") {
+      const newSections = Array.from(course.sections);
+      const sIndex = newSections.findIndex((s) => s._id === source.droppableId);
+      const dIndex = newSections.findIndex((s) => s._id === destination.droppableId);
+      if (sIndex === -1 || dIndex === -1) return;
+
+      const sourceLessons = Array.from(newSections[sIndex].lessons);
+      const destLessons = sIndex === dIndex ? sourceLessons : Array.from(newSections[dIndex].lessons);
+
+      const [moved] = sourceLessons.splice(source.index, 1);
+      destLessons.splice(destination.index, 0, moved);
+
+      newSections[sIndex] = { ...newSections[sIndex], lessons: sourceLessons };
+      if (sIndex !== dIndex) {
+        newSections[dIndex] = { ...newSections[dIndex], lessons: destLessons };
+      }
+      setCourse({ ...course, sections: newSections });
+
+      if (sIndex !== dIndex) {
+        await lessonApi.update(draggableId, { sectionId: destination.droppableId });
+      }
+      await lessonApi.reorder(destLessons.map((l) => l._id));
+    }
+  };
 
   useEffect(() => {
     fetchCourse();
@@ -138,22 +176,39 @@ export const CourseViewerPage = () => {
           </div>
 
           {/* Accordion sections */}
-          <div>
-            {course.sections?.map((section) => (
-              <LessonAccordion
-                key={section._id}
-                section={section}
-                activeLesson={activeLesson}
-                onSelectLesson={setActiveLesson}
-                onMutate={fetchCourse}
-              />
-            ))}
-            {(!course.sections || course.sections.length === 0) && (
-              <p className="px-4 py-8 text-sm text-zinc-400 italic text-center">
-                No sections yet
-              </p>
-            )}
-          </div>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="sections-list" type="section">
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef}>
+                  {course.sections?.map((section, index) => (
+                    <Draggable key={section._id} draggableId={section._id} index={index} isDragDisabled={!isAdmin}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className={snapshot.isDragging ? "opacity-90 shadow-lg relative z-50 ring-2 ring-indigo-500 rounded-xl bg-white dark:bg-zinc-900" : ""}
+                        >
+                          <LessonAccordion
+                            section={section}
+                            activeLesson={activeLesson}
+                            onSelectLesson={setActiveLesson}
+                            onMutate={fetchCourse}
+                            dragHandleProps={provided.dragHandleProps}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                  {(!course.sections || course.sections.length === 0) && (
+                    <p className="px-4 py-8 text-sm text-zinc-400 italic text-center">
+                      No sections yet
+                    </p>
+                  )}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         </div>
       </div>
 
