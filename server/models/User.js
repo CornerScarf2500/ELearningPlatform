@@ -18,9 +18,16 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
-    sessionTokens: {
-      type: [String],
-      default: [],
+    sessionTokens: [
+      {
+        token: String,
+        device: String,
+        loginAt: { type: Date, default: Date.now },
+      },
+    ],
+    isBanned: {
+      type: Boolean,
+      default: false,
     },
     favoriteCourses: [
       {

@@ -107,16 +107,12 @@ export const searchApi = {
 
 /* ── Users (admin) ────────────────────────────────────────── */
 export const userApi = {
-  list: () =>
-    api.get<
-      ApiResponse<
-        { id: string; role: string; activeSessions: number; createdAt: string }[]
-      >
-    >("/users"),
+  list: () => api.get<ApiResponse<import("../types").AdminUser[]>>("/users"),
   revokeSessions: (id: string) =>
     api.delete<ApiResponse>(`/users/${id}/sessions`),
-  revokeSession: (id: string, index: number) =>
-    api.delete<ApiResponse>(`/users/${id}/sessions/${index}`),
+  revokeSession: (id: string, sessionId: string) =>
+    api.delete<ApiResponse>(`/users/${id}/sessions/${sessionId}`),
+  toggleBan: (id: string) => api.post<ApiResponse>(`/users/${id}/ban`),
 };
 
 export default api;

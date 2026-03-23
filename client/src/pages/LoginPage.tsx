@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BookOpen, ArrowRight, Loader2 } from "lucide-react";
+import { BookOpen, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { BackendStatus } from "../components/ui/BackendStatus";
 
@@ -9,6 +9,7 @@ export const LoginPage = () => {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showCode, setShowCode] = useState(false);
   const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
 
@@ -55,15 +56,27 @@ export const LoginPage = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="relative">
             <input
-              type="password"
+              type={showCode ? "text" : "password"}
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="Access code"
               autoFocus
-              className="w-full px-4 py-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 dark:focus:border-indigo-500 transition-all"
+              className="w-full px-4 py-3 pr-11 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 dark:focus:border-indigo-500 transition-all"
             />
+            <button
+              type="button"
+              onClick={() => setShowCode(!showCode)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors focus:outline-none"
+              tabIndex={-1}
+            >
+              {showCode ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
           </div>
 
           {error && (

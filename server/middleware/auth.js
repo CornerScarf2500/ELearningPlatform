@@ -24,7 +24,7 @@ const verifyToken = async (req, res, next) => {
     // Verify JWT signature + expiry
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Find user and confirm the token is still in their session list
+    // Find user and confirm they are not banned
     const user = await User.findById(decoded.userId);
     if (!user) {
       return res
@@ -32,7 +32,15 @@ const verifyToken = async (req, res, next) => {
         .json({ success: false, message: "User not found." });
     }
 
-    if (!user.sessionTokens.includes(token)) {
+    if (user.isBanned) {
+      return res
+        .status(403)
+        .json({ success: false, message: "This account has been banned." });
+    }
+
+    // Confirm the token is still in their session list (server-side revocation)
+    const activeSession = user.sessionTokens.find((s) => s.token === token);
+    if (!activeSession) {
       return res
         .status(401)
         .json({ success: false, message: "Session has been revoked." });

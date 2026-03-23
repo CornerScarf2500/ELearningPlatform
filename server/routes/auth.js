@@ -35,6 +35,15 @@ router.post("/login", async (req, res, next) => {
         .json({ success: false, message: "Invalid access code." });
     }
 
+    if (matchedUser.isBanned) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Your account has been banned." });
+    }
+
+    // Capture device information
+    const device = req.headers["user-agent"] || "Unknown Device";
+
     // Issue JWT
     const token = jwt.sign(
       { userId: matchedUser._id, role: matchedUser.role },
@@ -42,8 +51,8 @@ router.post("/login", async (req, res, next) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
-    // Push token to sessionTokens for server-side revocation
-    matchedUser.sessionTokens.push(token);
+    // Push token object to sessionTokens for server-side revocation + tracking
+    matchedUser.sessionTokens.push({ token, device });
     await matchedUser.save({ validateModifiedOnly: true });
 
     res.json({
@@ -66,7 +75,7 @@ router.post("/logout", verifyToken, async (req, res, next) => {
   try {
     // Remove the current token from the user's sessionTokens
     req.user.sessionTokens = req.user.sessionTokens.filter(
-      (t) => t !== req.token
+      (s) => s.token !== req.token
     );
     await req.user.save({ validateModifiedOnly: true });
 

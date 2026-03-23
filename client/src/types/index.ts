@@ -83,3 +83,20 @@ export interface ApiResponse<T = unknown> {
   user?: { id: string; role: Role };
   action?: "added" | "removed";
 }
+
+/* ── Admin Users ──────────────────────────────────────────── */
+export interface SessionInfo {
+  id: string;
+  device: string;
+  loginAt: string;
+}
+
+export interface AdminUser {
+  id: string;
+  name?: string;
+  role: string;
+  isBanned: boolean;
+  activeSessions: number;
+  sessions: SessionInfo[];
+  createdAt: string;
+}
