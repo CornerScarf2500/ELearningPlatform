@@ -81,11 +81,19 @@ const autoSeed = async () => {
 
 // ── Start ────────────────────────────────────────────────
 const start = async () => {
-  await connectDB();
-  await autoSeed();
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  // Listen FIRST so Render detects the port immediately
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server listening on 0.0.0.0:${PORT}`);
   });
+
+  // Then connect to DB + seed (non-blocking)
+  try {
+    await connectDB();
+    await autoSeed();
+    console.log("Database ready.");
+  } catch (err) {
+    console.error("DB init failed, will retry on next request:", err.message);
+  }
 };
 
 start();
