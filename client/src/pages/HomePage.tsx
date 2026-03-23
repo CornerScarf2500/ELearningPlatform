@@ -6,6 +6,7 @@ import { CourseCard } from "../components/course/CourseCard";
 import { AdminEditModal } from "../components/admin/AdminEditModal";
 import { useAdmin } from "../hooks/useAdmin";
 import { courseApi, platformApi } from "../api";
+import { BackendStatus } from "../components/ui/BackendStatus";
 import type { Course, Platform } from "../types";
 
 export const HomePage = () => {
@@ -52,6 +53,9 @@ export const HomePage = () => {
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
             {courses.length} course{courses.length !== 1 && "s"} available
           </p>
+          <div className="mt-2">
+            <BackendStatus />
+          </div>
         </div>
 
         {isAdmin && (

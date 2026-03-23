@@ -43,9 +43,28 @@ const limiter = rateLimit({
 });
 app.use("/api/", limiter);
 
-// ── Health check ─────────────────────────────────────────────
-app.get("/api/health", (_req, res) => {
-  res.json({ success: true, message: "Server is running.", timestamp: new Date().toISOString() });
+// ── Health check (diagnostic — no auth required) ─────────────
+app.get("/api/health", async (_req, res) => {
+  const mongoose = require("mongoose");
+  const User = require("./models/User");
+  const dbState = mongoose.connection.readyState; // 0=disconnected, 1=connected, 2=connecting
+  const dbStatus = ["disconnected", "connected", "connecting", "disconnecting"][dbState] || "unknown";
+
+  let adminExists = false;
+  let userCount = 0;
+  try {
+    userCount = await User.countDocuments();
+    adminExists = (await User.countDocuments({ role: "admin" })) > 0;
+  } catch { /* db not ready */ }
+
+  res.json({
+    success: true,
+    message: "Server is running.",
+    db: dbStatus,
+    adminSeeded: adminExists,
+    users: userCount,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // ── API routes ───────────────────────────────────────────────

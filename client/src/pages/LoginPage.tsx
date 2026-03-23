@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BookOpen, ArrowRight, Loader2 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
+import { BackendStatus } from "../components/ui/BackendStatus";
 
 export const LoginPage = () => {
   const [code, setCode] = useState("");
@@ -19,8 +20,13 @@ export const LoginPage = () => {
     try {
       await login(code.trim());
       navigate("/", { replace: true });
-    } catch {
-      setError("Invalid access code. Please try again.");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || "";
+      if (msg.toLowerCase().includes("network") || err?.code === "ERR_NETWORK") {
+        setError("Server is starting up. Please wait and try again.");
+      } else {
+        setError(msg || "Invalid access code. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -87,6 +93,11 @@ export const LoginPage = () => {
             )}
           </motion.button>
         </form>
+
+        {/* Backend status */}
+        <div className="flex justify-center mt-6">
+          <BackendStatus />
+        </div>
       </motion.div>
     </div>
   );
