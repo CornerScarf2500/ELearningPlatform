@@ -66,9 +66,23 @@ app.use((_req, res) => {
 // ── Error handler (must be last) ─────────────────────────────
 app.use(errorHandler);
 
-// ── Start ────────────────────────────────────────────────────
+// ── Auto-seed admin if none exists ───────────────────────
+const autoSeed = async () => {
+  const User = require("./models/User");
+  const existing = await User.findOne({ role: "admin" });
+  if (!existing) {
+    const name = process.env.ADMIN_NAME || "CNSF";
+    const code = process.env.ADMIN_ACCESS_CODE || "Admin1234";
+    const admin = new User({ name, accessCode: code, role: "admin" });
+    await admin.save();
+    console.log(`Auto-seeded admin — Name: "${name}"`);
+  }
+};
+
+// ── Start ────────────────────────────────────────────────
 const start = async () => {
   await connectDB();
+  await autoSeed();
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });

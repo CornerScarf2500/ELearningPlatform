@@ -4,7 +4,7 @@
  * Creates a default admin user with a known access code.
  * Run once: node seed.js
  *
- * Default admin code: "admin123" (change before deploying to production)
+ * This is also called automatically on server startup if no admin exists.
  */
 require("dotenv").config();
 
@@ -12,7 +12,8 @@ const mongoose = require("mongoose");
 const User = require("./models/User");
 const connectDB = require("./config/db");
 
-const ADMIN_ACCESS_CODE = process.env.ADMIN_ACCESS_CODE || "admin123";
+const ADMIN_NAME = process.env.ADMIN_NAME || "CNSF";
+const ADMIN_ACCESS_CODE = process.env.ADMIN_ACCESS_CODE || "Admin1234";
 
 const seed = async () => {
   await connectDB();
@@ -25,12 +26,13 @@ const seed = async () => {
   }
 
   const admin = new User({
+    name: ADMIN_NAME,
     accessCode: ADMIN_ACCESS_CODE,
     role: "admin",
   });
 
   await admin.save();
-  console.log(`Admin user created with access code: "${ADMIN_ACCESS_CODE}"`);
+  console.log(`Admin user created — Name: "${ADMIN_NAME}", Access Code: "${ADMIN_ACCESS_CODE}"`);
   console.log("Change this code immediately in production!");
 
   process.exit(0);
