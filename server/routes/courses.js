@@ -130,15 +130,18 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
 
 // ──────────────────────────────────────────────────────────────
 // PUT /api/courses/bulk-platform — set platform on many courses
-// Body: { courseIds: [], platformId }
+// Body: { courseIds: [], platformName, platformLogoUrl }
 // ──────────────────────────────────────────────────────────────
 router.put("/bulk-platform", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const { courseIds, platformId } = req.body;
-    if (!Array.isArray(courseIds) || courseIds.length === 0 || !platformId) {
-      return res.status(400).json({ success: false, message: "courseIds[] and platformId are required." });
+    const { courseIds, platformName, platformLogoUrl } = req.body;
+    if (!Array.isArray(courseIds) || courseIds.length === 0 || !platformName) {
+      return res.status(400).json({ success: false, message: "courseIds[] and platformName are required." });
     }
-    await Course.updateMany({ _id: { $in: courseIds } }, { platformId });
+    await Course.updateMany(
+      { _id: { $in: courseIds } },
+      { platformName, platformLogoUrl: platformLogoUrl || "" }
+    );
     res.json({ success: true, message: `Updated ${courseIds.length} courses.` });
   } catch (error) {
     next(error);
@@ -152,11 +155,10 @@ router.put("/bulk-platform", verifyToken, requireAdmin, async (req, res, next) =
 // ──────────────────────────────────────────────────────────────
 router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const { title, subject, teacher, platformId } = req.body;
-    const course = await Course.create({ title, subject, teacher, platformId });
-    const populated = await course.populate("platformId", "name");
+    const { title, subject, teacher, grade, platformName, platformLogoUrl } = req.body;
+    const course = await Course.create({ title, subject, teacher, grade, platformName, platformLogoUrl });
 
-    res.status(201).json({ success: true, data: populated });
+    res.status(201).json({ success: true, data: course });
   } catch (error) {
     next(error);
   }
@@ -167,12 +169,12 @@ router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
 // ──────────────────────────────────────────────────────────────
 router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const { title, subject, teacher, platformId } = req.body;
+    const { title, subject, teacher, grade, platformName, platformLogoUrl } = req.body;
     const course = await Course.findByIdAndUpdate(
       req.params.id,
-      { title, subject, teacher, platformId },
+      { title, subject, teacher, grade, platformName, platformLogoUrl },
       { new: true, runValidators: true }
-    ).populate("platformId", "name");
+    );
 
     if (!course) {
       return res

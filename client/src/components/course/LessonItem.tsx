@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, FileText, Heart, Edit3 } from "lucide-react";
+import { Play, FileText, Edit3 } from "lucide-react";
 import { useAdmin } from "../../hooks/useAdmin";
-import { useAuthStore } from "../../store/authStore";
 import { AdminEditModal } from "../admin/AdminEditModal";
 import { lessonApi } from "../../api";
 import type { Lesson } from "../../types";
@@ -22,10 +21,8 @@ const itemVariants = {
 
 export const LessonItem = ({ lesson, isActive, index, onSelect, onMutate }: Props) => {
   const isAdmin = useAdmin();
-  const { user, toggleFavoriteLesson } = useAuthStore();
   const [editOpen, setEditOpen] = useState(false);
 
-  const isFav = user?.favoriteLessons.includes(lesson._id) ?? false;
   const isVideo = lesson.type === "video";
   const materials: string[] = lesson.fileUrls?.length
     ? lesson.fileUrls
@@ -61,12 +58,17 @@ export const LessonItem = ({ lesson, isActive, index, onSelect, onMutate }: Prop
               {isVideo ? <Play className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
             </div>
 
-            {/* Title — scrolls horizontally if long */}
-            <span className={`text-sm whitespace-nowrap ${
-              isActive ? "font-medium text-indigo-700 dark:text-indigo-300" : "text-zinc-700 dark:text-zinc-300"
-            }`}>
-              {lesson.title}
-            </span>
+            {/* Title — scrolls horizontally if long (mobile) */}
+            <div 
+              className="min-w-0 flex-1 overflow-x-auto scrollbar-none lesson-title-scroll"
+              title={lesson.title}
+            >
+              <span className={`text-sm whitespace-nowrap block ${
+                isActive ? "font-semibold text-indigo-700 dark:text-indigo-300" : "text-zinc-700 dark:text-zinc-300"
+              }`}>
+                {lesson.title}
+              </span>
+            </div>
           </div>
 
           {/* Bottom row: ❤️ + ✏️ — only when active or always visible */}
@@ -74,17 +76,6 @@ export const LessonItem = ({ lesson, isActive, index, onSelect, onMutate }: Prop
             className="flex items-center gap-1 mt-1 ml-7"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Favorite */}
-            <motion.button
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => toggleFavoriteLesson(lesson._id)}
-              className={`p-1 rounded transition-colors ${isFav ? "text-red-500" : "text-zinc-400 hover:text-red-400"}`}
-              title="Toggle favorite"
-            >
-              <Heart className={`w-3.5 h-3.5 ${isFav ? "fill-current" : ""}`} />
-            </motion.button>
-
             {/* Admin edit */}
             {isAdmin && (
               <motion.button
@@ -94,7 +85,7 @@ export const LessonItem = ({ lesson, isActive, index, onSelect, onMutate }: Prop
                 className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
                 title="Edit lesson"
               >
-                <Edit3 className="w-3.5 h-3.5" />
+                <Edit3 className={`w-3.5 h-3.5 ${isActive ? "text-indigo-500/80" : ""}`} />
               </motion.button>
             )}
 

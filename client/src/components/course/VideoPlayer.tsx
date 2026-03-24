@@ -9,7 +9,6 @@ import {
   Minimize,
   SkipBack,
   SkipForward,
-  Download,
 } from "lucide-react";
 
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 4];
@@ -29,7 +28,7 @@ interface VideoPlayerProps {
   onDownload?: () => void; // fires the download modal on parent
 }
 
-export const VideoPlayer = ({ src, title, className = "", onDownload }: VideoPlayerProps) => {
+export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hideControlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -296,17 +295,6 @@ export const VideoPlayer = ({ src, title, className = "", onDownload }: VideoPla
                   )}
                 </AnimatePresence>
               </div>
-
-              {/* Download */}
-              {onDownload && (
-                <button
-                  onClick={onDownload}
-                  className="text-white/80 hover:text-white p-1 transition-colors"
-                  title="Download video"
-                >
-                  <Download className="w-4 h-4" />
-                </button>
-              )}
 
               {/* Fullscreen */}
               <button onClick={toggleFullscreen} className="text-white/80 hover:text-white p-1">

@@ -106,7 +106,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { data } = await authApi.me();
       if (data.user) {
         set({
-          user: data.user,
+          user: {
+            ...data.user,
+            favoriteCourses: (data.user.favoriteCourses || []).map((id: any) => id.toString()),
+            favoriteLessons: (data.user.favoriteLessons || []).map((id: any) => id.toString()),
+          },
           isAdmin: data.user.role === "admin",
           loading: false,
         });

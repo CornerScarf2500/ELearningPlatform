@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight, Play } from "lucide-react";
+import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight, Play, Heart } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
 import { PageTransition } from "../components/ui/PageTransition";
@@ -11,7 +11,9 @@ import { VideoPlayer } from "../components/course/VideoPlayer";
 import { AdminEditModal } from "../components/admin/AdminEditModal";
 import { DownloadModal, type DownloadMode } from "../components/ui/DownloadModal";
 import { DownloadsDrawer } from "../components/ui/DownloadsDrawer";
+import { ExternalLinkModal } from "../components/ui/ExternalLinkModal";
 import { useAdmin } from "../hooks/useAdmin";
+import { useAuthStore } from "../store/authStore";
 import { useDownloads } from "../hooks/useDownloads";
 import { courseApi, sectionApi, lessonApi } from "../api";
 import type { Course, Section, Lesson } from "../types";
@@ -32,6 +34,7 @@ export const CourseViewerPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isAdmin = useAdmin();
+  const { user, toggleFavoriteLesson } = useAuthStore();
   const [course, setCourse] = useState<(Course & { sections: Section[]; unsectioned: Lesson[] }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
@@ -72,13 +75,18 @@ export const CourseViewerPage = () => {
   const inProgressId = Array.from(dlProgress.keys())[0];
   const inProgressPct = inProgressId ? dlProgress.get(inProgressId) : undefined;
 
-  // "Unsupported download" info modal (YouTube / external URLs)
-  const [noDownloadOpen, setNoDownloadOpen] = useState(false);
+  // "External link" confirmation modal
+  const [externalOpen, setExternalOpen] = useState(false);
+  const [externalTarget, setExternalTarget] = useState<{ url: string; title: string } | null>(null);
+
+  const confirmExternalOpen = (url: string, title: string) => {
+    setExternalTarget({ url, title });
+    setExternalOpen(true);
+  };
 
   const triggerVideoDownload = (url: string, title: string) => {
     if (isExternalUrl(url)) {
-      window.open(url, "_blank", "noopener,noreferrer");
-      setNoDownloadOpen(true);
+      confirmExternalOpen(url, title);
       return;
     }
     setPendingDownload({ url, title });
@@ -204,7 +212,6 @@ export const CourseViewerPage = () => {
           src={videoUrl}
           title={activeLesson.title}
           className="w-full h-full"
-          onDownload={() => triggerVideoDownload(videoUrl, activeLesson.title)}
         />
       );
     }
@@ -243,10 +250,58 @@ export const CourseViewerPage = () => {
             </button>
           </div>
 
-          {/* Player */}
-          <div className="flex-1 bg-black flex items-center justify-center min-h-[240px] md:min-h-0">
-            {renderPlayer()}
+          {/* Player area */}
+          <div className="flex-1 flex flex-col items-center justify-center bg-black min-h-[240px] md:min-h-0 relative">
+            <div className="w-full h-full flex items-center justify-center">
+              {renderPlayer()}
+            </div>
           </div>
+
+          {/* Action Row below Player */}
+          {activeLesson && (
+            <div className="flex items-center justify-center gap-6 px-4 py-6 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
+              {/* Favorite Button */}
+              {(() => {
+                const isFav = user?.favoriteLessons.includes(activeLesson._id) ?? false;
+                return (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => toggleFavoriteLesson(activeLesson._id)}
+                    className="flex flex-col items-center gap-1.5 transition-all group"
+                  >
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center shadow-md transition-all ${
+                      isFav 
+                        ? "bg-red-50 dark:bg-red-900/20 text-red-500" 
+                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                    }`}>
+                      <Heart className={`w-5 h-5 ${isFav ? "fill-current" : ""}`} />
+                    </div>
+                    <span className={`text-[11px] font-medium ${isFav ? "text-red-500" : "text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200"}`}>
+                      Favorite
+                    </span>
+                  </motion.button>
+                );
+              })()}
+
+              {/* Download Button */}
+              {activeLesson.type === "video" && !isExternalUrl(activeLesson.videoUrl || "") && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => triggerVideoDownload(activeLesson.videoUrl!, activeLesson.title)}
+                  className="flex flex-col items-center gap-1.5 transition-all group"
+                >
+                  <div className="w-11 h-11 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center shadow-md transition-all">
+                    <Download className="w-5 h-5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200">
+                    Download
+                  </span>
+                </motion.button>
+              )}
+            </div>
+          )}
 
           {/* Materials bar — local download only */}
           {activeLesson && materialUrls.length > 0 && (
@@ -287,7 +342,7 @@ export const CourseViewerPage = () => {
 
         {/* ── Right: Lesson list ────────────────────── */}
         <div
-          className="w-full md:h-screen md:overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+          className="w-full md:h-screen md:overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 scroll-snap-y"
           style={{ width: `${sidebarWidth}px`, flexShrink: 0 }}
         >
           {/* Sidebar header */}
@@ -457,39 +512,23 @@ export const CourseViewerPage = () => {
 
 
 
-      {/* Unsupported download info modal */}
-      {noDownloadOpen && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
-          onClick={() => setNoDownloadOpen(false)}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 24 }}
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 p-6"
-          >
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
-                <ExternalLink className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div>
-                <p className="font-semibold text-zinc-900 dark:text-zinc-100">Download not supported</p>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                  This video is hosted on an external platform (e.g. YouTube) and cannot be downloaded. It has been opened in a new tab.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setNoDownloadOpen(false)}
-              className="w-full py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-            >
-              Got it
-            </button>
-          </motion.div>
-        </div>
-      )}
+        <ExternalLinkModal
+          open={externalOpen}
+          onClose={() => {
+            setExternalOpen(false);
+            setExternalTarget(null);
+          }}
+          onConfirm={() => {
+            if (externalTarget) {
+              window.open(externalTarget.url, "_blank", "noopener,noreferrer");
+            }
+            setExternalOpen(false);
+            setExternalTarget(null);
+          }}
+          url={externalTarget?.url}
+          title="Open External Platform?"
+          message={`" ${externalTarget?.title} " is hosted on an external video player. Click confirm to watch it in a new window.`}
+        />
 
       {/* Download mode prompt — local video only */}
       <DownloadModal

@@ -44,4 +44,31 @@
   .dark .bg-accent {
     background-color: var(--color-accent-light);
   }
+
+  /* Thin unobtrusive scrollbar */
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 3px;
+    width: 3px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-zinc-300 dark:bg-zinc-700 rounded-full;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Horizontal title scroll with edge fades */
+  .lesson-title-scroll {
+    mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+  }
+
+  /* Scroll snapping */
+  .scroll-snap-y {
+    scroll-snap-type: y mandatory;
+  }
+  .scroll-snap-start {
+    scroll-snap-align: start;
+    scroll-margin-top: 0px;
+  }
 }

@@ -8,17 +8,8 @@ import { Modal } from "../components/ui/Modal";
 import { useAdmin } from "../hooks/useAdmin";
 import { courseApi } from "../api";
 import { BackendStatus } from "../components/ui/BackendStatus";
-import type { Course } from "../types";
-
-// ── localStorage platform registry helpers ────────────────────
-interface LocalPlatform { name: string; logoUrl: string; }
-const PLAT_KEY = "elearn-platforms";
-const loadPlatforms = (): LocalPlatform[] => {
-  try { return JSON.parse(localStorage.getItem(PLAT_KEY) || "[]"); } catch { return []; }
-};
-const savePlatforms = (p: LocalPlatform[]) => {
-  try { localStorage.setItem(PLAT_KEY, JSON.stringify(p)); } catch {}
-};
+import { platformApi } from "../api";
+import type { Course, Platform } from "../types";
 
 interface QueuedFile {
   name: string;
@@ -33,15 +24,14 @@ export const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [activePlatformName, setActivePlatformName] = useState<string | null>(null);
-
-  // Platform registry — localStorage-persisted list of known platforms
-  const [localPlatforms, setLocalPlatforms] = useState<LocalPlatform[]>(loadPlatforms);
+  // Platform registry — server-side
+  const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [addPlatformOpen, setAddPlatformOpen] = useState(false);
-  const [editPlatformTarget, setEditPlatformTarget] = useState<LocalPlatform | null>(null);
+  const [editPlatformTarget, setEditPlatformTarget] = useState<Platform | null>(null);
 
-  // Bulk-assign platform — shown when in select mode and platforms exist
+  // Bulk-assign platform
   const [assignPlatformOpen, setAssignPlatformOpen] = useState(false);
-  const [assignTarget, setAssignTarget] = useState<LocalPlatform | null>(null);
+  const [assignTarget, setAssignTarget] = useState<Platform | null>(null);
   
   // Multi-select state
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -56,8 +46,12 @@ export const HomePage = () => {
 
   const fetchCoursesAndPlatforms = useCallback(async () => {
     try {
-      const res = await courseApi.list();
-      setCourses(res.data.data || []);
+      const [courseRes, platformRes] = await Promise.all([
+        courseApi.list(),
+        platformApi.list()
+      ]);
+      setCourses(courseRes.data.data || []);
+      setPlatforms(platformRes.data.data || []);
       setSelectedIds(new Set());
     } catch { /* silently handle */ }
     finally { setLoading(false); }
@@ -67,23 +61,11 @@ export const HomePage = () => {
     fetchCoursesAndPlatforms();
   }, [fetchCoursesAndPlatforms]);
 
-  // Derived: merge localStorage platforms with course-inferred platform names
-  const courseNames = [...new Set(courses.map((c) => c.platformName).filter(Boolean))] as string[];
-  const localNames = localPlatforms.map((p) => p.name);
-  const platformNames = [...new Set([...localNames, ...courseNames])];
+  // Filter logic
+  const platformNames = platforms.map(p => p.name);
   const filteredCourses = activePlatformName
     ? courses.filter((c) => (c.platformName || "Unknown") === activePlatformName)
     : courses;
-
-  const savePlatform = (p: LocalPlatform, oldName?: string) => {
-    setLocalPlatforms((prev) => {
-      const next = oldName
-        ? prev.map((x) => x.name === oldName ? p : x)
-        : [...prev.filter((x) => x.name !== p.name), p];
-      savePlatforms(next);
-      return next;
-    });
-  };
 
   const handleBulkAssignPlatform = async () => {
     if (!assignTarget || selectedIds.size === 0) return;
@@ -93,7 +75,9 @@ export const HomePage = () => {
       setAssignTarget(null);
       setIsSelectMode(false);
       fetchCoursesAndPlatforms();
-    } catch { alert("Error assigning platform."); }
+    } catch { 
+      alert("Error assigning platform."); 
+    }
   };
 
   const openAdd = async () => {
@@ -269,31 +253,30 @@ export const HomePage = () => {
           All
         </button>
 
-        {platformNames.map((name) => {
-          const plat = localPlatforms.find((p) => p.name === name);
-          const isActive = activePlatformName === name;
+        {platforms.map((plat) => {
+          const isActive = activePlatformName === plat.name;
           return (
-            <div key={name} className="relative group flex items-center gap-1">
+            <div key={plat._id} className="relative group flex items-center gap-1">
               <button
-                onClick={() => setActivePlatformName(isActive ? null : name)}
+                onClick={() => setActivePlatformName(isActive ? null : plat.name)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                   isActive
                     ? "bg-indigo-600 text-white dark:bg-indigo-500"
                     : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
                 }`}
               >
-                {plat?.logoUrl && (
+                {plat.logoUrl && (
                   <img src={plat.logoUrl} alt="" className="w-3.5 h-3.5 rounded-sm object-contain" />
                 )}
-                {name}
+                {plat.name}
               </button>
               {isAdmin && (
                 <button
-                  onClick={() => setEditPlatformTarget(plat || { name, logoUrl: "" })}
-                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-zinc-400 hover:text-indigo-500 transition-all"
+                  onClick={() => setEditPlatformTarget(plat)}
+                  className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-all ml-0.5"
                   title="Edit platform"
                 >
-                  <Edit3 className="w-3 h-3" />
+                  <Edit3 className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
@@ -533,7 +516,8 @@ export const HomePage = () => {
           ]}
           onSave={async (vals) => {
             if (!vals.name.trim()) return;
-            savePlatform({ name: vals.name.trim(), logoUrl: vals.logoUrl.trim() });
+            await platformApi.create({ name: vals.name.trim(), logoUrl: vals.logoUrl.trim() });
+            fetchCoursesAndPlatforms();
           }}
         />
       )}
@@ -546,19 +530,17 @@ export const HomePage = () => {
           title={`Edit Platform: ${editPlatformTarget.name}`}
           fields={[
             { label: "Platform Name", key: "name", value: editPlatformTarget.name, placeholder: "YouTube…" },
-            { label: "Logo URL (optional)", key: "logoUrl", value: editPlatformTarget.logoUrl, placeholder: "https://…" },
+            { label: "Logo URL (optional)", key: "logoUrl", value: editPlatformTarget.logoUrl || "", placeholder: "https://…" },
           ]}
           onSave={async (vals) => {
-            savePlatform({ name: vals.name.trim(), logoUrl: vals.logoUrl.trim() }, editPlatformTarget.name);
+            await platformApi.update(editPlatformTarget._id, { name: vals.name.trim(), logoUrl: vals.logoUrl.trim() });
             if (activePlatformName === editPlatformTarget.name) setActivePlatformName(vals.name.trim());
+            fetchCoursesAndPlatforms();
           }}
           onDelete={async () => {
-            setLocalPlatforms((prev) => {
-              const next = prev.filter((p) => p.name !== editPlatformTarget!.name);
-              savePlatforms(next);
-              return next;
-            });
+            await platformApi.delete(editPlatformTarget._id);
             if (activePlatformName === editPlatformTarget.name) setActivePlatformName(null);
+            fetchCoursesAndPlatforms();
           }}
         />
       )}
@@ -570,20 +552,19 @@ export const HomePage = () => {
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Assign Platform</h2>
             <p className="text-sm text-zinc-500 mb-4">{selectedIds.size} course{selectedIds.size !== 1 && "s"} selected</p>
             <div className="space-y-2 max-h-64 overflow-y-auto">
-              {platformNames.map((name) => {
-                const plat = localPlatforms.find((p) => p.name === name);
+              {platforms.map((plat) => {
                 return (
                   <button
-                    key={name}
-                    onClick={() => setAssignTarget({ name, logoUrl: plat?.logoUrl || "" })}
+                    key={plat._id}
+                    onClick={() => setAssignTarget(plat)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
-                      assignTarget?.name === name
+                      assignTarget?._id === plat._id
                         ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300"
                         : "border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-indigo-400"
                     }`}
                   >
-                    {plat?.logoUrl && <img src={plat.logoUrl} alt="" className="w-5 h-5 rounded object-contain" />}
-                    {name}
+                    {plat.logoUrl && <img src={plat.logoUrl} alt="" className="w-5 h-5 rounded object-contain" />}
+                    {plat.name}
                   </button>
                 );
               })}
