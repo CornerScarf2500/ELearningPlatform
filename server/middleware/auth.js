@@ -25,7 +25,7 @@ const verifyToken = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Find user and confirm they are not banned
-    const user = await User.findById(decoded.userId).populate("favorites");
+    const user = await User.findById(decoded.userId);
     if (!user) {
       return res
         .status(401)

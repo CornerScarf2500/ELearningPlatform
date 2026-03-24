@@ -259,10 +259,14 @@ export const SettingsPage = () => {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 bg-gray-800/80 px-3 py-1.5 rounded-lg border border-gray-700">
-      <span className="text-sm font-semibold text-white whitespace-nowrap">Speed: {newUserRole}x</span>
-      <input type="range" min="0.25" max="2" step="0.25" value={newUserRole} onChange={(e) => setNewUserRole(e.target.value as "admin" | "user")} className="w-24 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500" />
-    </div>
+                  <select
+                    value={newUserRole}
+                    onChange={(e) => setNewUserRole(e.target.value as "admin" | "user")}
+                    className="px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  >
+                    <option value="user">Student / User</option>
+                    <option value="admin">Administrator</option>
+                  </select>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
