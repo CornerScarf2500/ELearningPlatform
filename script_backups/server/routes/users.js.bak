@@ -82,7 +82,7 @@ router.delete(
   requireAdmin,
   async (req, res, next) => {
     try {
-      const user = await User.findById(req.params.id).populate("favorites");
+      const user = await User.findById(req.params.id);
       if (!user) {
         return res
           .status(404)
@@ -111,7 +111,7 @@ router.delete(
   requireAdmin,
   async (req, res, next) => {
     try {
-      const user = await User.findById(req.params.id).populate("favorites");
+      const user = await User.findById(req.params.id);
       if (!user) {
         return res
           .status(404)
@@ -153,7 +153,7 @@ router.post(
           .json({ success: false, message: "Cannot ban yourself." });
       }
 
-      const user = await User.findById(req.params.id).populate("favorites");
+      const user = await User.findById(req.params.id);
       if (!user) {
         return res
           .status(404)

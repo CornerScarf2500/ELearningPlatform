@@ -91,7 +91,7 @@ router.post("/lesson/:id", verifyToken, async (req, res, next) => {
 // ──────────────────────────────────────────────────────────────
 router.get("/", verifyToken, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id).populate("favorites")
+    const user = await User.findById(req.user._id)
       .populate({
         path: "favoriteCourses",
         populate: { path: "platformId", select: "name" },

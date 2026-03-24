@@ -173,7 +173,7 @@ export const CourseViewerPage = () => {
   useEffect(() => { fetchCourse(); }, [fetchCourse]);
 
   if (loading) return (
-    <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center min-h-screen">
       <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
     </div>
   );
@@ -226,7 +226,7 @@ export const CourseViewerPage = () => {
 
   return (
     <PageTransition className="h-full">
-      <div className="flex flex-col md:flex flex-col lg:flex-row-row md:h-screen">
+      <div className="flex flex-col md:flex-row md:h-screen">
 
         {/* ── Left: Player ─────────────────────────────── */}
         <div className="flex flex-col" style={{ flex: "1 1 0", minWidth: 0 }}>
@@ -251,7 +251,7 @@ export const CourseViewerPage = () => {
           </div>
 
           {/* Player area */}
-          <div className="flex-1 flex flex flex-col lg:flex-row-col items-center justify-center bg-black min-h-[240px] md:min-h-0 relative">
+          <div className="flex-1 flex flex-col items-center justify-center bg-black min-h-[240px] md:min-h-0 relative">
             <div className="w-full h-full flex items-center justify-center">
               {renderPlayer()}
             </div>
@@ -384,7 +384,7 @@ export const CourseViewerPage = () => {
                       <div className="absolute right-0 top-7 z-50 w-44 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-xl overflow-hidden">
                         <button
                           onClick={() => { setAddChoiceOpen(false); setAddVideoOpen(true); }}
-                          className="flex flex-col lg:flex-row items-center gap-2.5 w-full px-4 py-3 text-sm text-zinc-800 dark:text-zinc-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                          className="flex items-center gap-2.5 w-full px-4 py-3 text-sm text-zinc-800 dark:text-zinc-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
                         >
                           <Play className="w-4 h-4 text-indigo-500 shrink-0" />
                           Add Video
@@ -392,7 +392,7 @@ export const CourseViewerPage = () => {
                         <div className="h-px bg-zinc-100 dark:bg-zinc-800" />
                         <button
                           onClick={() => { setAddChoiceOpen(false); setAddSectionOpen(true); }}
-                          className="flex flex-col lg:flex-row items-center gap-2.5 w-full px-4 py-3 text-sm text-zinc-800 dark:text-zinc-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                          className="flex items-center gap-2.5 w-full px-4 py-3 text-sm text-zinc-800 dark:text-zinc-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
                         >
                           <FolderDown className="w-4 h-4 text-zinc-400 shrink-0" />
                           Add Section

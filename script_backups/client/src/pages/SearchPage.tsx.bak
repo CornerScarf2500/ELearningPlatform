@@ -124,26 +124,44 @@ export const SearchPage = () => {
                 {/* Platform */}
                 <div>
                   <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-1 block">Platform</label>
-                  <div className="flex items-center gap-3 bg-gray-800/80 px-3 py-1.5 rounded-lg border border-gray-700">
-      <span className="text-sm font-semibold text-white whitespace-nowrap">Speed: {selectedPlatformName}x</span>
-      <input type="range" min="0.25" max="2" step="0.25" value={selectedPlatformName} onChange={(e) => setSelectedPlatformName(e.target.value)} className="w-24 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500" />
-    </div>
+                  <select
+                    value={selectedPlatformName}
+                    onChange={(e) => setSelectedPlatformName(e.target.value)}
+                    className="w-full text-sm px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  >
+                    <option value="">All Platforms</option>
+                    {platformNames.map((name) => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                  </select>
                 </div>
                 {/* Grade */}
                 <div>
                   <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-1 block">Grade</label>
-                  <div className="flex items-center gap-3 bg-gray-800/80 px-3 py-1.5 rounded-lg border border-gray-700">
-      <span className="text-sm font-semibold text-white whitespace-nowrap">Speed: {selectedGrade}x</span>
-      <input type="range" min="0.25" max="2" step="0.25" value={selectedGrade} onChange={(e) => setSelectedGrade(e.target.value)} className="w-24 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500" />
-    </div>
+                  <select
+                    value={selectedGrade}
+                    onChange={(e) => setSelectedGrade(e.target.value)}
+                    className="w-full text-sm px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  >
+                    <option value="">All Grades</option>
+                    {grades.map((g) => (
+                      <option key={g} value={g}>{g}</option>
+                    ))}
+                  </select>
                 </div>
                 {/* Subject */}
                 <div>
                   <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-1 block">Subject</label>
-                  <div className="flex items-center gap-3 bg-gray-800/80 px-3 py-1.5 rounded-lg border border-gray-700">
-      <span className="text-sm font-semibold text-white whitespace-nowrap">Speed: {selectedSubject}x</span>
-      <input type="range" min="0.25" max="2" step="0.25" value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} className="w-24 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500" />
-    </div>
+                  <select
+                    value={selectedSubject}
+                    onChange={(e) => setSelectedSubject(e.target.value)}
+                    className="w-full text-sm px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  >
+                    <option value="">All Subjects</option>
+                    {subjects.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               {activeFiltersCount > 0 && (
