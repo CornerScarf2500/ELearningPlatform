@@ -10,7 +10,8 @@ const requireAdmin = require("../middleware/admin");
 router.get("/", verifyToken, requireAdmin, async (_req, res, next) => {
   try {
     const users = await User.find()
-      .select("-accessCode -favoriteCourses -favoriteLessons")
+      .select("-accessCode -favoriteLessons")
+      .populate("allowedCourses", "title")
       .lean();
 
     // Map to include detailed session info
@@ -19,11 +20,14 @@ router.get("/", verifyToken, requireAdmin, async (_req, res, next) => {
       name: u.name,
       role: u.role,
       isBanned: u.isBanned,
+      isCoursesRestricted: u.isCoursesRestricted,
+      allowedCourses: u.allowedCourses || [],
       activeSessions: (u.sessionTokens || []).length,
       sessions: (u.sessionTokens || []).map(s => ({
         id: s._id,
         device: s.device,
-        loginAt: s.loginAt
+        loginAt: s.loginAt,
+        lastAccessedAt: s.lastAccessedAt || s.loginAt,
       })),
       createdAt: u.createdAt,
     }));
@@ -188,12 +192,53 @@ router.delete("/:id", verifyToken, requireAdmin, async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Cannot delete yourself." });
     }
 
-    const user = await User.findByIdAndDelete(req.params.id);
+    const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found." });
     }
 
+    if (user.role === "admin") {
+      const adminCount = await User.countDocuments({ role: "admin" });
+      if (adminCount <= 1) {
+        return res.status(400).json({ success: false, message: "Cannot delete the last remaining administrator." });
+      }
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+
     res.json({ success: true, message: "User deleted." });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────
+// PUT /api/users/:id — update a user's details and configuration
+// ──────────────────────────────────────────────────────────────
+router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
+  try {
+    const { name, role, isCoursesRestricted, allowedCourses } = req.body;
+    const userToUpdate = await User.findById(req.params.id);
+
+    if (!userToUpdate) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    if (role === "user" && userToUpdate.role === "admin") {
+      const adminCount = await User.countDocuments({ role: "admin" });
+      if (adminCount <= 1) {
+        return res.status(400).json({ success: false, message: "Cannot demote the last remaining administrator." });
+      }
+    }
+
+    if (name) userToUpdate.name = name;
+    if (role) userToUpdate.role = role;
+    if (typeof isCoursesRestricted === "boolean") userToUpdate.isCoursesRestricted = isCoursesRestricted;
+    if (Array.isArray(allowedCourses)) userToUpdate.allowedCourses = allowedCourses;
+
+    await userToUpdate.save();
+
+    res.json({ success: true, message: "User updated." });
   } catch (error) {
     next(error);
   }

@@ -22,12 +22,23 @@ const userSchema = new mongoose.Schema(
         token: String,
         device: String,
         loginAt: { type: Date, default: Date.now },
+        lastAccessedAt: { type: Date, default: Date.now },
       },
     ],
     isBanned: {
       type: Boolean,
       default: false,
     },
+    isCoursesRestricted: {
+      type: Boolean,
+      default: false,
+    },
+    allowedCourses: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+      },
+    ],
     favoriteCourses: [
       {
         type: mongoose.Schema.Types.ObjectId,

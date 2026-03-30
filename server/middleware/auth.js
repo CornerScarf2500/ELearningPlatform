@@ -46,6 +46,13 @@ const verifyToken = async (req, res, next) => {
         .json({ success: false, message: "Session has been revoked." });
     }
 
+    // Update last accessed time at most once every 5 minutes to avoid DB spam
+    const now = new Date();
+    if (!activeSession.lastAccessedAt || (now - activeSession.lastAccessedAt) > 5 * 60 * 1000) {
+      activeSession.lastAccessedAt = now;
+      await user.save({ validateModifiedOnly: true });
+    }
+
     req.user = user;
     req.token = token;
     next();

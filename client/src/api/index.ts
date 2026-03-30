@@ -122,6 +122,8 @@ export const userApi = {
     api.delete<ApiResponse>(`/users/${id}/sessions/${sessionId}`),
   toggleBan: (id: string) => api.post<ApiResponse>(`/users/${id}/ban`),
   deleteUser: (id: string) => api.delete<ApiResponse>(`/users/${id}`),
+  update: (id: string, data: { name?: string; role?: "admin" | "user"; isCoursesRestricted?: boolean; allowedCourses?: string[] }) =>
+    api.put<ApiResponse>(`/users/${id}`, data),
 };
 
 export default api;

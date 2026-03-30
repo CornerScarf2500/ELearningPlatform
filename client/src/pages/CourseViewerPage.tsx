@@ -9,12 +9,9 @@ import { LessonAccordion } from "../components/course/LessonAccordion";
 import { LessonItem } from "../components/course/LessonItem";
 import { VideoPlayer } from "../components/course/VideoPlayer";
 import { AdminEditModal } from "../components/admin/AdminEditModal";
-import { DownloadModal, type DownloadMode } from "../components/ui/DownloadModal";
-import { DownloadsDrawer } from "../components/ui/DownloadsDrawer";
 import { ExternalLinkModal } from "../components/ui/ExternalLinkModal";
 import { useAdmin } from "../hooks/useAdmin";
 import { useAuthStore } from "../store/authStore";
-import { useDownloads } from "../hooks/useDownloads";
 import { courseApi, sectionApi, lessonApi } from "../api";
 import type { Course, Section, Lesson } from "../types";
 
@@ -66,15 +63,6 @@ export const CourseViewerPage = () => {
     window.addEventListener("mouseup", onUp);
   }, [sidebarWidth]);
 
-  // ── Downloads ───────────────────────────────────────────────
-  const { items: downloads, progress: dlProgress, saveInApp, deleteItem: deleteDl, openItem: openDl } = useDownloads();
-  const [dlModalOpen, setDlModalOpen] = useState(false);
-  const [dlDrawerOpen, setDlDrawerOpen] = useState(false);
-  const [pendingDownload, setPendingDownload] = useState<{ url: string; title: string } | null>(null);
-  const [dlInProgress, setDlInProgress] = useState(false);
-  const inProgressId = Array.from(dlProgress.keys())[0];
-  const inProgressPct = inProgressId ? dlProgress.get(inProgressId) : undefined;
-
   // "External link" confirmation modal
   const [externalOpen, setExternalOpen] = useState(false);
   const [externalTarget, setExternalTarget] = useState<{ url: string; title: string } | null>(null);
@@ -84,46 +72,19 @@ export const CourseViewerPage = () => {
     setExternalOpen(true);
   };
 
-  const triggerVideoDownload = (url: string, title: string) => {
+  const triggerMaterialDownload = (url: string, filename: string) => {
     if (isExternalUrl(url)) {
-      confirmExternalOpen(url, title);
+      confirmExternalOpen(url, filename);
       return;
     }
-    setPendingDownload({ url, title });
-    setDlModalOpen(true);
-  };
-
-  const triggerMaterialDownload = (url: string) => {
-    // Materials: local download only (or open link if external)
     const a = document.createElement("a");
     a.href = url;
-    a.download = url.split("/").pop()?.split("?")[0] || "file";
+    a.download = filename;
     a.target = "_blank";
     a.rel = "noopener";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  };
-
-  const handleDownloadModeSelect = async (mode: DownloadMode) => {
-    if (!pendingDownload) return;
-    if (mode === "local") {
-      const a = document.createElement("a");
-      a.href = pendingDownload.url;
-      a.download = pendingDownload.title;
-      a.target = "_blank";
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setDlModalOpen(false);
-      setPendingDownload(null);
-    } else {
-      setDlInProgress(true);
-      try { await saveInApp(pendingDownload.title, pendingDownload.url); }
-      catch { alert("In-app save failed. The file may not allow cross-origin access."); }
-      finally { setDlInProgress(false); setDlModalOpen(false); setPendingDownload(null); }
-    }
   };
 
   const fetchCourse = useCallback(async () => {
@@ -239,15 +200,6 @@ export const CourseViewerPage = () => {
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">{course.title}</h2>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{activeLesson?.title || "Select a lesson"}</p>
             </div>
-            {/* Downloads drawer trigger */}
-            <button onClick={() => setDlDrawerOpen(true)} className="relative p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-500" title="In-app downloads">
-              <FolderDown className="w-4 h-4" />
-              {downloads.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-indigo-600 text-white text-[9px] flex items-center justify-center">
-                  {downloads.length}
-                </span>
-              )}
-            </button>
           </div>
 
           {/* Player area */}
@@ -284,22 +236,6 @@ export const CourseViewerPage = () => {
                 );
               })()}
 
-              {/* Download Button */}
-              {activeLesson.type === "video" && !isExternalUrl(activeLesson.videoUrl || "") && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => triggerVideoDownload(activeLesson.videoUrl!, activeLesson.title)}
-                  className="flex flex-col items-center gap-1.5 transition-all group"
-                >
-                  <div className="w-11 h-11 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center shadow-md transition-all">
-                    <Download className="w-5 h-5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200">
-                    Download
-                  </span>
-                </motion.button>
-              )}
             </div>
           )}
 
@@ -318,7 +254,7 @@ export const CourseViewerPage = () => {
                       key={i}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.97 }}
-                      onClick={() => triggerMaterialDownload(url)}
+                      onClick={() => triggerMaterialDownload(url, filename)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:border-indigo-400 transition-colors"
                     >
                       {isExt ? <ExternalLink className="w-3 h-3 text-amber-500 shrink-0" /> : <FileText className="w-3 h-3 text-amber-500 shrink-0" />}
@@ -510,38 +446,23 @@ export const CourseViewerPage = () => {
         />
       )}
 
-
-
-        <ExternalLinkModal
-          open={externalOpen}
-          onClose={() => {
-            setExternalOpen(false);
-            setExternalTarget(null);
-          }}
-          onConfirm={() => {
-            if (externalTarget) {
-              window.open(externalTarget.url, "_blank", "noopener,noreferrer");
-            }
-            setExternalOpen(false);
-            setExternalTarget(null);
-          }}
-          url={externalTarget?.url}
-          title="Open External Platform?"
-          message={`" ${externalTarget?.title} " is hosted on an external video player. Click confirm to watch it in a new window.`}
-        />
-
-      {/* Download mode prompt — local video only */}
-      <DownloadModal
-        open={dlModalOpen}
-        filename={pendingDownload?.title || ""}
-        onSelect={handleDownloadModeSelect}
-        onClose={() => { if (!dlInProgress) { setDlModalOpen(false); setPendingDownload(null); } }}
-        isDownloading={dlInProgress}
-        progress={inProgressPct}
+      <ExternalLinkModal
+        open={externalOpen}
+        onClose={() => {
+          setExternalOpen(false);
+          setExternalTarget(null);
+        }}
+        onConfirm={() => {
+          if (externalTarget) {
+            window.open(externalTarget.url, "_blank", "noopener,noreferrer");
+          }
+          setExternalOpen(false);
+          setExternalTarget(null);
+        }}
+        url={externalTarget?.url}
+        title="Open External Link?"
+        message={`" ${externalTarget?.title} " is an external link. Click confirm to open it in a new window.`}
       />
-
-      {/* In-app downloads manager */}
-      <DownloadsDrawer open={dlDrawerOpen} onClose={() => setDlDrawerOpen(false)} items={downloads} onDelete={deleteDl} onOpen={openDl} />
     </PageTransition>
   );
 };

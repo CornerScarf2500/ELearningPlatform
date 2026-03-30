@@ -94,6 +94,7 @@ export interface SessionInfo {
   id: string;
   device: string;
   loginAt: string;
+  lastAccessedAt?: string;
 }
 
 export interface AdminUser {
@@ -101,6 +102,8 @@ export interface AdminUser {
   name?: string;
   role: string;
   isBanned: boolean;
+  isCoursesRestricted?: boolean;
+  allowedCourses?: any[];
   activeSessions: number;
   sessions: SessionInfo[];
   createdAt: string;

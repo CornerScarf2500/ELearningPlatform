@@ -11,7 +11,8 @@ const requireAdmin = require("../middleware/admin");
 // ──────────────────────────────────────────────────────────────
 router.get("/", verifyToken, async (req, res, next) => {
   try {
-    const courses = await Course.find().sort({ createdAt: -1 }).lean();
+    const query = req.user.role === "admin" ? {} : req.user.isCoursesRestricted ? { _id: { $in: req.user.allowedCourses } } : {};
+    const courses = await Course.find(query).sort({ createdAt: -1 }).lean();
     res.json({ success: true, data: courses });
   } catch (error) { next(error); }
 });

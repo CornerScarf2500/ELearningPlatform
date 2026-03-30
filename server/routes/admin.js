@@ -3,6 +3,7 @@ const Course = require("../models/Course");
 const Section = require("../models/Section");
 const Lesson = require("../models/Lesson");
 const Platform = require("../models/Platform");
+const mongoose = require("mongoose");
 const verifyToken = require("../middleware/auth");
 const requireAdmin = require("../middleware/admin");
 
@@ -68,6 +69,24 @@ router.get("/backup", verifyToken, requireAdmin, async (_req, res, next) => {
       exportedAt: new Date().toISOString(),
       platforms: Object.values(platformMap),
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────
+// GET /api/admin/stats
+// Returns database storage stats
+// ──────────────────────────────────────────────────────────────
+router.get("/stats", verifyToken, requireAdmin, async (_req, res, next) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ success: false, message: "Database not connected" });
+    }
+    const stats = await mongoose.connection.db.stats();
+    // Use dataSize + indexSize as primary usage metric (stats.dataSize + stats.indexSize)
+    const usedBytes = stats.dataSize + stats.indexSize;
+    res.json({ success: true, usedBytes, stats });
   } catch (error) {
     next(error);
   }

@@ -34,7 +34,7 @@ export const LessonAccordion = ({
   return (
     <div className="border-b border-zinc-200 dark:border-zinc-800 last:border-b-0">
       {/* Section header */}
-      <div className="w-full flex items-center justify-between px-2 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group">
+      <div className="sticky top-0 z-40 bg-white dark:bg-zinc-900 shadow-sm w-full flex items-center justify-between px-2 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors group">
         <div className="flex items-center gap-1 min-w-0">
           {isAdmin && dragHandleProps && (
             <div {...dragHandleProps} className="p-1.5 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity">

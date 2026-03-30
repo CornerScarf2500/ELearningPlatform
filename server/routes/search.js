@@ -18,7 +18,11 @@ router.get("/", verifyToken, async (req, res, next) => {
     const regex = new RegExp(q.trim(), "i");
 
     // Search courses
-    const courses = await Course.find({ title: regex })
+    let courseQuery = { $or: [{ title: regex }, { teacher: regex }] };
+    if (req.user.role !== "admin" && req.user.isCoursesRestricted) {
+      courseQuery = { ...courseQuery, _id: { $in: req.user.allowedCourses } };
+    }
+    const courses = await Course.find(courseQuery)
       .populate("platformId", "name")
       .limit(20)
       .lean();

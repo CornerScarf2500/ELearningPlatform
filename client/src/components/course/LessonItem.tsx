@@ -63,38 +63,36 @@ export const LessonItem = ({ lesson, isActive, index, onSelect, onMutate }: Prop
               className="min-w-0 flex-1 overflow-x-auto scrollbar-none lesson-title-scroll"
               title={lesson.title}
             >
-              <span className={`text-sm whitespace-nowrap block ${
+              <span className={`text-sm whitespace-nowrap block pr-2 ${
                 isActive ? "font-semibold text-indigo-700 dark:text-indigo-300" : "text-zinc-700 dark:text-zinc-300"
               }`}>
                 {lesson.title}
               </span>
             </div>
-          </div>
 
-          {/* Bottom row: ❤️ + ✏️ — only when active or always visible */}
-          <div
-            className="flex items-center gap-1 mt-1 ml-7"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Admin edit */}
-            {isAdmin && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setEditOpen(true)}
-                className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
-                title="Edit lesson"
-              >
-                <Edit3 className={`w-3.5 h-3.5 ${isActive ? "text-indigo-500/80" : ""}`} />
-              </motion.button>
-            )}
+            {/* Actions (Edit / Materials) */}
+            <div
+              className="flex items-center gap-1 shrink-0 bg-white/50 dark:bg-zinc-900/50 rounded"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {isAdmin && (
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setEditOpen(true)}
+                  className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
+                  title="Edit lesson"
+                >
+                  <Edit3 className={`w-3.5 h-3.5 ${isActive ? "text-indigo-500/80" : ""}`} />
+                </motion.button>
+              )}
 
-            {/* Material count badge (no expand button — materials shown below player) */}
-            {materials.length > 0 && (
-              <span className="text-[10px] text-amber-500 font-medium ml-1">
-                {materials.length} file{materials.length !== 1 ? "s" : ""}
-              </span>
-            )}
+              {materials.length > 0 && (
+                <span className="text-[10px] text-amber-500 font-medium whitespace-nowrap">
+                  {materials.length} file{materials.length !== 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

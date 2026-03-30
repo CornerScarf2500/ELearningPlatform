@@ -17,8 +17,8 @@ import { PageTransition } from "../components/ui/PageTransition";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
 import { useAdmin } from "../hooks/useAdmin";
 import { useAuthStore } from "../store/authStore";
-import { userApi } from "../api";
-import type { AdminUser } from "../types";
+import { userApi, courseApi } from "../api";
+import type { AdminUser, Course } from "../types";
 
 
 // ── Backup button (admin only) ────────────────────────────────
@@ -83,6 +83,27 @@ export const SettingsPage = () => {
     }
   }, []);
 
+  const [dbUsed, setDbUsed] = useState<string>("Calculating…");
+
+  const fetchDbStats = useCallback(async () => {
+    if (!isAdmin) return;
+    try {
+      const token = useAuthStore.getState().token;
+      const resp = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/admin/stats`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await resp.json();
+      if (data.success) {
+        const mb = (data.usedBytes / 1024 / 1024).toFixed(2);
+        setDbUsed(`${mb} MB (${data.stats.collections} collections)`);
+      } else {
+        setDbUsed("Unavailable");
+      }
+    } catch {
+      setDbUsed("Unavailable");
+    }
+  }, [isAdmin]);
+
   const clearCache = async () => {
     if ("caches" in window) {
       const names = await caches.keys();
@@ -93,7 +114,8 @@ export const SettingsPage = () => {
 
   useEffect(() => {
     estimateStorage();
-  }, [estimateStorage]);
+    fetchDbStats();
+  }, [estimateStorage, fetchDbStats]);
 
   /* ── Admin: user management ───────────────────────── */
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -118,6 +140,24 @@ export const SettingsPage = () => {
   const [newUserRole, setNewUserRole] = useState<"admin" | "user">("user");
   const [addingUser, setAddingUser] = useState(false);
 
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
+  const [editForm, setEditForm] = useState<{
+    name: string;
+    role: "admin" | "user";
+    isCoursesRestricted: boolean;
+    allowedCourses: string[];
+  }>({ name: "", role: "user", isCoursesRestricted: false, allowedCourses: [] });
+  const [updatingUser, setUpdatingUser] = useState(false);
+
+  const fetchCourses = useCallback(async () => {
+    if (!isAdmin) return;
+    try {
+      const { data } = await courseApi.list();
+      setCourses(data.data || []);
+    } catch {}
+  }, [isAdmin]);
+
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUserCode.trim()) return;
@@ -139,9 +179,25 @@ export const SettingsPage = () => {
     }
   };
 
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setUpdatingUser(true);
+    try {
+      await userApi.update(editingUser.id, editForm);
+      setEditingUser(null);
+      fetchUsers();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to update user");
+    } finally {
+      setUpdatingUser(false);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+    fetchCourses();
+  }, [fetchUsers, fetchCourses]);
 
   const revokeSessions = async (userId: string) => {
     if (!confirm("Revoke all sessions for this user?")) return;
@@ -198,18 +254,31 @@ export const SettingsPage = () => {
               <HardDrive className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
               <div>
                 <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                  Cache Storage
+                  Cache Storage (Local)
                 </p>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   {cacheSize}
                 </p>
               </div>
             </div>
+            {isAdmin && (
+              <div className="flex items-center gap-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                <Archive className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                <div>
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    Database Storage
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {dbUsed}
+                  </p>
+                </div>
+              </div>
+            )}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={clearCache}
-              className="px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+              className="mt-2 px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
             >
               Clear All Cached Data
             </motion.button>
@@ -316,6 +385,22 @@ export const SettingsPage = () => {
                       </div>
 
                       <div className="flex items-center gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => {
+                            setEditingUser(u);
+                            setEditForm({
+                              name: u.name || "",
+                              role: u.role as "admin" | "user",
+                              isCoursesRestricted: u.isCoursesRestricted ?? false,
+                              allowedCourses: (u.allowedCourses || []).map(c => c._id || c),
+                            });
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                        >
+                          Edit
+                        </motion.button>
                         {u.role !== "admin" && (
                           <motion.button
                             whileHover={{ scale: 1.05 }}
@@ -374,12 +459,14 @@ export const SettingsPage = () => {
                             <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
                               <Smartphone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                               <div className="truncate text-[11px] flex-1 min-w-0">
-                                <p className="text-zinc-700 dark:text-zinc-300 truncate" title={s.device}>
-                                  {s.device}
-                                </p>
                                 <p className="text-zinc-500 dark:text-zinc-500">
-                                  {new Date(s.loginAt).toLocaleString()}
+                                  Login: {new Date(s.loginAt).toLocaleString()}
                                 </p>
+                                {s.lastAccessedAt && (
+                                  <p className="text-emerald-600 dark:text-emerald-500/80">
+                                    Last Access: {new Date(s.lastAccessedAt).toLocaleString()}
+                                  </p>
+                                )}
                               </div>
                             </div>
                             <motion.button
@@ -432,6 +519,114 @@ export const SettingsPage = () => {
           </motion.button>
         </section>
       </div>
+
+      {/* Edit User Modal */}
+      {isAdmin && editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setEditingUser(null)} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative bg-white dark:bg-zinc-900 rounded-2xl w-full max-w-md border border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col max-h-[90vh]"
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 dark:border-zinc-800">
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                Edit User ({editingUser.id.slice(-6)})
+              </h3>
+            </div>
+            <div className="p-5 overflow-y-auto min-h-0 flex-1 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  placeholder="Optional"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">
+                  Role
+                </label>
+                <select
+                  value={editForm.role}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, role: e.target.value as "admin" | "user" }))}
+                  className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                >
+                  <option value="user">Student / User</option>
+                  <option value="admin">Administrator</option>
+                </select>
+              </div>
+
+              {editForm.role !== "admin" && (
+                <div className="pt-2">
+                  <label className="flex items-center gap-2 cursor-pointer mb-3">
+                    <input
+                      type="checkbox"
+                      checked={editForm.isCoursesRestricted}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, isCoursesRestricted: e.target.checked }))}
+                      className="w-4 h-4 text-indigo-600 rounded border-zinc-300 focus:ring-indigo-500"
+                    />
+                    <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                      Restrict Course Access
+                    </span>
+                  </label>
+
+                  {editForm.isCoursesRestricted && (
+                    <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
+                      {courses.map((course) => {
+                        const checked = editForm.allowedCourses.includes(course._id);
+                        return (
+                          <label key={course._id} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                setEditForm((prev) => {
+                                  const list = e.target.checked
+                                    ? [...prev.allowedCourses, course._id]
+                                    : prev.allowedCourses.filter((id) => id !== course._id);
+                                  return { ...prev, allowedCourses: list };
+                                });
+                              }}
+                              className="w-4 h-4 text-indigo-600 rounded border-zinc-300 focus:ring-indigo-500"
+                            />
+                            <span className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
+                              {course.title}
+                            </span>
+                          </label>
+                        );
+                      })}
+                      {courses.length === 0 && (
+                        <p className="text-xs text-zinc-400">No courses available.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-end gap-3">
+              <button
+                onClick={() => setEditingUser(null)}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateUser}
+                disabled={updatingUser}
+                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium disabled:opacity-50 transition-colors flex items-center gap-2"
+              >
+                {updatingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </PageTransition>
   );
 };
