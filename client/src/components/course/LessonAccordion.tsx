@@ -16,6 +16,7 @@ interface Props {
   onMutate: () => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   showLessonGrips?: boolean;
+  startIndex?: number;
 }
 
 export const LessonAccordion = ({
@@ -25,6 +26,7 @@ export const LessonAccordion = ({
   onMutate,
   dragHandleProps,
   showLessonGrips = true,
+  startIndex = 0,
 }: Props) => {
   const [open, setOpen] = useState(true);
   const isAdmin = useAdmin();
@@ -129,7 +131,7 @@ export const LessonAccordion = ({
                                   key={lesson._id}
                                   lesson={lesson}
                                   isActive={activeLesson?._id === lesson._id}
-                                  index={i}
+                                  index={startIndex + i}
                                   onSelect={() => onSelectLesson(lesson)}
                                   onMutate={onMutate}
                                 />

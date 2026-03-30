@@ -98,15 +98,22 @@ router.get("/", verifyToken, async (req, res, next) => {
       })
       .populate({
         path: "favoriteLessons",
-        populate: {
-          path: "sectionId",
-          select: "title courseId",
-          populate: { 
-            path: "courseId", 
+        populate: [
+          {
+            path: "sectionId",
+            select: "title courseId",
+            populate: { 
+              path: "courseId", 
+              select: "title platformId",
+              populate: { path: "platformId", select: "name logoUrl" }
+            },
+          },
+          {
+            path: "courseId",
             select: "title platformId",
             populate: { path: "platformId", select: "name logoUrl" }
-          },
-        },
+          }
+        ]
       })
       .lean();
 

@@ -12,6 +12,7 @@ import {
   Plus,
   UserX,
   Archive,
+  Edit3,
 } from "lucide-react";
 import { PageTransition } from "../components/ui/PageTransition";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
@@ -95,7 +96,8 @@ export const SettingsPage = () => {
       const data = await resp.json();
       if (data.success) {
         const mb = (data.usedBytes / 1024 / 1024).toFixed(2);
-        setDbUsed(`${mb} MB (${data.stats.collections} collections)`);
+        const free = (512 - Number(mb)).toFixed(2);
+        setDbUsed(`${mb} MB / 512.00 MB (${free} MB free) - ${data.stats.collections} collections`);
       } else {
         setDbUsed("Unavailable");
       }
@@ -384,7 +386,7 @@ export const SettingsPage = () => {
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -397,30 +399,24 @@ export const SettingsPage = () => {
                               allowedCourses: (u.allowedCourses || []).map(c => c._id || c),
                             });
                           }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                          className="p-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                          title="Edit User"
                         >
-                          Edit
+                          <Edit3 className="w-4 h-4" />
                         </motion.button>
                         {u.role !== "admin" && (
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => toggleBan(u.id)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                            className={`p-1.5 rounded-lg border transition-colors ${
                               u.isBanned
                                 ? "border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
                                 : "border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
                             }`}
+                            title={u.isBanned ? "Unban User" : "Ban User"}
                           >
-                            {u.isBanned ? (
-                              <>
-                                <Shield className="w-3.5 h-3.5" /> Unban
-                              </>
-                            ) : (
-                              <>
-                                <ShieldAlert className="w-3.5 h-3.5" /> Ban
-                              </>
-                            )}
+                            {u.isBanned ? <Shield className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
                           </motion.button>
                         )}
                         {u.activeSessions > 0 && (
@@ -428,10 +424,10 @@ export const SettingsPage = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => revokeSessions(u.id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                            className="p-1.5 rounded-lg border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors"
+                            title="Revoke Sessions"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            Revoke All
+                            <Trash2 className="w-4 h-4" />
                           </motion.button>
                         )}
                         {u.role !== "admin" && (
@@ -439,10 +435,10 @@ export const SettingsPage = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleDeleteUser(u.id, u.name || "User")}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                            className="p-1.5 rounded-lg border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                             title="Delete User"
                           >
-                            <UserX className="w-3.5 h-3.5" />
+                            <UserX className="w-4 h-4" />
                           </motion.button>
                         )}
                       </div>
@@ -577,30 +573,44 @@ export const SettingsPage = () => {
                   </label>
 
                   {editForm.isCoursesRestricted && (
-                    <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
-                      {courses.map((course) => {
-                        const checked = editForm.allowedCourses.includes(course._id);
-                        return (
-                          <label key={course._id} className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={(e) => {
-                                setEditForm((prev) => {
-                                  const list = e.target.checked
-                                    ? [...prev.allowedCourses, course._id]
-                                    : prev.allowedCourses.filter((id) => id !== course._id);
-                                  return { ...prev, allowedCourses: list };
-                                });
-                              }}
-                              className="w-4 h-4 text-indigo-600 rounded border-zinc-300 focus:ring-indigo-500"
-                            />
-                            <span className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
-                              {course.title}
-                            </span>
-                          </label>
-                        );
-                      })}
+                    <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-lg p-3 max-h-64 overflow-y-auto space-y-4">
+                      {Object.entries(
+                        courses.reduce((acc, c) => {
+                          const pName = (c as any).platformId?.name || (c as any).platformName || "Other / Unassigned";
+                          if (!acc[pName]) acc[pName] = [];
+                          acc[pName].push(c);
+                          return acc;
+                        }, {} as Record<string, Course[]>)
+                      ).map(([platformName, platformCourses]) => (
+                        <div key={platformName} className="space-y-2">
+                          <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{platformName}</p>
+                          <div className="space-y-1">
+                            {platformCourses.map((course) => {
+                              const checked = editForm.allowedCourses.includes(course._id);
+                              return (
+                                <label key={course._id} className="flex items-center gap-2 cursor-pointer py-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={(e) => {
+                                      setEditForm((prev) => {
+                                        const list = e.target.checked
+                                          ? [...prev.allowedCourses, course._id]
+                                          : prev.allowedCourses.filter((id) => id !== course._id);
+                                        return { ...prev, allowedCourses: list };
+                                      });
+                                    }}
+                                    className="w-4 h-4 text-indigo-600 rounded border-zinc-300 focus:ring-indigo-500"
+                                  />
+                                  <span className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
+                                    {course.title}
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
                       {courses.length === 0 && (
                         <p className="text-xs text-zinc-400">No courses available.</p>
                       )}

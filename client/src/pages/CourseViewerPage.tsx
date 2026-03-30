@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight, Play, Heart, Edit3 } from "lucide-react";
@@ -50,6 +50,17 @@ export const CourseViewerPage = () => {
   const [sidebarWidth, setSidebarWidth] = useState(320);
   const isResizing = useRef(false);
 
+  const sectionStartIndices = React.useMemo(() => {
+    if (!course) return [];
+    const indices: number[] = [];
+    let current = course.unsectioned?.length || 0;
+    (course.sections || []).forEach(sec => {
+      indices.push(current);
+      current += sec.lessons?.length || 0;
+    });
+    return indices;
+  }, [course]);
+
   const startResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     isResizing.current = true;
@@ -75,6 +86,9 @@ export const CourseViewerPage = () => {
   const [downloadVideoOpen, setDownloadVideoOpen] = useState(false);
   const [downloadTarget, setDownloadTarget] = useState<{ url: string; title: string; size?: number | null } | null>(null);
   const [downloadChecking, setDownloadChecking] = useState(false);
+
+  const [downloadMaterialOpen, setDownloadMaterialOpen] = useState(false);
+  const [downloadMaterialTarget, setDownloadMaterialTarget] = useState<{ url: string; title: string } | null>(null);
 
   const confirmExternalOpen = (url: string, title: string) => {
     setExternalTarget({ url, title });
@@ -102,19 +116,26 @@ export const CourseViewerPage = () => {
     }
   };
 
-  const triggerMaterialDownload = (url: string, filename: string) => {
+  const confirmMaterialDownload = (url: string, filename: string) => {
     if (isExternalUrl(url)) {
       confirmExternalOpen(url, filename);
       return;
     }
+    setDownloadMaterialTarget({ url, title: filename });
+    setDownloadMaterialOpen(true);
+  };
+
+  const executeMaterialDownload = () => {
+    if (!downloadMaterialTarget) return;
     const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
+    a.href = downloadMaterialTarget.url;
+    a.download = downloadMaterialTarget.title;
     a.target = "_blank";
     a.rel = "noopener";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    setDownloadMaterialOpen(false);
   };
 
   const fetchCourse = useCallback(async () => {
@@ -317,7 +338,7 @@ export const CourseViewerPage = () => {
                       key={i}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.97 }}
-                      onClick={() => triggerMaterialDownload(url, filename)}
+                      onClick={() => confirmMaterialDownload(url, filename)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:border-indigo-400 transition-colors"
                     >
                       {isExt ? <ExternalLink className="w-3 h-3 text-amber-500 shrink-0" /> : <FileText className="w-3 h-3 text-amber-500 shrink-0" />}
@@ -445,6 +466,7 @@ export const CourseViewerPage = () => {
                             onMutate={fetchCourse}
                             dragHandleProps={showReorderHandle ? provided.dragHandleProps : null}
                             showLessonGrips={showReorderHandle}
+                            startIndex={sectionStartIndices[index]}
                           />
                         </div>
                       )}
@@ -582,7 +604,7 @@ export const CourseViewerPage = () => {
                 </button>
                 <button
                   onClick={() => {
-                    if (downloadTarget) triggerMaterialDownload(downloadTarget.url, downloadTarget.title);
+                    if (downloadTarget) confirmMaterialDownload(downloadTarget.url, downloadTarget.title);
                     setDownloadVideoOpen(false);
                   }}
                   className="w-full py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 transition"
@@ -595,6 +617,27 @@ export const CourseViewerPage = () => {
               </div>
             </>
           )}
+        </div>
+      </Modal>
+
+      <Modal open={downloadMaterialOpen} onClose={() => setDownloadMaterialOpen(false)}>
+        <div className="p-5 text-center">
+          <FileText className="w-10 h-10 mx-auto text-amber-500 mb-3" />
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Download File</h2>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+            Do you want to download <span className="font-semibold text-zinc-700 dark:text-zinc-200">"{downloadMaterialTarget?.title}"</span> to your device?
+          </p>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={executeMaterialDownload}
+              className="w-full py-2.5 rounded-xl bg-amber-500 text-white font-medium hover:bg-amber-600 transition shadow-sm"
+            >
+              Download
+            </button>
+            <button onClick={() => setDownloadMaterialOpen(false)} className="w-full py-2 text-xs font-medium text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition">
+              Cancel
+            </button>
+          </div>
         </div>
       </Modal>
 

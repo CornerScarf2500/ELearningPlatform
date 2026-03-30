@@ -9,9 +9,8 @@ import {
   Minimize,
   SkipBack,
   SkipForward,
+  FastForward,
 } from "lucide-react";
-
-const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 4];
 
 function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -42,7 +41,6 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
   const [fullscreen, setFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [speed, setSpeed] = useState(1);
-  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
 
   const scheduleHide = useCallback(() => {
     if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
@@ -85,15 +83,13 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
   };
 
   const changeSpeed = (dir: 1 | -1) => {
-    const idx = SPEEDS.indexOf(speed);
-    const next = SPEEDS[Math.max(0, Math.min(SPEEDS.length - 1, idx + dir))];
+    const next = Math.max(0.5, Math.min(4, speed + (dir * 0.25)));
     applySpeed(next);
   };
 
   const applySpeed = (s: number) => {
     setSpeed(s);
     if (videoRef.current) videoRef.current.playbackRate = s;
-    setShowSpeedMenu(false);
   };
 
   const toggleFullscreen = () => {
@@ -138,7 +134,7 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onMouseMove={handleMouseMove}
-      onMouseLeave={() => { if (playing) setShowControls(false); setShowSpeedMenu(false); }}
+      onMouseLeave={() => { if (playing) setShowControls(false); }}
       className={`relative bg-black rounded-xl overflow-hidden outline-none select-none ${className}`}
       style={{ aspectRatio: "16/9" }}
     >
@@ -146,6 +142,7 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
         ref={videoRef}
         src={src}
         muted={muted}
+        playsInline
         className="w-full h-full object-contain"
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
@@ -261,40 +258,17 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
                 className="w-14 accent-indigo-500 cursor-pointer"
               />
 
-              {/* Speed selector */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowSpeedMenu((s) => !s)}
-                  className="text-white/80 hover:text-white px-2 py-1 rounded text-xs font-medium min-w-[3rem] text-center bg-white/10 hover:bg-white/20 transition-colors shadow-sm"
-                  title="Playback speed (< >)"
-                >
-                  {speed === 1 ? "1x" : `${speed}x`}
-                </button>
-                <AnimatePresence>
-                  {showSpeedMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute bottom-full right-[-10px] md:right-0 mb-3 bg-zinc-900/95 backdrop-blur-md border border-zinc-700/50 rounded-xl overflow-hidden shadow-2xl min-w-[100px] z-[60]"
-                    >
-                      {SPEEDS.map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => applySpeed(s)}
-                          className={`w-full text-center px-4 py-3 md:py-2 text-sm transition-colors ${
-                            speed === s
-                              ? "bg-indigo-600/90 text-white font-semibold"
-                              : "text-zinc-300 hover:bg-white/10 hover:text-white font-medium"
-                          }`}
-                        >
-                          {s}x
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              {/* Speed selector (slider) */}
+              <div className="flex items-center gap-1.5 md:ml-2">
+                <FastForward className="w-3.5 h-3.5 text-white/80" />
+                <span className="text-white/80 text-[10px] tabular-nums min-w-[32px]">{speed}x</span>
+                <input
+                  type="range" min={0.5} max={4} step={0.25}
+                  value={speed}
+                  onChange={(e) => applySpeed(parseFloat(e.target.value))}
+                  className="w-16 accent-indigo-500 cursor-pointer hidden md:block"
+                  title="Playback speed"
+                />
               </div>
 
               {/* Fullscreen */}
