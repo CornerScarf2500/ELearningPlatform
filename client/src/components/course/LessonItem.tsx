@@ -24,9 +24,6 @@ export const LessonItem = ({ lesson, isActive, index, onSelect, onMutate }: Prop
   const [editOpen, setEditOpen] = useState(false);
 
   const isVideo = lesson.type === "video";
-  const materials: string[] = lesson.fileUrls?.length
-    ? lesson.fileUrls
-    : lesson.fileUrl ? [lesson.fileUrl] : [];
 
   return (
     <>
