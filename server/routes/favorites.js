@@ -94,13 +94,18 @@ router.get("/", verifyToken, async (req, res, next) => {
     const user = await User.findById(req.user._id)
       .populate({
         path: "favoriteCourses",
+        populate: { path: "platformId", select: "name logoUrl" }
       })
       .populate({
         path: "favoriteLessons",
         populate: {
           path: "sectionId",
           select: "title courseId",
-          populate: { path: "courseId", select: "title" },
+          populate: { 
+            path: "courseId", 
+            select: "title platformId",
+            populate: { path: "platformId", select: "name logoUrl" }
+          },
         },
       })
       .lean();

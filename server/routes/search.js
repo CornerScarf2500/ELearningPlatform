@@ -16,9 +16,11 @@ router.get("/", verifyToken, async (req, res, next) => {
     }
 
     const regex = new RegExp(q.trim(), "i");
+    const flexQuery = q.trim().replace(/\s+/g, "").split("").join("\\s*");
+    const flexRegex = new RegExp(flexQuery, "i");
 
     // Search courses
-    let courseQuery = { $or: [{ title: regex }, { teacher: regex }] };
+    let courseQuery = { $or: [{ title: regex }, { teacher: flexRegex }] };
     if (req.user.role !== "admin" && req.user.isCoursesRestricted) {
       courseQuery = { ...courseQuery, _id: { $in: req.user.allowedCourses } };
     }

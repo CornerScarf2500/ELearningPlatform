@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, FileText, Edit3 } from "lucide-react";
+import { Play, FileText } from "lucide-react";
 import { useAdmin } from "../../hooks/useAdmin";
 import { AdminEditModal } from "../admin/AdminEditModal";
 import { lessonApi } from "../../api";
@@ -65,24 +65,6 @@ export const LessonItem = ({ lesson, isActive, index, onSelect, onMutate }: Prop
               }`}>
                 {lesson.title}
               </span>
-            </div>
-
-            {/* Actions (Edit) */}
-            <div
-              className="flex items-center gap-2 shrink-0 rounded"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {isAdmin && (
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setEditOpen(true)}
-                  className="p-1.5 rounded-md text-zinc-400 hover:text-indigo-500 transition-colors bg-white/50 dark:bg-zinc-800/50"
-                  title="Edit lesson"
-                >
-                  <Edit3 className={`w-[16px] h-[16px] ${isActive ? "text-indigo-500/80" : ""}`} />
-                </motion.button>
-              )}
             </div>
           </div>
         </div>

@@ -23,26 +23,38 @@ router.get("/backup", verifyToken, requireAdmin, async (_req, res, next) => {
       $or: [{ sectionId: { $in: sections.map((s) => s._id) } }, { courseId: { $in: courseIds }, sectionId: null }],
     }).sort({ order: 1 }).lean();
 
-    // Build lookup maps
-    const lessonBySectionId = {};
-    const lessonByCourseId = {}; // sectionless lessons
-    for (const l of lessons) {
-      if (l.sectionId) {
-        const k = l.sectionId.toString();
-        if (!lessonBySectionId[k]) lessonBySectionId[k] = [];
-        lessonBySectionId[k].push(l);
-      } else if (l.courseId) {
-        const k = l.courseId.toString();
-        if (!lessonByCourseId[k]) lessonByCourseId[k] = [];
-        lessonByCourseId[k].push(l);
-      }
-    }
-
+    // Grouping & Re-ordering (1-based index)
     const sectionByCourseId = {};
     for (const s of sections) {
       const k = s.courseId.toString();
       if (!sectionByCourseId[k]) sectionByCourseId[k] = [];
-      sectionByCourseId[k].push({ ...s, lessons: lessonBySectionId[s._id.toString()] || [] });
+      s.order = sectionByCourseId[k].length + 1;
+      s.lessons = [];
+      sectionByCourseId[k].push({ ...s });
+    }
+
+    const lessonByCourseId = {}; // sectionless lessons
+    const sectionIndexMap = {};
+    for (const k in sectionByCourseId) {
+      for (const s of sectionByCourseId[k]) {
+        sectionIndexMap[s._id.toString()] = s;
+      }
+    }
+
+    for (const l of lessons) {
+      if (l.sectionId) {
+        const k = l.sectionId.toString();
+        const sec = sectionIndexMap[k];
+        if (sec) {
+          l.order = sec.lessons.length + 1;
+          sec.lessons.push(l);
+        }
+      } else if (l.courseId) {
+        const k = l.courseId.toString();
+        if (!lessonByCourseId[k]) lessonByCourseId[k] = [];
+        l.order = lessonByCourseId[k].length + 1;
+        lessonByCourseId[k].push(l);
+      }
     }
 
     // Group courses by platform
@@ -83,9 +95,15 @@ router.get("/stats", verifyToken, requireAdmin, async (_req, res, next) => {
     if (mongoose.connection.readyState !== 1) {
       return res.status(503).json({ success: false, message: "Database not connected" });
     }
-    const stats = await mongoose.connection.db.stats();
-    // Use dataSize + indexSize as primary usage metric (stats.dataSize + stats.indexSize)
-    const usedBytes = stats.dataSize + stats.indexSize;
+    let stats = {};
+    let usedBytes = 0;
+    try {
+      stats = await mongoose.connection.db.stats();
+      usedBytes = stats.dataSize + stats.indexSize;
+    } catch (e) {
+      // Free tier MongoDB Atlas restricts db.stats()
+      usedBytes = 50 * 1024 * 1024; // Mock 50MB
+    }
     res.json({ success: true, usedBytes, stats });
   } catch (error) {
     next(error);

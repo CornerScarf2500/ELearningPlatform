@@ -4,6 +4,7 @@ export type Role = "user" | "admin";
 /* ── User ─────────────────────────────────────────────────── */
 export interface User {
   id: string;
+  name?: string;
   role: Role;
   favoriteCourses: string[];
   favoriteLessons: string[];

@@ -13,6 +13,8 @@ import { ExternalLinkModal } from "../components/ui/ExternalLinkModal";
 import { useAdmin } from "../hooks/useAdmin";
 import { useAuthStore } from "../store/authStore";
 import { courseApi, sectionApi, lessonApi } from "../api";
+import { useDownloads } from "../hooks/useDownloads";
+import { Modal } from "../components/ui/Modal";
 import type { Course, Section, Lesson } from "../types";
 
 // ── YouTube helpers ─────────────────────────────────────────────
@@ -67,10 +69,37 @@ export const CourseViewerPage = () => {
   // "External link" confirmation modal
   const [externalOpen, setExternalOpen] = useState(false);
   const [externalTarget, setExternalTarget] = useState<{ url: string; title: string } | null>(null);
+  
+  // Downloads
+  const { saveInApp } = useDownloads();
+  const [downloadVideoOpen, setDownloadVideoOpen] = useState(false);
+  const [downloadTarget, setDownloadTarget] = useState<{ url: string; title: string; size?: number | null } | null>(null);
+  const [downloadChecking, setDownloadChecking] = useState(false);
 
   const confirmExternalOpen = (url: string, title: string) => {
     setExternalTarget({ url, title });
     setExternalOpen(true);
+  };
+
+  const triggerVideoDownload = async (url: string, title: string) => {
+    if (isExternalUrl(url)) {
+      setDownloadTarget({ url, title, size: null });
+      setDownloadVideoOpen(true);
+      return;
+    }
+    
+    setDownloadChecking(true);
+    setDownloadTarget({ url, title, size: null });
+    setDownloadVideoOpen(true);
+    try {
+      const resp = await fetch(url, { method: "HEAD" });
+      const len = resp.headers.get("content-length");
+      setDownloadTarget({ url, title, size: len ? Number(len) : null });
+    } catch {
+      setDownloadTarget({ url, title, size: null });
+    } finally {
+      setDownloadChecking(false);
+    }
   };
 
   const triggerMaterialDownload = (url: string, filename: string) => {
@@ -238,11 +267,11 @@ export const CourseViewerPage = () => {
               })()}
 
               {/* Download Button */}
-              {activeLesson.fileUrl && (
+              {activeLesson.videoUrl && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => triggerMaterialDownload(activeLesson.fileUrl!, activeLesson.title)}
+                  onClick={() => triggerVideoDownload(activeLesson.videoUrl!, activeLesson.title)}
                   className="flex flex-col items-center gap-1.5 transition-all group"
                 >
                   <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all border bg-white dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700">
@@ -436,7 +465,11 @@ export const CourseViewerPage = () => {
       {isAdmin && (
         <AdminEditModal open={addSectionOpen} onClose={() => setAddSectionOpen(false)} title="New Section"
           fields={[{ label: "Title", key: "title", value: "", placeholder: "Section title" }]}
-          onSave={async (vals) => { await sectionApi.create({ title: vals.title, courseId: course._id }); fetchCourse(); }}
+          onSave={async (vals) => { 
+            await sectionApi.create({ title: vals.title, courseId: course._id }); 
+            fetchCourse(); 
+            setAddSectionOpen(false); 
+          }}
         />
       )}
 
@@ -497,6 +530,73 @@ export const CourseViewerPage = () => {
         title="Open External Link?"
         message={`" ${externalTarget?.title} " is an external link. Click confirm to open it in a new window.`}
       />
+
+      <Modal open={downloadVideoOpen} onClose={() => setDownloadVideoOpen(false)}>
+        <div className="p-5 text-center">
+          <Download className="w-10 h-10 mx-auto text-indigo-500 mb-3" />
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Download Video</h2>
+          {downloadTarget && isExternalUrl(downloadTarget.url) ? (
+            <>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+                Cannot download this video directly because it is hosted externally.
+              </p>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => {
+                    window.open(downloadTarget.url, "_blank", "noopener,noreferrer");
+                    setDownloadVideoOpen(false);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
+                >
+                  Open in New Tab
+                </button>
+                <button onClick={() => setDownloadVideoOpen(false)} className="w-full py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium transition">
+                  Cancel
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+                Do you want to download this video in-app for offline playback, or save it to your device?
+              </p>
+              {downloadChecking ? (
+                <div className="flex items-center justify-center gap-2 mb-6 mt-4 opacity-70">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-xs">Checking file size...</span>
+                </div>
+              ) : (
+                <p className="text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-6 mt-2">
+                  File size: {downloadTarget?.size ? `${(downloadTarget.size / (1024 * 1024)).toFixed(1)} MB` : "Unknown size"}
+                </p>
+              )}
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => {
+                    if (downloadTarget) saveInApp(downloadTarget.title, downloadTarget.url);
+                    setDownloadVideoOpen(false);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
+                >
+                  Download In-App
+                </button>
+                <button
+                  onClick={() => {
+                    if (downloadTarget) triggerMaterialDownload(downloadTarget.url, downloadTarget.title);
+                    setDownloadVideoOpen(false);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 transition"
+                >
+                  Local Download
+                </button>
+                <button onClick={() => setDownloadVideoOpen(false)} className="w-full py-2 text-xs font-medium text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition">
+                  Cancel
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </Modal>
 
       {/* Edit Active Lesson */}
       {isAdmin && activeLesson && (

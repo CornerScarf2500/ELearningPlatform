@@ -459,8 +459,8 @@ export const SettingsPage = () => {
                             <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
                               <Smartphone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                               <div className="truncate text-[11px] flex-1 min-w-0">
-                                <p className="text-zinc-500 dark:text-zinc-500">
-                                  Login: {new Date(s.loginAt).toLocaleString()}
+                                <p className="text-zinc-500 dark:text-zinc-500 truncate">
+                                  {s.device || "Unknown Device"} &bull; Login: {new Date(s.loginAt).toLocaleString()}
                                 </p>
                                 {s.lastAccessedAt && (
                                   <p className="text-emerald-600 dark:text-emerald-500/80">

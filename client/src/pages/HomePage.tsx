@@ -6,6 +6,7 @@ import { CourseCard } from "../components/course/CourseCard";
 import { AdminEditModal } from "../components/admin/AdminEditModal";
 import { Modal } from "../components/ui/Modal";
 import { useAdmin } from "../hooks/useAdmin";
+import { useAuthStore } from "../store/authStore";
 import { courseApi } from "../api";
 import { BackendStatus } from "../components/ui/BackendStatus";
 import { platformApi } from "../api";
@@ -193,7 +194,9 @@ export const HomePage = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <div>
-          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Courses</h1>
+          <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+            {new Date().getHours() < 12 ? "Good morning" : new Date().getHours() < 18 ? "Good afternoon" : "Good evening"}, {useAuthStore.getState().user?.name || "User"}!
+          </h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
             {filteredCourses.length} course{filteredCourses.length !== 1 && "s"}
             {activePlatformName ? " in this platform" : " available"}

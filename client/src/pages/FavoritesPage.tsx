@@ -75,13 +75,17 @@ export const FavoritesPage = () => {
                 onClick={() => navigate(`/course/${course._id}`)}
                 className="flex items-center gap-3 px-4 py-3.5 rounded-xl cursor-pointer border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-indigo-300 dark:hover:border-indigo-500/30 transition-all"
               >
-                <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-                  <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0 overflow-hidden">
+                  {(course as any).platformId?.logoUrl ? (
+                    <img src={(course as any).platformId.logoUrl} alt="" className="w-full h-full object-contain p-1" />
+                  ) : (
+                    <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">{course.title}</p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
-                    {[course.grade, course.subject, course.teacher].filter(Boolean).join(" · ")}
+                    {[course.grade, course.subject, course.teacher, (course as any).platformId?.name].filter(Boolean).join(" · ")}
                   </p>
                 </div>
                 {/* Unfavorite */}
@@ -136,10 +140,7 @@ export const FavoritesPage = () => {
                   >
                     <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">{lesson.title}</p>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
-                      {lesson.type === "video" ? "Video" : "PDF"}
-                      {courseTitle && (
-                        <span className="ml-1 text-indigo-500 dark:text-indigo-400">· {courseTitle}</span>
-                      )}
+                      {[lesson.type === "video" ? "Video" : "PDF", courseTitle, (section?.courseId as any)?.platformId?.name].filter(Boolean).join(" · ")}
                     </p>
                   </div>
 
