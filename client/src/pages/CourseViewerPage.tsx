@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight, Play, Heart } from "lucide-react";
+import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight, Play, Heart, Edit3 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
 import { PageTransition } from "../components/ui/PageTransition";
@@ -38,6 +38,7 @@ export const CourseViewerPage = () => {
   const [addSectionOpen, setAddSectionOpen] = useState(false);
   const [addVideoOpen, setAddVideoOpen] = useState(false);
   const [addChoiceOpen, setAddChoiceOpen] = useState(false);
+  const [editActiveLessonOpen, setEditActiveLessonOpen] = useState(false);
   const [showReorderHandle, setShowReorderHandle] = useState(() => {
     try { return localStorage.getItem("reorder-handle") !== "false"; }
     catch { return true; }
@@ -211,7 +212,7 @@ export const CourseViewerPage = () => {
 
           {/* Action Row below Player */}
           {activeLesson && (
-            <div className="flex items-center justify-center gap-6 px-4 py-6 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-center gap-8 px-4 py-5 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 relative z-40 lg:pb-5 pb-8">
               {/* Favorite Button */}
               {(() => {
                 const isFav = user?.favoriteLessons.includes(activeLesson._id) ?? false;
@@ -222,20 +223,53 @@ export const CourseViewerPage = () => {
                     onClick={() => toggleFavoriteLesson(activeLesson._id)}
                     className="flex flex-col items-center gap-1.5 transition-all group"
                   >
-                    <div className={`w-11 h-11 rounded-full flex items-center justify-center shadow-md transition-all ${
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all border ${
                       isFav 
-                        ? "bg-red-50 dark:bg-red-900/20 text-red-500" 
-                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                        ? "bg-red-50/80 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-900/50" 
+                        : "bg-white dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}>
                       <Heart className={`w-5 h-5 ${isFav ? "fill-current" : ""}`} />
                     </div>
-                    <span className={`text-[11px] font-medium ${isFav ? "text-red-500" : "text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200"}`}>
+                    <span className={`text-[11px] font-semibold ${isFav ? "text-red-500" : "text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200"}`}>
                       Favorite
                     </span>
                   </motion.button>
                 );
               })()}
 
+              {/* Download Button */}
+              {activeLesson.fileUrl && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => triggerMaterialDownload(activeLesson.fileUrl!, activeLesson.title)}
+                  className="flex flex-col items-center gap-1.5 transition-all group"
+                >
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all border bg-white dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700">
+                    <Download className="w-5 h-5 group-hover:text-zinc-700 dark:group-hover:text-zinc-200" />
+                  </div>
+                  <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200">
+                    Download
+                  </span>
+                </motion.button>
+              )}
+
+              {/* Edit Button (Admin only) */}
+              {isAdmin && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setEditActiveLessonOpen(true)}
+                  className="flex flex-col items-center gap-1.5 transition-all group"
+                >
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all border bg-white dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:border-indigo-200 hover:text-indigo-500">
+                    <Edit3 className="w-5 h-5" />
+                  </div>
+                  <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                    Edit
+                  </span>
+                </motion.button>
+              )}
             </div>
           )}
 
@@ -278,8 +312,8 @@ export const CourseViewerPage = () => {
 
         {/* ── Right: Lesson list ────────────────────── */}
         <div
-          className="w-full md:h-screen md:overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 scroll-snap-y"
-          style={{ width: `${sidebarWidth}px`, flexShrink: 0 }}
+          className="w-full md:w-[var(--sidebar-width)] md:h-screen md:overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 scroll-snap-y shrink-0 pb-20 md:pb-0"
+          style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
           {/* Sidebar header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
@@ -463,6 +497,45 @@ export const CourseViewerPage = () => {
         title="Open External Link?"
         message={`" ${externalTarget?.title} " is an external link. Click confirm to open it in a new window.`}
       />
+
+      {/* Edit Active Lesson */}
+      {isAdmin && activeLesson && (
+        <AdminEditModal
+          open={editActiveLessonOpen}
+          onClose={() => setEditActiveLessonOpen(false)}
+          title="Edit Lesson"
+          fields={[
+            { label: "Title", key: "title", value: activeLesson.title },
+            { label: "Video URL", key: "videoUrl", value: activeLesson.videoUrl || "", placeholder: "https:// or YouTube URL" },
+            {
+              label: "Materials",
+              key: "fileUrls",
+              type: "list",
+              value: (activeLesson.fileUrls || []).join("\n") || activeLesson.fileUrl || "",
+              placeholder: "https://… (PDF, YouTube, link…)",
+              addLabel: "+ Add Material",
+            },
+            { label: "Order", key: "order", value: String(activeLesson.order ?? 0) },
+          ]}
+          onSave={async (vals) => {
+            const fileUrls = String(vals.fileUrls || "").split("\n").map((u: string) => u.trim()).filter(Boolean);
+            await lessonApi.update(activeLesson._id, {
+              ...vals,
+              fileUrls,
+              fileUrl: fileUrls[0] || "",
+              order: Number(vals.order) || 0,
+            } as Partial<Lesson>);
+            fetchCourse();
+            setEditActiveLessonOpen(false);
+          }}
+          onDelete={async () => {
+            await lessonApi.delete(activeLesson._id);
+            setActiveLesson(null);
+            fetchCourse();
+            setEditActiveLessonOpen(false);
+          }}
+        />
+      )}
     </PageTransition>
   );
 };

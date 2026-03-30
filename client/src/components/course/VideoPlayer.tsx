@@ -11,7 +11,7 @@ import {
   SkipForward,
 } from "lucide-react";
 
-const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 4];
+const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
 function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -265,30 +265,31 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
               <div className="relative">
                 <button
                   onClick={() => setShowSpeedMenu((s) => !s)}
-                  className="text-white/80 hover:text-white px-1.5 py-0.5 rounded text-xs font-mono font-bold min-w-[2.5rem] text-center bg-white/10 hover:bg-white/20 transition-colors"
+                  className="text-white/80 hover:text-white px-2 py-1 rounded text-xs font-medium min-w-[3rem] text-center bg-white/10 hover:bg-white/20 transition-colors shadow-sm"
                   title="Playback speed (< >)"
                 >
-                  {speed === 1 ? "1×" : `${speed}×`}
+                  {speed === 1 ? "1x" : `${speed}x`}
                 </button>
                 <AnimatePresence>
                   {showSpeedMenu && (
                     <motion.div
-                      initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                      className="absolute bottom-full right-0 mb-2 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden shadow-2xl min-w-[80px] z-50"
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute bottom-full right-[-10px] md:right-0 mb-3 bg-zinc-900/95 backdrop-blur-md border border-zinc-700/50 rounded-xl overflow-hidden shadow-2xl min-w-[100px] z-[60]"
                     >
                       {SPEEDS.map((s) => (
                         <button
                           key={s}
                           onClick={() => applySpeed(s)}
-                          className={`w-full text-center px-4 py-1.5 text-xs font-mono transition-colors ${
+                          className={`w-full text-center px-4 py-3 md:py-2 text-sm transition-colors ${
                             speed === s
-                              ? "bg-indigo-600 text-white"
-                              : "text-zinc-200 hover:bg-zinc-800"
+                              ? "bg-indigo-600/90 text-white font-semibold"
+                              : "text-zinc-300 hover:bg-white/10 hover:text-white font-medium"
                           }`}
                         >
-                          {s}×
+                          {s}x
                         </button>
                       ))}
                     </motion.div>
