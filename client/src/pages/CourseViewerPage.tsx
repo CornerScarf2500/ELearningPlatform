@@ -48,6 +48,7 @@ export const CourseViewerPage = () => {
 
   // Resizable sidebar
   const [sidebarWidth, setSidebarWidth] = useState(320);
+  const [showSidebar, setShowSidebar] = useState(true);
   const isResizing = useRef(false);
 
   const sectionStartIndices = React.useMemo(() => {
@@ -237,19 +238,28 @@ export const CourseViewerPage = () => {
   };
 
   return (
-    <PageTransition className="h-full">
-      <div className="flex flex-col md:flex-row md:h-screen">
+    <PageTransition className="h-[100dvh] w-full overflow-hidden flex flex-col bg-white dark:bg-zinc-950">
+      <div className="flex flex-col md:flex-row flex-1 h-full min-h-0 w-full">
 
         {/* ── Left: Player ─────────────────────────────── */}
-        <div className="flex flex-col" style={{ flex: "1 1 0", minWidth: 0 }}>
+        <div className={`flex flex-col bg-white dark:bg-zinc-950 transition-all duration-300 ${showSidebar ? "md:flex-1" : "flex-1"} ${!showSidebar && "md:w-full"}`} style={showSidebar ? { flex: "1 1 0", minWidth: 0 } : { minWidth: 0 }}>
           {/* Top bar */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sticky top-0 z-50 md:static">
             <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
               <ArrowLeft className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
             </button>
-            <div className="min-w-0 flex-1">
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">{course.title}</h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{activeLesson?.title || "Select a lesson"}</p>
+            <div className="min-w-0 flex-1 flex items-center justify-between">
+              <div className="truncate">
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">{course.title}</h2>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{activeLesson?.title || "Select a lesson"}</p>
+              </div>
+              <button
+                onClick={() => setShowSidebar(!showSidebar)}
+                className="hidden md:flex p-1.5 ml-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition flex-shrink-0"
+                title={showSidebar ? "Hide Sidebar" : "Show Sidebar"}
+              >
+                {showSidebar ? <ToggleRight className="w-5 h-5 text-indigo-500" /> : <ToggleLeft className="w-5 h-5 text-zinc-400" />}
+              </button>
             </div>
           </div>
 
@@ -353,18 +363,22 @@ export const CourseViewerPage = () => {
         </div>
 
         {/* Resize handle (desktop only) */}
-        <div
-          onMouseDown={startResize}
-          className="hidden md:flex w-1 cursor-col-resize hover:bg-indigo-400 bg-zinc-200 dark:bg-zinc-800 transition-colors active:bg-indigo-500 items-center justify-center"
-        >
-          <GripVertical className="w-3 h-3 text-zinc-400 opacity-0 hover:opacity-100 transition-opacity" />
-        </div>
+        {showSidebar && (
+          <div
+            onMouseDown={startResize}
+            className="hidden md:flex w-1 cursor-col-resize hover:bg-indigo-400 bg-zinc-200 dark:bg-zinc-800 transition-colors active:bg-indigo-500 items-center justify-center flex-shrink-0"
+          >
+            <GripVertical className="w-3 h-3 text-zinc-400 opacity-0 hover:opacity-100 transition-opacity" />
+          </div>
+        )}
 
         {/* ── Right: Lesson list ────────────────────── */}
         <div
-          className="w-full md:w-[var(--sidebar-width)] md:h-screen md:overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 scroll-snap-y shrink-0 pb-20 md:pb-0"
+          className={`w-full md:w-[var(--sidebar-width)] flex-1 md:flex-none flex flex-col border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-all duration-300 ${!showSidebar ? "hidden" : "flex"} overflow-hidden`}
           style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
+          {/* Scrollable list container */}
+          <div className="flex-1 overflow-y-auto scroll-snap-y pb-20 md:pb-0">
           {/* Sidebar header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Content</h3>
@@ -451,7 +465,7 @@ export const CourseViewerPage = () => {
             <Droppable droppableId="sections-list" type="section">
               {(provided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef}>
-                  {course.sections?.filter((s) => s.lessons?.length > 0).map((section, index) => (
+                  {course.sections?.filter((s) => isAdmin || s.lessons?.length > 0).map((section, index) => (
                     <Draggable key={section._id} draggableId={section._id} index={index} isDragDisabled={!isAdmin || !showReorderHandle}>
                       {(provided, snapshot) => (
                         <div
@@ -480,6 +494,7 @@ export const CourseViewerPage = () => {
               )}
             </Droppable>
           </DragDropContext>
+          </div>
         </div>
       </div>
 
@@ -642,35 +657,52 @@ export const CourseViewerPage = () => {
       </Modal>
 
       {/* Edit Active Lesson */}
-      {isAdmin && activeLesson && (
-        <AdminEditModal
-          open={editActiveLessonOpen}
-          onClose={() => setEditActiveLessonOpen(false)}
-          title="Edit Lesson"
-          fields={[
-            { label: "Title", key: "title", value: activeLesson.title },
-            { label: "Video URL", key: "videoUrl", value: activeLesson.videoUrl || "", placeholder: "https:// or YouTube URL" },
-            {
-              label: "Materials",
-              key: "fileUrls",
-              type: "list",
-              value: (activeLesson.fileUrls || []).join("\n") || activeLesson.fileUrl || "",
-              placeholder: "https://… (PDF, YouTube, link…)",
-              addLabel: "+ Add Material",
-            },
-            { label: "Order", key: "order", value: String(activeLesson.order ?? 0) },
-          ]}
-          onSave={async (vals) => {
-            const fileUrls = String(vals.fileUrls || "").split("\n").map((u: string) => u.trim()).filter(Boolean);
-            await lessonApi.update(activeLesson._id, {
-              ...vals,
-              fileUrls,
-              fileUrl: fileUrls[0] || "",
-              order: Number(vals.order) || 0,
-            } as Partial<Lesson>);
-            fetchCourse();
-            setEditActiveLessonOpen(false);
-          }}
+      {isAdmin && activeLesson && (() => {
+        // Compute visual order (index + 1) for the active lesson to match what is shown in the list
+        let visualOrder = (activeLesson.order ?? 0) + 1;
+        if (course) {
+          const allLessons = [
+            ...(course.unsectioned || []),
+            ...(course.sections || []).flatMap((s) => s.lessons || []),
+          ];
+          const foundIdx = allLessons.findIndex(l => l._id === activeLesson._id);
+          if (foundIdx !== -1) visualOrder = foundIdx + 1;
+        }
+
+        return (
+          <AdminEditModal
+            open={editActiveLessonOpen}
+            onClose={() => setEditActiveLessonOpen(false)}
+            title="Edit Lesson"
+            fields={[
+              { label: "Title", key: "title", value: activeLesson.title },
+              { label: "Video URL", key: "videoUrl", value: activeLesson.videoUrl || "", placeholder: "https:// or YouTube URL" },
+              {
+                label: "Materials",
+                key: "fileUrls",
+                type: "list",
+                value: (activeLesson.fileUrls || []).join("\n") || activeLesson.fileUrl || "",
+                placeholder: "https://… (PDF, YouTube, link…)",
+                addLabel: "+ Add Material",
+              },
+              { label: "Order (Visual)", key: "order", value: String(visualOrder) },
+            ]}
+            onSave={async (vals) => {
+              const fileUrls = String(vals.fileUrls || "").split("\n").map((u: string) => u.trim()).filter(Boolean);
+              // Calculate actual zero-indexed order if they meant to change it 
+              const newVisualOrder = Number(vals.order);
+              let dbOrder = Number.isNaN(newVisualOrder) ? activeLesson.order : newVisualOrder - 1;
+              if (dbOrder! < 0) dbOrder = 0;
+
+              await lessonApi.update(activeLesson._id, {
+                ...vals,
+                fileUrls,
+                fileUrl: fileUrls[0] || "",
+                order: dbOrder,
+              } as Partial<Lesson>);
+              fetchCourse();
+              setEditActiveLessonOpen(false);
+            }}
           onDelete={async () => {
             await lessonApi.delete(activeLesson._id);
             setActiveLesson(null);
@@ -678,7 +710,8 @@ export const CourseViewerPage = () => {
             setEditActiveLessonOpen(false);
           }}
         />
-      )}
+        );
+      })()}
     </PageTransition>
   );
 };

@@ -12,7 +12,14 @@ const requireAdmin = require("../middleware/admin");
 // Returns all courses grouped by platform, with sections & lessons.
 // Admin only.
 // ──────────────────────────────────────────────────────────────
-router.get("/backup", verifyToken, requireAdmin, async (_req, res, next) => {
+const backupTokenFallback = (req, res, next) => {
+  if (req.query.token && !req.headers.authorization) {
+    req.headers.authorization = `Bearer ${req.query.token}`;
+  }
+  next();
+};
+
+router.get("/backup", backupTokenFallback, verifyToken, requireAdmin, async (req, res, next) => {
   try {
     const courses = await Course.find().populate("platformId", "name logoUrl").lean();
 
@@ -76,11 +83,16 @@ router.get("/backup", verifyToken, requireAdmin, async (_req, res, next) => {
       });
     }
 
-    res.json({
+    const backupData = {
       success: true,
       exportedAt: new Date().toISOString(),
       platforms: Object.values(platformMap),
-    });
+    };
+
+    const parsedJson = JSON.stringify(backupData, null, 2);
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="backup_${new Date().toISOString().slice(0, 10)}.json"`);
+    res.send(parsedJson);
   } catch (error) {
     next(error);
   }
@@ -102,7 +114,19 @@ router.get("/stats", verifyToken, requireAdmin, async (_req, res, next) => {
       usedBytes = stats.dataSize + stats.indexSize;
     } catch (e) {
       // Free tier MongoDB Atlas restricts db.stats()
-      usedBytes = 50 * 1024 * 1024; // Mock 50MB
+      // Fallback: iterate over all collections and estimate simply or mock sensibly if strictly enforced
+      try {
+        const collections = await mongoose.connection.db.listCollections().toArray();
+        let fallbackSize = 0;
+        for (const c of collections) {
+          const collStats = await mongoose.connection.db.collection(c.name).stats().catch(() => ({ size: 0, totalIndexSize: 0 }));
+          fallbackSize += (collStats.size || 0) + (collStats.totalIndexSize || 0);
+        }
+        usedBytes = fallbackSize;
+        stats = { collections: collections.length, note: "estimated" };
+      } catch (innerFallbackErr) {
+        usedBytes = 0;
+      }
     }
     res.json({ success: true, usedBytes, stats });
   } catch (error) {

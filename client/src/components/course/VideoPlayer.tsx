@@ -116,17 +116,39 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
     setBuffered(v.buffered.end(v.buffered.length - 1));
   };
 
-  const seek = (e: React.MouseEvent<HTMLDivElement>) => {
-    const v = videoRef.current;
-    const bar = e.currentTarget;
-    if (!v) return;
-    const rect = bar.getBoundingClientRect();
-    const pct = (e.clientX - rect.left) / rect.width;
-    v.currentTime = pct * v.duration;
-  };
-
   const progressPct = duration ? (currentTime / duration) * 100 : 0;
   const bufferedPct = duration ? (buffered / duration) * 100 : 0;
+
+  // Real-time scrubbing logic
+  const dragRef = useRef(false);
+
+  const calculateAndSeek = useCallback((clientX: number) => {
+    const v = videoRef.current;
+    if (!v) return;
+    const bar = document.getElementById("video-progress-bar");
+    if (!bar) return;
+    const rect = bar.getBoundingClientRect();
+    let pct = (clientX - rect.left) / rect.width;
+    pct = Math.max(0, Math.min(1, pct));
+    v.currentTime = pct * v.duration;
+  }, []);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    dragRef.current = true;
+    calculateAndSeek(e.clientX);
+    
+    // Switch to global pointer events to track cursor outside bar
+    const onPointerMove = (ev: PointerEvent) => {
+      if (dragRef.current) calculateAndSeek(ev.clientX);
+    };
+    const onPointerUp = () => {
+      dragRef.current = false;
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+    };
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+  };
 
   return (
     <div
@@ -195,8 +217,9 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
 
             {/* Progress bar */}
             <div
-              className="relative h-1.5 rounded-full bg-white/20 cursor-pointer mb-3 group/bar"
-              onClick={seek}
+              id="video-progress-bar"
+              className="relative h-2 md:h-1.5 rounded-full bg-white/20 cursor-pointer mb-3 group/bar touch-none"
+              onPointerDown={handlePointerDown}
             >
               <div className="absolute h-full rounded-full bg-white/30" style={{ width: `${bufferedPct}%` }} />
               <div className="absolute h-full rounded-full bg-indigo-500" style={{ width: `${progressPct}%` }} />
@@ -266,7 +289,7 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
                   type="range" min={0.5} max={4} step={0.25}
                   value={speed}
                   onChange={(e) => applySpeed(parseFloat(e.target.value))}
-                  className="w-16 accent-indigo-500 cursor-pointer hidden md:block"
+                  className="w-12 md:w-16 accent-indigo-500 cursor-pointer block"
                   title="Playback speed"
                 />
               </div>

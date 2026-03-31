@@ -31,25 +31,13 @@ const BackupButton = () => {
     if (!token) return;
     setDownloading(true);
     try {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/admin/backup`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!resp.ok) throw new Error("Backup failed");
-      const data = await resp.json();
-      // Download as JSON file
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `backup_${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch {
-      alert("Backup failed. Please try again.");
+      // Trigger native browser download using query token
+      const baseUrl = import.meta.env.VITE_API_URL || "";
+      const url = `${baseUrl}/api/admin/backup?token=${encodeURIComponent(token)}`;
+      window.location.href = url;
     } finally {
-      setDownloading(false);
+      // Small delay to simulate load for UI feedback
+      setTimeout(() => setDownloading(false), 2000);
     }
   };
 
