@@ -139,36 +139,65 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
   const progressPct = duration ? (currentTime / duration) * 100 : 0;
   const bufferedPct = duration ? (buffered / duration) * 100 : 0;
 
-  // Real-time scrubbing logic
+  // YouTube-style scrubbing: live dragging with visual feedback
   const dragRef = useRef(false);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragPct, setDragPct] = useState(0);
+  const [hoverPct, setHoverPct] = useState<number | null>(null);
 
-  const calculateAndSeek = useCallback((clientX: number) => {
-    const v = videoRef.current;
-    if (!v) return;
-    const bar = document.getElementById("video-progress-bar");
-    if (!bar) return;
+  const displayPct = isDragging ? dragPct : progressPct;
+
+  const calcPct = useCallback((clientX: number) => {
+    const bar = progressBarRef.current;
+    if (!bar) return 0;
     const rect = bar.getBoundingClientRect();
     let pct = (clientX - rect.left) / rect.width;
-    pct = Math.max(0, Math.min(1, pct));
-    v.currentTime = pct * v.duration;
+    return Math.max(0, Math.min(1, pct));
   }, []);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
     dragRef.current = true;
-    calculateAndSeek(e.clientX);
-    
-    // Switch to global pointer events to track cursor outside bar
+    setIsDragging(true);
+    const pct = calcPct(e.clientX);
+    setDragPct(pct * 100);
+    // Seek immediately for live scrubbing
+    if (videoRef.current && duration) {
+      videoRef.current.currentTime = pct * duration;
+    }
+
     const onPointerMove = (ev: PointerEvent) => {
-      if (dragRef.current) calculateAndSeek(ev.clientX);
+      if (!dragRef.current) return;
+      const p = calcPct(ev.clientX);
+      setDragPct(p * 100);
+      if (videoRef.current && duration) {
+        videoRef.current.currentTime = p * duration;
+      }
     };
-    const onPointerUp = () => {
+    const onPointerUp = (ev: PointerEvent) => {
+      if (!dragRef.current) return;
       dragRef.current = false;
+      const p = calcPct(ev.clientX);
+      if (videoRef.current && duration) {
+        videoRef.current.currentTime = p * duration;
+      }
+      setIsDragging(false);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
     };
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
   };
+
+  const handleBarHover = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isDragging) return;
+    setHoverPct(calcPct(e.clientX) * 100);
+  };
+
+  const hoverTime = hoverPct !== null && duration
+    ? formatTime((hoverPct / 100) * duration)
+    : null;
 
   return (
     <div
@@ -235,18 +264,42 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
               <p className="text-xs text-white/70 mb-2 truncate font-medium">{title}</p>
             )}
 
-            {/* Progress bar */}
+            {/* Progress bar — YouTube-style */}
             <div
-              id="video-progress-bar"
-              className="relative h-2 md:h-1.5 rounded-full bg-white/20 cursor-pointer mb-3 group/bar touch-none"
+              ref={progressBarRef}
+              className={`relative rounded-full bg-white/20 cursor-pointer mb-3 group/bar touch-none transition-all duration-150 ${
+                isDragging ? "h-3" : "h-1.5 hover:h-3"
+              }`}
               onPointerDown={handlePointerDown}
+              onMouseMove={handleBarHover}
+              onMouseLeave={() => setHoverPct(null)}
             >
-              <div className="absolute h-full rounded-full bg-white/30" style={{ width: `${bufferedPct}%` }} />
-              <div className="absolute h-full rounded-full bg-indigo-500" style={{ width: `${progressPct}%` }} />
+              {/* Buffered */}
+              <div className="absolute h-full rounded-full bg-white/25 pointer-events-none" style={{ width: `${bufferedPct}%` }} />
+              {/* Hover preview (gray bar) */}
+              {hoverPct !== null && !isDragging && (
+                <div className="absolute h-full rounded-full bg-white/20 pointer-events-none" style={{ width: `${hoverPct}%` }} />
+              )}
+              {/* Played / drag progress */}
+              <div className="absolute h-full rounded-full bg-indigo-500 pointer-events-none" style={{ width: `${displayPct}%` }} />
+              {/* Thumb */}
               <div
-                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow opacity-0 group-hover/bar:opacity-100 transition-opacity"
-                style={{ left: `calc(${progressPct}% - 6px)` }}
+                className={`absolute top-1/2 -translate-y-1/2 rounded-full bg-white shadow-md pointer-events-none transition-all duration-100 ${
+                  isDragging
+                    ? "w-4 h-4 opacity-100 scale-110"
+                    : "w-3 h-3 opacity-0 group-hover/bar:opacity-100"
+                }`}
+                style={{ left: `calc(${displayPct}% - ${isDragging ? 8 : 6}px)` }}
               />
+              {/* Hover time tooltip */}
+              {hoverTime && !isDragging && hoverPct !== null && (
+                <div
+                  className="absolute -top-8 -translate-x-1/2 px-1.5 py-0.5 rounded bg-black/80 text-white text-[10px] font-semibold tabular-nums pointer-events-none whitespace-nowrap"
+                  style={{ left: `${hoverPct}%` }}
+                >
+                  {hoverTime}
+                </div>
+              )}
             </div>
 
             {/* Button row */}

@@ -11,6 +11,7 @@ import type { Section, Lesson } from "../../types";
 
 interface Props {
   section: Section;
+  courseId: string;
   activeLesson: Lesson | null;
   onSelectLesson: (lesson: Lesson) => void;
   onMutate: () => void;
@@ -21,6 +22,7 @@ interface Props {
 
 export const LessonAccordion = ({
   section,
+  courseId,
   activeLesson,
   onSelectLesson,
   onMutate,
@@ -188,7 +190,7 @@ export const LessonAccordion = ({
             onSave={async (vals) => {
               await lessonApi.create({
                 ...vals,
-                courseId: section.courseId,
+                courseId,
                 sectionId: section._id,
                 type: (vals.type as "video" | "pdf") || "video",
               } as Partial<Lesson> & { courseId: string; sectionId: string });

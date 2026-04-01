@@ -25,7 +25,7 @@ export interface Lesson {
   videoUrl: string;
   fileUrl: string;
   fileUrls?: string[];   // multiple material files (PDFs, docs, etc.)
-  sectionId: string;
+  sectionId?: string;    // provided by favorites/search responses for context
   order: number;
   type: "video" | "pdf";
   _type?: "lesson";
@@ -35,7 +35,7 @@ export interface Lesson {
 export interface Section {
   _id: string;
   title: string;
-  courseId: string;
+  courseId?: string;    // only present in non-embedded contexts
   order: number;
   lessons: Lesson[];
 }

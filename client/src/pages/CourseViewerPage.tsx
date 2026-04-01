@@ -475,6 +475,7 @@ export const CourseViewerPage = () => {
                         >
                           <LessonAccordion
                             section={section}
+                            courseId={course._id}
                             activeLesson={activeLesson}
                             onSelectLesson={setActiveLesson}
                             onMutate={fetchCourse}

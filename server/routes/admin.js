@@ -1,15 +1,12 @@
 const router = require("express").Router();
 const Course = require("../models/Course");
-const Section = require("../models/Section");
-const Lesson = require("../models/Lesson");
-const Platform = require("../models/Platform");
 const mongoose = require("mongoose");
 const verifyToken = require("../middleware/auth");
 const requireAdmin = require("../middleware/admin");
 
 // ──────────────────────────────────────────────────────────────
 // GET /api/admin/backup
-// Returns all courses grouped by platform, with sections & lessons.
+// Returns all courses grouped by platform, with embedded sections & lessons.
 // Admin only.
 // ──────────────────────────────────────────────────────────────
 const backupTokenFallback = (req, res, next) => {
@@ -21,65 +18,34 @@ const backupTokenFallback = (req, res, next) => {
 
 router.get("/backup", backupTokenFallback, verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const courses = await Course.find().populate("platformId", "name logoUrl").lean();
-
-    // Fetch all sections and lessons in bulk
-    const courseIds = courses.map((c) => c._id);
-    const sections = await Section.find({ courseId: { $in: courseIds } }).sort({ order: 1 }).lean();
-    const lessons = await Lesson.find({
-      $or: [{ sectionId: { $in: sections.map((s) => s._id) } }, { courseId: { $in: courseIds }, sectionId: null }],
-    }).sort({ order: 1 }).lean();
-
-    // Grouping & Re-ordering (1-based index)
-    const sectionByCourseId = {};
-    for (const s of sections) {
-      const k = s.courseId.toString();
-      if (!sectionByCourseId[k]) sectionByCourseId[k] = [];
-      s.order = sectionByCourseId[k].length + 1;
-      s.lessons = [];
-      sectionByCourseId[k].push({ ...s });
-    }
-
-    const lessonByCourseId = {}; // sectionless lessons
-    const sectionIndexMap = {};
-    for (const k in sectionByCourseId) {
-      for (const s of sectionByCourseId[k]) {
-        sectionIndexMap[s._id.toString()] = s;
-      }
-    }
-
-    for (const l of lessons) {
-      if (l.sectionId) {
-        const k = l.sectionId.toString();
-        const sec = sectionIndexMap[k];
-        if (sec) {
-          l.order = sec.lessons.length + 1;
-          sec.lessons.push(l);
-        }
-      } else if (l.courseId) {
-        const k = l.courseId.toString();
-        if (!lessonByCourseId[k]) lessonByCourseId[k] = [];
-        l.order = lessonByCourseId[k].length + 1;
-        lessonByCourseId[k].push(l);
-      }
-    }
+    const courses = await Course.find().lean();
 
     // Group courses by platform
-    const platformMap = {}; // name -> { platform info, courses[] }
+    const platformMap = {};
     for (const course of courses) {
-      const p = course.platformId;
-      const platformName = (p && typeof p === "object") ? (p.name || "Unknown") : (p ? String(p) : "Unknown");
-      const logoUrl = (p && typeof p === "object") ? (p.logoUrl || "") : "";
+      const platformName = course.platformName || "Unknown";
+      const logoUrl = course.platformLogoUrl || "";
 
       if (!platformMap[platformName]) {
         platformMap[platformName] = { name: platformName, logoUrl, courses: [] };
       }
 
-      const cid = course._id.toString();
+      // Re-number sections and lessons for clean export
+      const sections = (course.sections || []).map((sec, si) => ({
+        ...sec,
+        order: si + 1,
+        lessons: (sec.lessons || []).map((l, li) => ({ ...l, order: li + 1 })),
+      }));
+
+      const unsectioned = (course.unsectioned || []).map((l, li) => ({
+        ...l,
+        order: li + 1,
+      }));
+
       platformMap[platformName].courses.push({
         ...course,
-        sections: sectionByCourseId[cid] || [],
-        unsectioned: lessonByCourseId[cid] || [],
+        sections,
+        unsectioned,
       });
     }
 
@@ -107,28 +73,73 @@ router.get("/stats", verifyToken, requireAdmin, async (_req, res, next) => {
     if (mongoose.connection.readyState !== 1) {
       return res.status(503).json({ success: false, message: "Database not connected" });
     }
-    let stats = {};
+
+    const db = mongoose.connection.db;
     let usedBytes = 0;
+    let stats = {};
+    let method = "unknown";
+
+    // Attempt 1: db.stats() — works on self-hosted, may fail on Atlas free tier
     try {
-      stats = await mongoose.connection.db.stats();
-      usedBytes = stats.dataSize + stats.indexSize;
-    } catch (e) {
-      // Free tier MongoDB Atlas restricts db.stats()
-      // Fallback: iterate over all collections and estimate simply or mock sensibly if strictly enforced
+      const raw = await db.stats();
+      usedBytes = (raw.dataSize || 0) + (raw.indexSize || 0);
+      stats = { collections: raw.collections || 0, objects: raw.objects || 0 };
+      method = "dbStats";
+    } catch {
+      // Attempt 2: per-collection stats — may also fail on Atlas
       try {
-        const collections = await mongoose.connection.db.listCollections().toArray();
+        const collections = await db.listCollections().toArray();
         let fallbackSize = 0;
         for (const c of collections) {
-          const collStats = await mongoose.connection.db.collection(c.name).stats().catch(() => ({ size: 0, totalIndexSize: 0 }));
-          fallbackSize += (collStats.size || 0) + (collStats.totalIndexSize || 0);
+          try {
+            const cs = await db.command({ collStats: c.name });
+            fallbackSize += (cs.size || 0) + (cs.totalIndexSize || 0);
+          } catch {
+            // skip this collection
+          }
         }
-        usedBytes = fallbackSize;
-        stats = { collections: collections.length, note: "estimated" };
-      } catch (innerFallbackErr) {
-        usedBytes = 0;
+        if (fallbackSize > 0) {
+          usedBytes = fallbackSize;
+          stats = { collections: collections.length };
+          method = "collStats";
+        } else {
+          throw new Error("collStats failed too");
+        }
+      } catch {
+        // Attempt 3: estimate via $bsonSize aggregation (works everywhere)
+        try {
+          const collections = await db.listCollections().toArray();
+          let totalSize = 0;
+          let totalDocs = 0;
+          for (const c of collections) {
+            if (c.name.startsWith("system.") || c.name.startsWith("_")) continue;
+            try {
+              const result = await db.collection(c.name).aggregate([
+                { $group: { _id: null, totalSize: { $sum: { $bsonSize: "$$ROOT" } }, count: { $sum: 1 } } },
+              ]).toArray();
+              if (result.length > 0) {
+                totalSize += result[0].totalSize || 0;
+                totalDocs += result[0].count || 0;
+              }
+            } catch {
+              // $bsonSize might not be available on very old versions
+              const count = await db.collection(c.name).countDocuments();
+              totalDocs += count;
+              totalSize += count * 500; // rough estimate: 500 bytes per doc
+            }
+          }
+          usedBytes = totalSize;
+          stats = { collections: collections.length, objects: totalDocs, note: "estimated via $bsonSize" };
+          method = "bsonSize";
+        } catch {
+          usedBytes = 0;
+          stats = { note: "Unable to determine storage usage" };
+          method = "failed";
+        }
       }
     }
-    res.json({ success: true, usedBytes, stats });
+
+    res.json({ success: true, usedBytes, stats, method });
   } catch (error) {
     next(error);
   }

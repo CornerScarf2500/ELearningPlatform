@@ -48,7 +48,6 @@ const userSchema = new mongoose.Schema(
     favoriteLessons: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Lesson",
       },
     ],
   },
