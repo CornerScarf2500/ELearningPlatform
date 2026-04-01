@@ -18,7 +18,7 @@ const lessonSchema = new mongoose.Schema(
       default: "",
     },
     fileUrls: {
-      type: [String],
+      type: [mongoose.Schema.Types.Mixed],
       default: [],
     },
     sectionId: {

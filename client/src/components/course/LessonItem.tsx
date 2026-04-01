@@ -84,19 +84,32 @@ export const LessonItem = ({ lesson, isActive, index, onSelect, onMutate }: Prop
             {
               label: "Materials",
               key: "fileUrls",
-              type: "list",
-              value: (lesson.fileUrls || []).join("\n") || lesson.fileUrl || "",
+              type: "material-list",
+              value: JSON.stringify(lesson.fileUrls?.length ? lesson.fileUrls : lesson.fileUrl ? [lesson.fileUrl] : []),
               placeholder: "https://… (PDF, YouTube, link…)",
               addLabel: "+ Add Material",
             },
             { label: "Order", key: "order", value: String(lesson.order ?? index) },
           ]}
           onSave={async (vals) => {
-            const fileUrls = String(vals.fileUrls || "").split("\n").map((u: string) => u.trim()).filter(Boolean);
+            let fileUrls: any[] = [];
+            let fileUrl = "";
+            try {
+              const parsed = JSON.parse(vals.fileUrls || "[]");
+              if (Array.isArray(parsed)) {
+                fileUrls = parsed.filter((item: any) => {
+                  if (typeof item === "string") return item.trim();
+                  return item?.url?.trim();
+                });
+                fileUrl = fileUrls.length > 0
+                  ? (typeof fileUrls[0] === "string" ? fileUrls[0] : fileUrls[0].url)
+                  : "";
+              }
+            } catch {}
             await lessonApi.update(lesson._id, {
               ...vals,
               fileUrls,
-              fileUrl: fileUrls[0] || "",
+              fileUrl,
               order: Number(vals.order) || 0,
             } as Partial<Lesson>);
             onMutate();

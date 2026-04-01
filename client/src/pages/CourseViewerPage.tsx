@@ -17,6 +17,12 @@ import { useDownloads } from "../hooks/useDownloads";
 import { Modal } from "../components/ui/Modal";
 import type { Course, Section, Lesson } from "../types";
 
+// ── Helper: normalize a material entry to {url, name} ─────────
+function normalizeMaterial(item: string | { url: string; name?: string }): { url: string; name: string } {
+  if (typeof item === "string") return { url: item, name: "" };
+  return { url: item.url || "", name: item.name || "" };
+}
+
 // ── YouTube helpers ─────────────────────────────────────────────
 function isYouTubeUrl(url: string) {
   return /youtube\.com|youtu\.be/i.test(url);
@@ -237,9 +243,15 @@ export const CourseViewerPage = () => {
   const isVideo = activeLesson?.type === "video";
   const videoUrl = activeLesson?.videoUrl || "";
   const pdfUrl = activeLesson?.fileUrl || "";
-  const materialUrls: string[] = activeLesson?.fileUrls?.length
+
+  // Normalize materials to { url, name } objects
+  const rawMaterials = activeLesson?.fileUrls?.length
     ? activeLesson.fileUrls
     : activeLesson?.fileUrl ? [activeLesson.fileUrl] : [];
+  const materials = rawMaterials.map(normalizeMaterial).filter(m => m.url);
+
+  // Check if sections exist (for hiding "All Lessons")
+  const hasSections = (course.sections?.length || 0) > 0;
 
   const renderPlayer = () => {
     if (!activeLesson) return <p className="text-zinc-500 text-sm">Select a lesson to begin</p>;
@@ -272,6 +284,30 @@ export const CourseViewerPage = () => {
       );
     }
     return <p className="text-zinc-500 text-sm">No media available</p>;
+  };
+
+  // Serialize fileUrls for the material-list field  
+  const serializeMaterials = (lesson: Lesson): string => {
+    const items = lesson.fileUrls?.length ? lesson.fileUrls : lesson.fileUrl ? [lesson.fileUrl] : [];
+    return JSON.stringify(items);
+  };
+
+  // Parse fileUrls back from the material-list field value
+  const parseMaterials = (val: string): { fileUrls: (string | { url: string; name: string })[]; fileUrl: string } => {
+    try {
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed.filter((item: any) => {
+          if (typeof item === "string") return item.trim();
+          return item?.url?.trim();
+        });
+        const firstUrl = cleaned.length > 0
+          ? (typeof cleaned[0] === "string" ? cleaned[0] : cleaned[0].url)
+          : "";
+        return { fileUrls: cleaned, fileUrl: firstUrl };
+      }
+    } catch {}
+    return { fileUrls: [], fileUrl: "" };
   };
 
   return (
@@ -371,25 +407,25 @@ export const CourseViewerPage = () => {
           )}
 
           {/* Materials bar — local download only */}
-          {activeLesson && materialUrls.length > 0 && (
+          {activeLesson && materials.length > 0 && (
             <div className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
               <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
-                Materials ({materialUrls.length})
+                Materials ({materials.length})
               </p>
               <div className="flex flex-wrap gap-2">
-                {materialUrls.map((url, i) => {
-                  const filename = url.split("/").pop()?.split("?")[0] || `File ${i + 1}`;
-                  const isExt = /youtube\.com|youtu\.be|vimeo\.com/i.test(url);
+                {materials.map((mat, i) => {
+                  const displayName = mat.name || mat.url.split("/").pop()?.split("?")[0] || `File ${i + 1}`;
+                  const isExt = /youtube\.com|youtu\.be|vimeo\.com/i.test(mat.url);
                   return (
                     <motion.button
                       key={i}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.97 }}
-                      onClick={() => confirmMaterialDownload(url, filename)}
+                      onClick={() => confirmMaterialDownload(mat.url, displayName)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:border-indigo-400 transition-colors"
                     >
                       {isExt ? <ExternalLink className="w-3 h-3 text-amber-500 shrink-0" /> : <FileText className="w-3 h-3 text-amber-500 shrink-0" />}
-                      <span className="truncate max-w-[120px]">{filename}</span>
+                      <span className="truncate max-w-[120px]">{displayName}</span>
                       <Download className="w-3 h-3 text-zinc-400 shrink-0" />
                     </motion.button>
                   );
@@ -476,8 +512,8 @@ export const CourseViewerPage = () => {
             </div>
           </div>
 
-              {/* Unsectioned lessons (flat import, no sections) */}
-              {course.unsectioned && course.unsectioned.length > 0 && (
+              {/* Unsectioned lessons — only shown when NO sections exist */}
+              {course.unsectioned && course.unsectioned.length > 0 && !hasSections && (
                 <div className="border-b border-zinc-100 dark:border-zinc-800/60">
                   <div className="px-4 py-2">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">All Lessons</span>
@@ -519,6 +555,8 @@ export const CourseViewerPage = () => {
                             dragHandleProps={showReorderHandle ? provided.dragHandleProps : null}
                             showLessonGrips={showReorderHandle}
                             startIndex={sectionStartIndices[index]}
+                            sections={course.sections || []}
+                            sectionIndex={index}
                           />
                         </div>
                       )}
@@ -548,7 +586,7 @@ export const CourseViewerPage = () => {
         />
       )}
 
-      {/* Add Video modal */}
+      {/* Add Video modal — places video in last section if sections exist */}
       {isAdmin && course && (
         <AdminEditModal
           open={addVideoOpen}
@@ -560,26 +598,31 @@ export const CourseViewerPage = () => {
             {
               label: "Materials",
               key: "fileUrls",
-              type: "list",
-              value: "",
+              type: "material-list",
+              value: "[]",
               placeholder: "https://… (PDF, link…)",
               addLabel: "+ Add Material",
             },
           ]}
           onSave={async (vals) => {
-            const allLessons = [
-              ...(course.unsectioned || []),
-              ...(course.sections || []).flatMap((s) => s.lessons || []),
-            ];
-            const nextOrder = allLessons.length;
-            const fileUrls = String(vals.fileUrls || "").split("\n").map((u) => u.trim()).filter(Boolean);
+            const { fileUrls, fileUrl } = parseMaterials(vals.fileUrls || "[]");
+
+            // Determine where to place the new video
+            const lastSection = course.sections?.length
+              ? course.sections[course.sections.length - 1]
+              : null;
+
+            const nextOrder = lastSection
+              ? (lastSection.lessons?.length || 0)
+              : (course.unsectioned?.length || 0);
+
             await lessonApi.create({
               title: vals.title || "Untitled",
               videoUrl: vals.videoUrl || "",
-              fileUrls,
-              fileUrl: fileUrls[0] || "",
+              fileUrls: fileUrls as any,
+              fileUrl,
               courseId: course._id,
-              sectionId: undefined,
+              sectionId: lastSection?._id || undefined,
               order: nextOrder,
               type: "video",
             });
@@ -718,15 +761,15 @@ export const CourseViewerPage = () => {
               {
                 label: "Materials",
                 key: "fileUrls",
-                type: "list",
-                value: (activeLesson.fileUrls || []).join("\n") || activeLesson.fileUrl || "",
+                type: "material-list",
+                value: serializeMaterials(activeLesson),
                 placeholder: "https://… (PDF, YouTube, link…)",
                 addLabel: "+ Add Material",
               },
               { label: "Order (Visual)", key: "order", value: String(visualOrder) },
             ]}
             onSave={async (vals) => {
-              const fileUrls = String(vals.fileUrls || "").split("\n").map((u: string) => u.trim()).filter(Boolean);
+              const { fileUrls, fileUrl } = parseMaterials(vals.fileUrls || "[]");
               // Calculate actual zero-indexed order if they meant to change it 
               const newVisualOrder = Number(vals.order);
               let dbOrder = Number.isNaN(newVisualOrder) ? activeLesson.order : newVisualOrder - 1;
@@ -734,8 +777,8 @@ export const CourseViewerPage = () => {
 
               await lessonApi.update(activeLesson._id, {
                 ...vals,
-                fileUrls,
-                fileUrl: fileUrls[0] || "",
+                fileUrls: fileUrls as any,
+                fileUrl,
                 order: dbOrder,
               } as Partial<Lesson>);
               fetchCourse();
