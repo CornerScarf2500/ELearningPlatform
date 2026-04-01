@@ -89,35 +89,35 @@ const MaterialListField = ({
       <label className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-2">
         {label}
       </label>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {items.map((item, i) => (
-          <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50/50 dark:bg-zinc-800/30">
-            <div className="flex-1 space-y-1.5">
+          <div key={i} className="flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-2">
+              <input
+                type="text"
+                value={item.name}
+                placeholder="Name"
+                onChange={(e) => { const n = [...items]; n[i] = { ...n[i], name: e.target.value }; update(n); }}
+                className="w-1/3 px-2 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-shadow"
+              />
               <input
                 type="text"
                 value={item.url}
                 placeholder={placeholder || "URL"}
                 onChange={(e) => { const n = [...items]; n[i] = { ...n[i], url: e.target.value }; update(n); }}
-                className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-shadow"
-              />
-              <input
-                type="text"
-                value={item.name}
-                placeholder="Display name (optional)"
-                onChange={(e) => { const n = [...items]; n[i] = { ...n[i], name: e.target.value }; update(n); }}
-                className="w-full px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-white dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-shadow"
+                className="flex-1 px-2 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-shadow"
               />
             </div>
             <button onClick={() => update(items.filter((_, idx) => idx !== i))} type="button"
-              className="p-1.5 mt-1 text-red-400 hover:text-red-600 transition-colors shrink-0" title="Remove">
-              <X className="w-4 h-4" />
+              className="p-1 text-red-400 hover:text-red-600 transition-colors shrink-0" title="Remove">
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         ))}
       </div>
       <button onClick={() => update([...items, { url: "", name: "" }])} type="button"
-        className="mt-2 flex items-center gap-1 text-sm text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
-        <Plus className="w-3.5 h-3.5" />{addLabel || "+ Add Material"}
+        className="mt-2 flex items-center gap-1 text-xs text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+        <Plus className="w-3 h-3" />{addLabel || "+ Add Material"}
       </button>
     </div>
   );

@@ -528,7 +528,7 @@ export const CourseViewerPage = () => {
                     <>
                       {/* Backdrop */}
                       <div className="fixed inset-0 z-40" onClick={() => setAddChoiceOpen(false)} />
-                      <div className="absolute right-0 top-7 z-50 w-44 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-xl overflow-hidden">
+                      <div className="absolute right-0 top-full mt-1 z-50 w-44 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-xl overflow-hidden">
                         <button
                           onClick={() => { setAddChoiceOpen(false); setAddVideoOpen(true); }}
                           className="flex items-center gap-2.5 w-full px-4 py-3 text-sm text-zinc-800 dark:text-zinc-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
@@ -552,29 +552,52 @@ export const CourseViewerPage = () => {
             </div>
           </div>
 
+          <DragDropContext onDragEnd={handleDragEnd}>
               {/* Unsectioned lessons — only shown when NO sections exist */}
               {course.unsectioned && course.unsectioned.length > 0 && !hasSections && (
-                <div className="border-b border-zinc-100 dark:border-zinc-800/60">
-                  <div className="px-4 py-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">All Lessons</span>
-                  </div>
-                  <div className="pb-1">
-                    {course.unsectioned.map((lesson, i) => (
-                      <LessonItem
-                        key={lesson._id}
-                        lesson={lesson}
-                        isActive={activeLesson?._id === lesson._id}
-                        index={i}
-                        onSelect={() => setActiveLesson(lesson)}
-                        onMutate={fetchCourse}
-                      />
-                    ))}
-                  </div>
-                </div>
+                <Droppable droppableId="unsectioned" type="lesson">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef} className="border-b border-zinc-100 dark:border-zinc-800/60">
+                      <div className="px-4 py-2">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">All Lessons</span>
+                      </div>
+                      <div className="pb-1">
+                        {course.unsectioned.map((lesson, i) => (
+                          <Draggable key={lesson._id} draggableId={lesson._id} index={i} isDragDisabled={!isAdmin || !showReorderHandle}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={snapshot.isDragging ? "opacity-90 shadow-lg relative z-50 bg-white dark:bg-zinc-900 rounded-lg ring-1 ring-indigo-500" : ""}
+                              >
+                                <div className="flex items-center">
+                                  {isAdmin && showReorderHandle && (
+                                    <div {...provided.dragHandleProps} className="p-1 ml-1 cursor-grab text-zinc-300 hover:text-zinc-500 dark:text-zinc-700 dark:hover:text-zinc-500">
+                                      <GripVertical className="w-3.5 h-3.5" />
+                                    </div>
+                                  )}
+                                  <div className="flex-1">
+                                    <LessonItem
+                                      lesson={lesson}
+                                      isActive={activeLesson?._id === lesson._id}
+                                      index={i}
+                                      onSelect={() => setActiveLesson(lesson)}
+                                      onMutate={fetchCourse}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    </div>
+                  )}
+                </Droppable>
               )}
 
-          {/* Sectioned content */}
-          <DragDropContext onDragEnd={handleDragEnd}>
+            {/* Sectioned content */}
             <Droppable droppableId="sections-list" type="section">
               {(provided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef}>
