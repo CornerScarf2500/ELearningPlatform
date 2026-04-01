@@ -117,11 +117,15 @@ router.get("/", verifyToken, async (req, res, next) => {
       })
       .lean();
 
+    // Filter out null entries (deleted courses/lessons populate as null)
+    const courses = (user.favoriteCourses || []).filter(Boolean);
+    const lessons = (user.favoriteLessons || []).filter(Boolean);
+
     res.json({
       success: true,
       data: {
-        courses: user.favoriteCourses || [],
-        lessons: user.favoriteLessons || [],
+        courses,
+        lessons,
       },
     });
   } catch (error) {

@@ -13,6 +13,7 @@ import {
   UserX,
   Archive,
   Edit3,
+  Database,
 } from "lucide-react";
 import { PageTransition } from "../components/ui/PageTransition";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
@@ -55,6 +56,51 @@ const BackupButton = () => {
   );
 };
 
+// ── Storage Progress Bar ──────────────────────────────────────
+const TOTAL_MB = 512;
+
+const StorageProgressBar = ({ usedMB }: { usedMB: number }) => {
+  const pct = Math.min(100, (usedMB / TOTAL_MB) * 100);
+  const freeMB = Math.max(0, TOTAL_MB - usedMB);
+
+  // Color gradient: green → yellow → red
+  const getBarColor = (p: number) => {
+    if (p < 50) return "from-emerald-500 to-emerald-400";
+    if (p < 75) return "from-amber-500 to-yellow-400";
+    return "from-red-500 to-red-400";
+  };
+
+  const getTextColor = (p: number) => {
+    if (p < 50) return "text-emerald-600 dark:text-emerald-400";
+    if (p < 75) return "text-amber-600 dark:text-amber-400";
+    return "text-red-600 dark:text-red-400";
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+          {usedMB.toFixed(2)} MB / {TOTAL_MB} MB
+        </span>
+        <span className={`text-xs font-bold tabular-nums ${getTextColor(pct)}`}>
+          {pct.toFixed(1)}%
+        </span>
+      </div>
+      <div className="relative h-3 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className={`absolute h-full rounded-full bg-gradient-to-r ${getBarColor(pct)} shadow-sm`}
+        />
+      </div>
+      <p className="text-[11px] text-zinc-400">
+        {freeMB.toFixed(2)} MB free
+      </p>
+    </div>
+  );
+};
+
 export const SettingsPage = () => {
   const isAdmin = useAdmin();
   const logout = useAuthStore((s) => s.logout);
@@ -72,7 +118,9 @@ export const SettingsPage = () => {
     }
   }, []);
 
-  const [dbUsed, setDbUsed] = useState<string>("Calculating…");
+  const [dbUsedMB, setDbUsedMB] = useState<number | null>(null);
+  const [dbCollections, setDbCollections] = useState<number>(0);
+  const [dbError, setDbError] = useState(false);
 
   const fetchDbStats = useCallback(async () => {
     if (!isAdmin) return;
@@ -83,14 +131,14 @@ export const SettingsPage = () => {
       });
       const data = await resp.json();
       if (data.success) {
-        const mb = (data.usedBytes / 1024 / 1024).toFixed(2);
-        const free = (512 - Number(mb)).toFixed(2);
-        setDbUsed(`${mb} MB / 512.00 MB (${free} MB free) - ${data.stats.collections} collections`);
+        const mb = data.usedBytes / 1024 / 1024;
+        setDbUsedMB(mb);
+        setDbCollections(data.stats?.collections || 0);
       } else {
-        setDbUsed("Unavailable");
+        setDbError(true);
       }
     } catch {
-      setDbUsed("Unavailable");
+      setDbError(true);
     }
   }, [isAdmin]);
 
@@ -251,19 +299,6 @@ export const SettingsPage = () => {
                 </p>
               </div>
             </div>
-            {isAdmin && (
-              <div className="flex items-center gap-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                <Archive className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                <div>
-                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                    Database Storage
-                  </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {dbUsed}
-                  </p>
-                </div>
-              </div>
-            )}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -274,6 +309,35 @@ export const SettingsPage = () => {
             </motion.button>
           </div>
         </section>
+
+        {/* ── Admin: Database Storage ─────────────────── */}
+        {isAdmin && (
+          <section>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3 flex items-center gap-2">
+              <Database className="w-4 h-4" />
+              Database Storage (MongoDB)
+            </h2>
+            <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-4">
+              {dbError ? (
+                <p className="text-sm text-zinc-400">Storage data unavailable</p>
+              ) : dbUsedMB === null ? (
+                <div className="flex items-center gap-2 text-zinc-400">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">Loading storage data…</span>
+                </div>
+              ) : (
+                <>
+                  <StorageProgressBar usedMB={dbUsedMB} />
+                  {dbCollections > 0 && (
+                    <p className="text-[11px] text-zinc-400">
+                      {dbCollections} collection{dbCollections !== 1 ? "s" : ""}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* ── Admin: User Management ──────────────────── */}
         {isAdmin && (
