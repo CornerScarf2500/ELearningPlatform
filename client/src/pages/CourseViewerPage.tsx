@@ -210,19 +210,59 @@ export const CourseViewerPage = () => {
       setCourse({ ...course, sections: newSections });
       await sectionApi.reorder(newSections.map((s) => s._id));
     } else if (type === "lesson") {
-      const newSections = Array.from(course.sections);
-      const si = newSections.findIndex((s) => s._id === source.droppableId);
-      const di = newSections.findIndex((s) => s._id === destination.droppableId);
-      if (si === -1 || di === -1) return;
-      const sLessons = Array.from(newSections[si].lessons);
-      const dLessons = si === di ? sLessons : Array.from(newSections[di].lessons);
-      const [moved] = sLessons.splice(source.index, 1);
-      dLessons.splice(destination.index, 0, moved);
-      newSections[si] = { ...newSections[si], lessons: sLessons };
-      if (si !== di) newSections[di] = { ...newSections[di], lessons: dLessons };
-      setCourse({ ...course, sections: newSections });
-      if (si !== di) await lessonApi.update(draggableId, { sectionId: destination.droppableId });
-      await lessonApi.reorder(dLessons.map((l) => l._id));
+      // Collect all lessons from all sections and unsectioned
+      const allLessons: Array<{ lesson: Lesson; sectionId: string | null }> = [];
+      (course.unsectioned || []).forEach((l) => allLessons.push({ lesson: l, sectionId: null }));
+      (course.sections || []).forEach((s) => {
+        (s.lessons || []).forEach((l) => allLessons.push({ lesson: l, sectionId: s._id }));
+      });
+
+      // Find source and destination indices in the flat list
+      const sourceGlobalIndex = allLessons.findIndex((item) => item.lesson._id === draggableId);
+      if (sourceGlobalIndex === -1) return;
+
+      // Calculate destination global index
+      let destGlobalIndex = 0;
+      if (destination.droppableId === "unsectioned") {
+        destGlobalIndex = destination.index;
+      } else {
+        // Find the section and add its offset
+        let offset = (course.unsectioned || []).length;
+        for (const section of course.sections || []) {
+          if (section._id === destination.droppableId) {
+            destGlobalIndex = offset + destination.index;
+            break;
+          }
+          offset += section.lessons?.length || 0;
+        }
+      }
+
+      // Reorder: remove from source, insert at destination
+      const reordered = allLessons.filter((_, i) => i !== sourceGlobalIndex);
+      const movedItem = allLessons[sourceGlobalIndex];
+      reordered.splice(destGlobalIndex > sourceGlobalIndex ? destGlobalIndex - 1 : destGlobalIndex, 0, movedItem);
+
+      // Update the course state
+      const newUnsectioned: Lesson[] = [];
+      const newSections = course.sections.map((s) => ({ ...s, lessons: [] }));
+
+      reordered.forEach((item) => {
+        if (item.sectionId === null) {
+          newUnsectioned.push(item.lesson);
+        } else {
+          const secIdx = newSections.findIndex((s) => s._id === item.sectionId);
+          if (secIdx !== -1) {
+            newSections[secIdx].lessons.push(item.lesson);
+          }
+        }
+      });
+
+      setCourse({ ...course, unsectioned: newUnsectioned, sections: newSections });
+
+      // Send reorder to backend with section IDs
+      const orderedIds = reordered.map((item) => item.lesson._id);
+      const sectionIds = reordered.map((item) => item.sectionId || null);
+      await lessonApi.reorder(orderedIds, sectionIds);
     }
   };
 
@@ -451,9 +491,9 @@ export const CourseViewerPage = () => {
           style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
           {/* Scrollable list container */}
-          <div className="flex-1 overflow-y-auto scroll-snap-y pb-20 md:pb-0">
-          {/* Sidebar header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+          <div className="flex-1 overflow-y-auto scroll-snap-y pb-20 md:pb-0 scrollbar-none">
+          {/* Sidebar header — sticky */}
+          <div className="sticky top-0 z-40 flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Content</h3>
             <div className="flex items-center gap-1">
               {/* Toggle reorder handles */}

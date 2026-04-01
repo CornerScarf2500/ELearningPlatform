@@ -81,8 +81,8 @@ export const lessonApi = {
   update: (id: string, data: Partial<Lesson>) =>
     api.put<ApiResponse<Lesson>>(`/lessons/${id}`, data),
   delete: (id: string) => api.delete<ApiResponse>(`/lessons/${id}`),
-  reorder: (orderedIds: string[]) =>
-    api.put<ApiResponse>("/lessons/reorder", { orderedIds }),
+  reorder: (orderedIds: string[], sectionIds?: (string | null)[]) =>
+    api.put<ApiResponse>("/lessons/reorder", { orderedIds, sectionIds }),
 };
 
 /* ── Platforms ────────────────────────────────────────────── */

@@ -71,50 +71,73 @@ router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
 });
 
 // ──────────────────────────────────────────────────────────────
-// PUT /api/lessons/reorder — bulk reorder lessons within a section (Admin)
-// Body: { orderedIds: ["id1", "id2", "id3"] }
+// PUT /api/lessons/reorder — bulk reorder lessons across sections (Admin)
+// Body: { orderedIds: ["id1", "id2", "id3"], sectionIds?: ["sec1", "sec2", "sec1"] }
+// Supports cross-section rearrangement
 // Must be BEFORE /:id to avoid route conflict
 // ──────────────────────────────────────────────────────────────
 router.put("/reorder", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const { orderedIds } = req.body;
+    const { orderedIds, sectionIds } = req.body;
     if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
       return res.status(400).json({ success: false, message: "orderedIds must be a non-empty array." });
     }
 
-    // Find where the first lesson lives
+    // Find the course that contains the first lesson
     const loc = await findLessonLocation(orderedIds[0]);
     if (!loc) return res.status(404).json({ success: false, message: "Lesson not found." });
 
-    const { course, section, location } = loc;
-    const lessonsArray = location === "section" ? section.lessons : course.unsectioned;
+    const { course } = loc;
 
-    // Build map and reorder
-    const map = {};
-    for (const l of lessonsArray) {
-      map[l._id.toString()] = l;
+    // Build a map of all lessons in the course (from all sections and unsectioned)
+    const lessonMap = {};
+    const sectionMap = {};
+
+    // Map unsectioned lessons
+    for (const lesson of course.unsectioned) {
+      lessonMap[lesson._id.toString()] = { lesson, section: null };
     }
 
-    const reordered = [];
+    // Map sectioned lessons
+    for (const section of course.sections) {
+      sectionMap[section._id.toString()] = section;
+      for (const lesson of section.lessons) {
+        lessonMap[lesson._id.toString()] = { lesson, section };
+      }
+    }
+
+    // Extract lessons in the new order
+    const lessonsByNewOrder = [];
     for (let i = 0; i < orderedIds.length; i++) {
-      const l = map[orderedIds[i]];
-      if (l) {
-        l.order = i;
-        reordered.push(l);
+      const lessonId = orderedIds[i];
+      const entry = lessonMap[lessonId];
+      if (entry) {
+        entry.lesson.order = i;
+        lessonsByNewOrder.push({ lesson: entry.lesson, targetSectionId: sectionIds?.[i] || null, oldSection: entry.section });
       }
     }
 
-    // Add back any lessons not in orderedIds
-    for (const l of lessonsArray) {
-      if (!orderedIds.includes(l._id.toString())) {
-        reordered.push(l);
-      }
+    // Clear all lessons from sections and unsectioned
+    course.unsectioned = [];
+    for (const section of course.sections) {
+      section.lessons = [];
     }
 
-    if (location === "section") {
-      section.lessons = reordered;
-    } else {
-      course.unsectioned = reordered;
+    // Re-add lessons to their target locations
+    for (const { lesson, targetSectionId, oldSection } of lessonsByNewOrder) {
+      if (targetSectionId) {
+        const targetSection = course.sections.id(targetSectionId);
+        if (targetSection) {
+          targetSection.lessons.push(lesson);
+        } else if (oldSection) {
+          // Fallback to old section if target not found
+          oldSection.lessons.push(lesson);
+        } else {
+          course.unsectioned.push(lesson);
+        }
+      } else {
+        course.unsectioned.push(lesson);
+      }
     }
 
     await course.save();
