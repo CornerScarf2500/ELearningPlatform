@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Edit3, GripVertical, Trash2, AlertTriangle } from "lucide-react";
+import { ChevronRight, Edit3, GripVertical, AlertTriangle } from "lucide-react";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
 import { useAdmin } from "../../hooks/useAdmin";
@@ -12,7 +12,6 @@ import type { Section, Lesson } from "../../types";
 
 interface Props {
   section: Section;
-  courseId: string;
   activeLesson: Lesson | null;
   onSelectLesson: (lesson: Lesson) => void;
   onMutate: () => void;
@@ -25,7 +24,6 @@ interface Props {
 
 export const LessonAccordion = ({
   section,
-  courseId,
   activeLesson,
   onSelectLesson,
   onMutate,

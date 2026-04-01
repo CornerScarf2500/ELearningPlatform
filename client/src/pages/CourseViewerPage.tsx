@@ -244,7 +244,7 @@ export const CourseViewerPage = () => {
 
       // Update the course state
       const newUnsectioned: Lesson[] = [];
-      const newSections = course.sections.map((s) => ({ ...s, lessons: [] }));
+      const newSections: Section[] = course.sections.map((s) => ({ ...s, lessons: [] as Lesson[] }));
 
       reordered.forEach((item) => {
         if (item.sectionId === null) {
@@ -588,7 +588,6 @@ export const CourseViewerPage = () => {
                         >
                           <LessonAccordion
                             section={section}
-                            courseId={course._id}
                             activeLesson={activeLesson}
                             onSelectLesson={setActiveLesson}
                             onMutate={fetchCourse}
