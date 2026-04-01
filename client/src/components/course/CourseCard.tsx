@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Edit3, Heart } from "lucide-react";
+import { BookOpen, Edit3, Heart, Play, X } from "lucide-react";
 import { useAdmin } from "../../hooks/useAdmin";
 import { useAuthStore } from "../../store/authStore";
 import { AdminEditModal } from "../admin/AdminEditModal";
@@ -28,6 +28,20 @@ export const CourseCard = ({ course, index, onMutate, isSelectMode, selected, on
   const isAdmin = useAdmin();
   const { user, toggleFavoriteCourse } = useAuthStore();
   const [editOpen, setEditOpen] = useState(false);
+  const [lastWatched, setLastWatched] = useState<string | null>(null);
+
+  // Check for saved progress
+  // useEffect is required because localStorage might update
+  useState(() => {
+    const saved = localStorage.getItem(`lastWatched_${course._id}`);
+    if (saved) setLastWatched(saved);
+  });
+
+  const resetProgress = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    localStorage.removeItem(`lastWatched_${course._id}`);
+    setLastWatched(null);
+  };
 
   const isFav = user?.favoriteCourses.includes(course._id) ?? false;
   const platformName = course.platformName || "";
@@ -93,6 +107,36 @@ export const CourseCard = ({ course, index, onMutate, isSelectMode, selected, on
             </p>
           </div>
         </div>
+
+        {/* Continue Watching Sub-row (rendered if active and not in select mode) */}
+        {!isSelectMode && lastWatched && (
+          <div className="absolute -bottom-8 left-4 right-4 flex items-center justify-between opacity-0 group-hover:opacity-100 group-hover:-translate-y-11 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto">
+            <div className="flex items-center gap-2 bg-white dark:bg-zinc-800 shadow-lg rounded-lg p-1.5 border border-zinc-200 dark:border-zinc-700">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/course/${course._id}?lesson=${lastWatched}`);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-semibold rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors"
+              >
+                <Play className="w-3.5 h-3.5" />
+                Continue Watching
+              </button>
+              
+              <div className="px-2 py-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-md text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                {platformName || "Platform not selected"}
+              </div>
+
+              <button
+                onClick={resetProgress}
+                className="p-1 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors"
+                title="Reset progress"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Right: actions */}
         {!isSelectMode && (

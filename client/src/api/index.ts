@@ -122,8 +122,19 @@ export const userApi = {
     api.delete<ApiResponse>(`/users/${id}/sessions/${sessionId}`),
   toggleBan: (id: string) => api.post<ApiResponse>(`/users/${id}/ban`),
   deleteUser: (id: string) => api.delete<ApiResponse>(`/users/${id}`),
-  update: (id: string, data: { name?: string; role?: "admin" | "user"; isCoursesRestricted?: boolean; allowedCourses?: string[] }) =>
+  update: (id: string, data: { name?: string; role?: "admin" | "user"; isCoursesRestricted?: boolean; allowedCourses?: string[]; accessCode?: string }) =>
     api.put<ApiResponse>(`/users/${id}`, data),
+};
+
+/* ── Admin ────────────────────────────────────────────────── */
+export const adminApi = {
+  importZip: (file: File) => {
+    return api.post<ApiResponse & { imported?: any; skipped?: any; errors?: string[] }>(
+      "/admin/import-zip",
+      file,
+      { headers: { "Content-Type": "application/octet-stream" } }
+    );
+  },
 };
 
 export default api;

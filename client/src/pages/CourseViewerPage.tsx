@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight, Play, Heart, Edit3 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
@@ -32,6 +32,7 @@ function isExternalUrl(url: string) {
 export const CourseViewerPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const isAdmin = useAdmin();
   const { user, toggleFavoriteLesson } = useAuthStore();
   const [course, setCourse] = useState<(Course & { sections: Section[]; unsectioned: Lesson[] }) | null>(null);
@@ -145,15 +146,51 @@ export const CourseViewerPage = () => {
       const { data } = await courseApi.get(id);
       const c = data.data as Course & { sections: Section[]; unsectioned: Lesson[] };
       setCourse(c);
+
+      // Restore active lesson from URL, localStorage, or first item
       if (!activeLesson) {
-        if (c.unsectioned?.length) setActiveLesson(c.unsectioned[0]);
-        else if (c.sections?.length) {
-          for (const s of c.sections) { if (s.lessons?.length) { setActiveLesson(s.lessons[0]); break; } }
+        let defaultLesson: Lesson | null = null;
+        
+        // 1. Try URL param ?lesson=
+        const queryParams = new URLSearchParams(location.search);
+        const lessonQuery = queryParams.get("lesson");
+        
+        // 2. Try localStorage latest watched for this course
+        const storedId = localStorage.getItem(`lastWatched_${id}`);
+        const targetId = lessonQuery || storedId;
+
+        if (targetId) {
+          defaultLesson = c.unsectioned?.find(l => l._id === targetId) || null;
+          if (!defaultLesson && c.sections) {
+            for (const s of c.sections) {
+              const found = s.lessons?.find(l => l._id === targetId);
+              if (found) { defaultLesson = found; break; }
+            }
+          }
         }
+
+        // 3. Fallback to very first lesson
+        if (!defaultLesson) {
+          if (c.unsectioned?.length) defaultLesson = c.unsectioned[0];
+          else if (c.sections?.length) {
+            for (const s of c.sections) {
+              if (s.lessons?.length) { defaultLesson = s.lessons[0]; break; }
+            }
+          }
+        }
+
+        if (defaultLesson) setActiveLesson(defaultLesson);
       }
     } catch { /* handle */ }
     finally { setLoading(false); }
-  }, [id]);
+  }, [id, location.search, activeLesson]);
+
+  // Save progress
+  useEffect(() => {
+    if (id && activeLesson) {
+      localStorage.setItem(`lastWatched_${id}`, activeLesson._id);
+    }
+  }, [id, activeLesson]);
 
   const handleDragEnd = async (result: DropResult) => {
     if (!isAdmin || !course) return;

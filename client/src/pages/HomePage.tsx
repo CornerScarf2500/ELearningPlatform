@@ -7,7 +7,7 @@ import { AdminEditModal } from "../components/admin/AdminEditModal";
 import { Modal } from "../components/ui/Modal";
 import { useAdmin } from "../hooks/useAdmin";
 import { useAuthStore } from "../store/authStore";
-import { courseApi } from "../api";
+import { courseApi, adminApi } from "../api";
 import { BackendStatus } from "../components/ui/BackendStatus";
 import { platformApi } from "../api";
 import type { Course, Platform } from "../types";
@@ -15,7 +15,8 @@ import type { Course, Platform } from "../types";
 interface QueuedFile {
   name: string;
   status: "pending" | "importing" | "done" | "error";
-  parsed: any;
+  parsed?: any;
+  file?: File;
   error?: string;
 }
 
@@ -118,16 +119,20 @@ export const HomePage = () => {
   const parseFiles = (fileList: FileList) => {
     const readers: Promise<QueuedFile>[] = Array.from(fileList).map((file) =>
       new Promise<QueuedFile>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          try {
-            const parsed = JSON.parse(e.target?.result as string);
-            resolve({ name: file.name, status: "pending", parsed });
-          } catch {
-            resolve({ name: file.name, status: "error", parsed: null, error: "Invalid JSON" });
-          }
-        };
-        reader.readAsText(file);
+        if (file.name.toLowerCase().endsWith(".zip")) {
+          resolve({ name: file.name, status: "pending", file });
+        } else {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const parsed = JSON.parse(e.target?.result as string);
+              resolve({ name: file.name, status: "pending", parsed, file });
+            } catch {
+              resolve({ name: file.name, status: "error", error: "Invalid JSON" });
+            }
+          };
+          reader.readAsText(file);
+        }
       })
     );
     Promise.all(readers).then((results) => {
@@ -152,17 +157,24 @@ export const HomePage = () => {
   };
 
   const handleImportAll = async () => {
-    const pending = fileQueue.filter((f) => f.status === "pending" && f.parsed);
+    const pending = fileQueue.filter((f) => f.status === "pending" && (f.parsed || f.file?.name.endsWith(".zip")));
     if (pending.length === 0) return;
     setImporting(true);
     for (let i = 0; i < fileQueue.length; i++) {
       const f = fileQueue[i];
-      if (f.status !== "pending" || !f.parsed) continue;
+      if (f.status !== "pending" || (!f.parsed && !f.name.endsWith(".zip"))) continue;
+      
       setFileQueue((prev) =>
         prev.map((item, idx) => (idx === i ? { ...item, status: "importing" } : item))
       );
+      
       try {
-        await courseApi.import(f.parsed);
+        if (f.name.toLowerCase().endsWith(".zip") && f.file) {
+          const res = await adminApi.importZip(f.file);
+          if (!res.data.success) throw new Error(res.data.message || "ZIP import failed");
+        } else if (f.parsed) {
+          await courseApi.import(f.parsed);
+        }
         setFileQueue((prev) =>
           prev.map((item, idx) => (idx === i ? { ...item, status: "done" } : item))
         );
@@ -170,7 +182,7 @@ export const HomePage = () => {
         setFileQueue((prev) =>
           prev.map((item, idx) =>
             idx === i
-              ? { ...item, status: "error", error: err.response?.data?.message || "Import failed" }
+              ? { ...item, status: "error", error: err.response?.data?.message || err.message || "Import failed" }
               : item
           )
         );
@@ -426,7 +438,7 @@ export const HomePage = () => {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".json,application/json"
+              accept=".json,application/json,.zip,application/zip"
               multiple
               onChange={handleFileInput}
               className="hidden"
@@ -435,7 +447,7 @@ export const HomePage = () => {
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
               <span className="font-medium text-indigo-600 dark:text-indigo-400">Click to browse</span> or drag & drop
             </p>
-            <p className="text-xs text-zinc-400 mt-1">Accepts multiple .json files</p>
+            <p className="text-xs text-zinc-400 mt-1">Accepts multiple .json or .zip backup files</p>
           </div>
 
           {/* File Queue */}

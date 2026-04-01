@@ -126,14 +126,21 @@ export const SettingsPage = () => {
     if (!isAdmin) return;
     try {
       const token = useAuthStore.getState().token;
-      const resp = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/admin/stats`, {
+      const baseUrl = import.meta.env.VITE_API_URL || "/api";
+      const resp = await fetch(`${baseUrl}/admin/stats`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!resp.ok) {
+        setDbError(true);
+        return;
+      }
       const data = await resp.json();
       if (data.success) {
-        const mb = data.usedBytes / 1024 / 1024;
+        const bytes = data.usedBytes ?? 0;
+        const mb = bytes / 1024 / 1024;
         setDbUsedMB(mb);
         setDbCollections(data.stats?.collections || 0);
+        setDbError(false);
       } else {
         setDbError(true);
       }
@@ -185,7 +192,8 @@ export const SettingsPage = () => {
     role: "admin" | "user";
     isCoursesRestricted: boolean;
     allowedCourses: string[];
-  }>({ name: "", role: "user", isCoursesRestricted: false, allowedCourses: [] });
+    accessCode: string;
+  }>({ name: "", role: "user", isCoursesRestricted: false, allowedCourses: [], accessCode: "" });
   const [updatingUser, setUpdatingUser] = useState(false);
 
   const fetchCourses = useCallback(async () => {
@@ -449,6 +457,7 @@ export const SettingsPage = () => {
                               role: u.role as "admin" | "user",
                               isCoursesRestricted: u.isCoursesRestricted ?? false,
                               allowedCourses: (u.allowedCourses || []).map(c => c._id || c),
+                              accessCode: "",
                             });
                           }}
                           className="p-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
@@ -593,6 +602,19 @@ export const SettingsPage = () => {
                   onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
                   className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                   placeholder="Optional"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">
+                  Access Code
+                </label>
+                <input
+                  type="text"
+                  value={editForm.accessCode}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, accessCode: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  placeholder="Leave blank to keep unchanged"
                 />
               </div>
 
