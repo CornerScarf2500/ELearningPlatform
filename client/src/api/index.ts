@@ -70,8 +70,6 @@ export const sectionApi = {
   delete: (id: string) => api.delete<ApiResponse>(`/sections/${id}`),
   reorder: (orderedIds: string[]) =>
     api.put<ApiResponse>("/sections/reorder", { orderedIds }),
-  merge: (id: string, targetSectionId: string) =>
-    api.put<ApiResponse>(`/sections/${id}/merge`, { targetSectionId }),
 };
 
 /* ── Lessons ──────────────────────────────────────────────── */

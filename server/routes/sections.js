@@ -99,42 +99,6 @@ router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
 });
 
 // ──────────────────────────────────────────────────────────────
-// PUT /api/sections/:id/merge — merge lessons into another section, then delete (Admin)
-// Body: { targetSectionId }
-// ──────────────────────────────────────────────────────────────
-router.put("/:id/merge", verifyToken, requireAdmin, async (req, res, next) => {
-  try {
-    const { targetSectionId } = req.body;
-    if (!targetSectionId) {
-      return res.status(400).json({ success: false, message: "targetSectionId is required." });
-    }
-
-    const course = await Course.findOne({ "sections._id": req.params.id });
-    if (!course) return res.status(404).json({ success: false, message: "Section not found." });
-
-    const sourceSection = course.sections.id(req.params.id);
-    const targetSection = course.sections.id(targetSectionId);
-    if (!sourceSection) return res.status(404).json({ success: false, message: "Source section not found." });
-    if (!targetSection) return res.status(404).json({ success: false, message: "Target section not found." });
-
-    // Append all lessons from source to target
-    const lessonsToMove = sourceSection.lessons.map(l => l.toObject());
-    for (let i = 0; i < lessonsToMove.length; i++) {
-      lessonsToMove[i].order = targetSection.lessons.length + i;
-      targetSection.lessons.push(lessonsToMove[i]);
-    }
-
-    // Remove source section
-    course.sections.pull({ _id: req.params.id });
-    await course.save();
-
-    res.json({ success: true, message: "Lessons merged and section deleted." });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// ──────────────────────────────────────────────────────────────
 // DELETE /api/sections/:id — delete section + its lessons (Admin)
 // ──────────────────────────────────────────────────────────────
 router.delete("/:id", verifyToken, requireAdmin, async (req, res, next) => {

@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Edit3, GripVertical, Trash2, AlertTriangle } from "lucide-react";
+import { ChevronRight, Edit3, Plus, GripVertical } from "lucide-react";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
 import { useAdmin } from "../../hooks/useAdmin";
 import { AdminEditModal } from "../admin/AdminEditModal";
-import { Modal } from "../ui/Modal";
 import { LessonItem } from "./LessonItem";
-import { sectionApi } from "../../api";
+import { sectionApi, lessonApi } from "../../api";
 import type { Section, Lesson } from "../../types";
 
 interface Props {
@@ -19,8 +18,6 @@ interface Props {
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   showLessonGrips?: boolean;
   startIndex?: number;
-  sections: Section[];       // full sections array for merge logic
-  sectionIndex: number;      // index of this section in the array
 }
 
 export const LessonAccordion = ({
@@ -32,42 +29,11 @@ export const LessonAccordion = ({
   dragHandleProps,
   showLessonGrips = true,
   startIndex = 0,
-  sections,
-  sectionIndex,
 }: Props) => {
   const [open, setOpen] = useState(true);
   const isAdmin = useAdmin();
   const [editOpen, setEditOpen] = useState(false);
-  const [deleteChoiceOpen, setDeleteChoiceOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-
-  // Determine merge target: prefer previous section, fallback to next
-  const prevSection = sectionIndex > 0 ? sections[sectionIndex - 1] : null;
-  const nextSection = sectionIndex < sections.length - 1 ? sections[sectionIndex + 1] : null;
-  const mergeTarget = prevSection || nextSection;
-
-  const handleDeleteWithVideos = async () => {
-    setDeleting(true);
-    try {
-      await sectionApi.delete(section._id);
-      onMutate();
-    } finally {
-      setDeleting(false);
-      setDeleteChoiceOpen(false);
-    }
-  };
-
-  const handleMergeVideos = async () => {
-    if (!mergeTarget) return;
-    setDeleting(true);
-    try {
-      await sectionApi.merge(section._id, mergeTarget._id);
-      onMutate();
-    } finally {
-      setDeleting(false);
-      setDeleteChoiceOpen(false);
-    }
-  };
+  const [addOpen, setAddOpen] = useState(false);
 
   return (
     <div className="border-b border-zinc-200 dark:border-zinc-800 last:border-b-0">
@@ -94,6 +60,18 @@ export const LessonAccordion = ({
 
         {isAdmin && (
           <div className="flex items-center gap-1 shrink-0 ml-2">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setAddOpen(true);
+              }}
+              className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
+              title="Add lesson"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </motion.button>
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -193,59 +171,32 @@ export const LessonAccordion = ({
               await sectionApi.update(section._id, vals as Partial<Section>);
               onMutate();
             }}
-            onDelete={() => {
-              setEditOpen(false);
-              setDeleteChoiceOpen(true);
-              return Promise.resolve();
+            onDelete={async () => {
+              await sectionApi.delete(section._id);
+              onMutate();
             }}
           />
 
-          {/* Delete Section Choice Modal */}
-          <Modal open={deleteChoiceOpen} onClose={() => setDeleteChoiceOpen(false)}>
-            <div className="p-6 text-center">
-              <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
-                <AlertTriangle className="w-7 h-7 text-red-500" />
-              </div>
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-                Delete Section "{section.title}"?
-              </h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
-                {section.lessons.length > 0
-                  ? `This section has ${section.lessons.length} video${section.lessons.length > 1 ? "s" : ""}. What would you like to do?`
-                  : "This section is empty. It will be permanently deleted."}
-              </p>
-
-              <div className="flex flex-col gap-2.5">
-                {/* Merge option — only if there are videos and a target section */}
-                {section.lessons.length > 0 && mergeTarget && (
-                  <button
-                    onClick={handleMergeVideos}
-                    disabled={deleting}
-                    className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 disabled:opacity-50 transition text-sm"
-                  >
-                    {deleting ? "Moving…" : `Move videos to "${mergeTarget.title}"`}
-                  </button>
-                )}
-
-                {/* Delete all */}
-                <button
-                  onClick={handleDeleteWithVideos}
-                  disabled={deleting}
-                  className="w-full py-2.5 px-4 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 disabled:opacity-50 transition text-sm"
-                >
-                  {deleting ? "Deleting…" : section.lessons.length > 0 ? "Delete section & all videos" : "Delete section"}
-                </button>
-
-                {/* Cancel */}
-                <button
-                  onClick={() => setDeleteChoiceOpen(false)}
-                  className="w-full py-2 text-xs font-medium text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </Modal>
+          <AdminEditModal
+            open={addOpen}
+            onClose={() => setAddOpen(false)}
+            title="Add Lesson"
+            fields={[
+              { label: "Title", key: "title", value: "", placeholder: "Lesson title" },
+              { label: "Video URL", key: "videoUrl", value: "", placeholder: "https://..." },
+              { label: "File URL (optional)", key: "fileUrl", value: "", placeholder: "https://..." },
+              { label: "Type", key: "type", value: "video", placeholder: "video or pdf" },
+            ]}
+            onSave={async (vals) => {
+              await lessonApi.create({
+                ...vals,
+                courseId,
+                sectionId: section._id,
+                type: (vals.type as "video" | "pdf") || "video",
+              } as Partial<Lesson> & { courseId: string; sectionId: string });
+              onMutate();
+            }}
+          />
         </>
       )}
     </div>

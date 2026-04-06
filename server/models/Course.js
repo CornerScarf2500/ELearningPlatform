@@ -19,7 +19,7 @@ const lessonSchema = new mongoose.Schema(
       default: "",
     },
     fileUrls: {
-      type: [mongoose.Schema.Types.Mixed],
+      type: [String],
       default: [],
     },
     order: {

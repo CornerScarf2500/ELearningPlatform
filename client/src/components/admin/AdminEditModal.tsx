@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { X, Plus } from "lucide-react";
 import { Modal } from "../ui/Modal";
 
-type FieldType = "text" | "list" | "suggest" | "material-list";
+type FieldType = "text" | "list" | "suggest";
 
 interface Field {
   label: string;
@@ -61,63 +61,6 @@ const ListField = ({
       <button onClick={() => update([...items, ""])} type="button"
         className="mt-2 flex items-center gap-1 text-sm text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
         <Plus className="w-3.5 h-3.5" />{addLabel || "+ Add"}
-      </button>
-    </div>
-  );
-};
-
-// ── Material list field (URL + optional Name) ──────────────────
-interface MaterialItem {
-  url: string;
-  name: string;
-}
-
-const MaterialListField = ({
-  label, addLabel, placeholder, initial, onChange,
-}: {
-  label: string;
-  addLabel?: string;
-  placeholder?: string;
-  initial: MaterialItem[];
-  onChange: (items: MaterialItem[]) => void;
-}) => {
-  const [items, setItems] = useState<MaterialItem[]>(initial.length ? initial : [{ url: "", name: "" }]);
-  const update = (next: MaterialItem[]) => { setItems(next); onChange(next); };
-
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-2">
-        {label}
-      </label>
-      <div className="space-y-3">
-        {items.map((item, i) => (
-          <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50/50 dark:bg-zinc-800/30">
-            <div className="flex-1 space-y-1.5">
-              <input
-                type="text"
-                value={item.url}
-                placeholder={placeholder || "URL"}
-                onChange={(e) => { const n = [...items]; n[i] = { ...n[i], url: e.target.value }; update(n); }}
-                className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-shadow"
-              />
-              <input
-                type="text"
-                value={item.name}
-                placeholder="Display name (optional)"
-                onChange={(e) => { const n = [...items]; n[i] = { ...n[i], name: e.target.value }; update(n); }}
-                className="w-full px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700/60 bg-white dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-shadow"
-              />
-            </div>
-            <button onClick={() => update(items.filter((_, idx) => idx !== i))} type="button"
-              className="p-1.5 mt-1 text-red-400 hover:text-red-600 transition-colors shrink-0" title="Remove">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
-      </div>
-      <button onClick={() => update([...items, { url: "", name: "" }])} type="button"
-        className="mt-2 flex items-center gap-1 text-sm text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
-        <Plus className="w-3.5 h-3.5" />{addLabel || "+ Add Material"}
       </button>
     </div>
   );
@@ -211,34 +154,7 @@ export const AdminEditModal = ({ open, onClose, title, fields, onSave, onDelete 
     <Modal open={open} onClose={onClose} title={title}>
       <div className="space-y-4">
         {fields.map((field) =>
-          field.type === "material-list" ? (
-            <MaterialListField
-              key={field.key}
-              label={field.label}
-              addLabel={field.addLabel}
-              placeholder={field.placeholder}
-              initial={(() => {
-                // Parse from serialized JSON string or newline-separated URLs
-                try {
-                  const parsed = JSON.parse(field.value);
-                  if (Array.isArray(parsed)) {
-                    return parsed.map((item: string | { url: string; name?: string }) =>
-                      typeof item === "string" ? { url: item, name: "" } : { url: item.url || "", name: item.name || "" }
-                    );
-                  }
-                } catch {}
-                // Fallback: treat as newline-separated URLs
-                const urls = field.value ? field.value.split("\n").map(s => s.trim()).filter(Boolean) : [];
-                return urls.map(u => ({ url: u, name: "" }));
-              })()}
-              onChange={(items) => {
-                // Serialize as JSON so the save handler can parse it back
-                const cleaned = items.filter(it => it.url.trim());
-                const serialized = cleaned.map(it => it.name.trim() ? { url: it.url.trim(), name: it.name.trim() } : it.url.trim());
-                setValues((prev) => ({ ...prev, [field.key]: JSON.stringify(serialized) }));
-              }}
-            />
-          ) : field.type === "list" ? (
+          field.type === "list" ? (
             <ListField
               key={field.key}
               label={field.label}

@@ -24,7 +24,7 @@ export interface Lesson {
   title: string;
   videoUrl: string;
   fileUrl: string;
-  fileUrls?: (string | { url: string; name?: string })[];   // material URLs or {url, name} objects
+  fileUrls?: string[];   // multiple material files (PDFs, docs, etc.)
   sectionId?: string;    // provided by favorites/search responses for context
   order: number;
   type: "video" | "pdf";
