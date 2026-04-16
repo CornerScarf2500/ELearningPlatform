@@ -7,6 +7,8 @@ export interface User {
   role: Role;
   favoriteCourses: string[];
   favoriteLessons: string[];
+  courseProgress?: { courseId: string; status: string }[];
+  totalLearningSeconds?: number;
   createdAt?: string;
 }
 

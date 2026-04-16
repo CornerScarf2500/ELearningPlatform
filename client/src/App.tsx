@@ -17,6 +17,7 @@ import { FavoritesPage } from "./pages/FavoritesPage";
 import { SearchPage } from "./pages/SearchPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { DownloadsPage } from "./pages/DownloadsPage";
+import { ProfilePage } from "./pages/ProfilePage";
 
 /* ── Route guard ──────────────────────────────────────────── */
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -69,6 +70,7 @@ const AnimatedRoutes = () => {
           <Route path="search" element={<SearchPage />} />
           <Route path="downloads" element={<DownloadsPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

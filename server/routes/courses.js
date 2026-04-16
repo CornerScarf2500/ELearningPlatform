@@ -57,6 +57,7 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
       videos = [],
       pdfs = [],
       sections,
+      unsectioned = [],
       importedFilename,
     } = req.body;
 
@@ -82,22 +83,39 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
       if (p.url) pdfMap[key].push(p.url);
     }
 
-    if (videos.length > 0) {
+    if (videos.length > 0 || unsectioned.length > 0) {
       // NO sections created — flat lessons stored directly on course.
       // Admin can create and reorganise sections manually.
-      const sortedVideos = [...videos].sort((a, b) => (a.order || 0) - (b.order || 0));
+      // Merge "videos" and "unsectioned" (since custom JSON might use either)
+      const mergedItems = [...videos];
+      unsectioned.forEach((u) => {
+        // Handle unsectioned formatted from Sample JSON
+        mergedItems.push({
+          title: u.title,
+          url: u.videoUrl || u.url,
+          videoUrl: u.videoUrl,
+          fileUrl: u.fileUrl,
+          fileUrls: u.fileUrls || [],
+          type: u.type,
+          order: u.order,
+        });
+      });
+      
+      const sortedVideos = mergedItems.sort((a, b) => (a.order || 0) - (b.order || 0));
       const lessonDocs = sortedVideos.map((v, idx) => {
         const lessonTitle = (v.title || `Video ${idx + 1}`).trim();
         const matchedUrls = pdfMap[lessonTitle] || [];
+        const fileUrlsFinal = Array.isArray(v.fileUrls) && v.fileUrls.length > 0 ? v.fileUrls : matchedUrls;
+        
         return {
           title: lessonTitle,
-          videoUrl: v.url || "",
-          fileUrl: matchedUrls[0] || "",
-          fileUrls: matchedUrls,
+          videoUrl: v.videoUrl || v.url || "",
+          fileUrl: v.fileUrl || fileUrlsFinal[0] || "",
+          fileUrls: fileUrlsFinal,
           sectionId: null,
           courseId: course._id,
           order: idx,
-          type: "video",
+          type: v.type || (v.videoUrl || v.url ? "video" : "pdf"),
         };
       });
       if (lessonDocs.length > 0) await Lesson.insertMany(lessonDocs);
@@ -184,6 +202,39 @@ router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
     }
 
     res.json({ success: true, data: course });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────
+// POST /api/courses/:id/reorder-all — bulk reorder
+// ──────────────────────────────────────────────────────────────
+router.post("/:id/reorder-all", verifyToken, requireAdmin, async (req, res, next) => {
+  try {
+    const { sections, lessons } = req.body;
+    
+    if (Array.isArray(sections) && sections.length > 0) {
+      const sectionOps = sections.map((s) => ({
+        updateOne: {
+          filter: { _id: s._id, courseId: req.params.id },
+          update: { order: s.order },
+        },
+      }));
+      await Section.bulkWrite(sectionOps);
+    }
+    
+    if (Array.isArray(lessons) && lessons.length > 0) {
+      const lessonOps = lessons.map((l) => ({
+        updateOne: {
+          filter: { _id: l._id, courseId: req.params.id },
+          update: { order: l.order, sectionId: l.sectionId || null },
+        },
+      }));
+      await Lesson.bulkWrite(lessonOps);
+    }
+    
+    res.json({ success: true, message: "Reordered successfully" });
   } catch (error) {
     next(error);
   }

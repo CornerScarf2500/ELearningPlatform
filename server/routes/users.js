@@ -4,6 +4,54 @@ const verifyToken = require("../middleware/auth");
 const requireAdmin = require("../middleware/admin");
 
 // ──────────────────────────────────────────────────────────────
+// POST /api/users/me/progress — update course progress and time
+// ──────────────────────────────────────────────────────────────
+router.post("/me/progress", verifyToken, async (req, res, next) => {
+  try {
+    const { courseId, status, secondsToAdd } = req.body;
+    const user = await User.findById(req.user._id);
+    
+    if (secondsToAdd && !isNaN(secondsToAdd)) {
+      user.totalLearningSeconds = (user.totalLearningSeconds || 0) + Number(secondsToAdd);
+    }
+    
+    if (courseId && status) {
+      let found = false;
+      for (const p of user.courseProgress) {
+        if (p.courseId.toString() === courseId) {
+          p.status = status;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        user.courseProgress.push({ courseId, status });
+      }
+    }
+    
+    await user.save();
+    res.json({ success: true, courseProgress: user.courseProgress, totalLearningSeconds: user.totalLearningSeconds });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────
+// DELETE /api/users/me/stats — clear out stats (Admin self-clear)
+// ──────────────────────────────────────────────────────────────
+router.delete("/me/stats", verifyToken, requireAdmin, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    user.courseProgress = [];
+    user.totalLearningSeconds = 0;
+    await user.save();
+    res.json({ success: true, message: "Stats cleared" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────────────────────
 // GET /api/users — list all users (Admin)
 // Returns id, role, session count, and createdAt — never the hash.
 // ──────────────────────────────────────────────────────────────

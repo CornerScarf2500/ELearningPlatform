@@ -21,9 +21,10 @@ interface Props {
     grades: string[];
     platformNames: string[];
   };
+  readonly?: boolean;
 }
 
-export const CourseCard = ({ course, index, onMutate, isSelectMode, selected, onToggleSelect, suggestions }: Props) => {
+export const CourseCard = ({ course, index, onMutate, isSelectMode, selected, onToggleSelect, suggestions, readonly }: Props) => {
   const navigate = useNavigate();
   const isAdmin = useAdmin();
   const { user, toggleFavoriteCourse } = useAuthStore();
@@ -95,7 +96,7 @@ export const CourseCard = ({ course, index, onMutate, isSelectMode, selected, on
         </div>
 
         {/* Right: actions */}
-        {!isSelectMode && (
+        {!readonly && !isSelectMode && (
           <div className="flex items-center gap-1 shrink-0 ml-3">
           <motion.button
             whileHover={{ scale: 1.1 }}

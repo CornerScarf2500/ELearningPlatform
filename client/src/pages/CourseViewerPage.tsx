@@ -5,14 +5,13 @@ import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink,
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
 import { PageTransition } from "../components/ui/PageTransition";
-import { LessonAccordion } from "../components/course/LessonAccordion";
 import { LessonItem } from "../components/course/LessonItem";
 import { VideoPlayer } from "../components/course/VideoPlayer";
 import { AdminEditModal } from "../components/admin/AdminEditModal";
 import { ExternalLinkModal } from "../components/ui/ExternalLinkModal";
 import { useAdmin } from "../hooks/useAdmin";
 import { useAuthStore } from "../store/authStore";
-import { courseApi, sectionApi, lessonApi } from "../api";
+import { courseApi, sectionApi, lessonApi, authApi } from "../api";
 import type { Course, Section, Lesson } from "../types";
 
 // ── YouTube helpers ─────────────────────────────────────────────
@@ -105,31 +104,57 @@ export const CourseViewerPage = () => {
 
   const handleDragEnd = async (result: DropResult) => {
     if (!isAdmin || !course) return;
-    const { source, destination, type, draggableId } = result;
+    const { source, destination } = result;
     if (!destination) return;
-    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-    if (type === "section") {
-      const newSections = Array.from(course.sections);
-      const [moved] = newSections.splice(source.index, 1);
-      newSections.splice(destination.index, 0, moved);
-      setCourse({ ...course, sections: newSections });
-      await sectionApi.reorder(newSections.map((s) => s._id));
-    } else if (type === "lesson") {
-      const newSections = Array.from(course.sections);
-      const si = newSections.findIndex((s) => s._id === source.droppableId);
-      const di = newSections.findIndex((s) => s._id === destination.droppableId);
-      if (si === -1 || di === -1) return;
-      const sLessons = Array.from(newSections[si].lessons);
-      const dLessons = si === di ? sLessons : Array.from(newSections[di].lessons);
-      const [moved] = sLessons.splice(source.index, 1);
-      dLessons.splice(destination.index, 0, moved);
-      newSections[si] = { ...newSections[si], lessons: sLessons };
-      if (si !== di) newSections[di] = { ...newSections[di], lessons: dLessons };
-      setCourse({ ...course, sections: newSections });
-      if (si !== di) await lessonApi.update(draggableId, { sectionId: destination.droppableId });
-      await lessonApi.reorder(dLessons.map((l) => l._id));
+    if (source.index === destination.index) return;
+    
+    // Build current flat list
+    type FlatItem = { type: 'section' | 'lesson'; id: string; section?: Section; lesson?: Lesson };
+    const items: FlatItem[] = [];
+    (course.unsectioned || []).forEach(l => items.push({ type: 'lesson', id: `lesson-${l._id}`, lesson: l }));
+    (course.sections || []).forEach(s => {
+      items.push({ type: 'section', id: `section-${s._id}`, section: s });
+      (s.lessons || []).forEach(l => items.push({ type: 'lesson', id: `lesson-${l._id}`, lesson: l }));
+    });
+    
+    // Swap
+    const [moved] = items.splice(source.index, 1);
+    items.splice(destination.index, 0, moved);
+    
+    let currentSectionId: string | null = null;
+    let secOrder = 0;
+    const sectionsToUpdate: any[] = [];
+    const lessonsToUpdate: any[] = [];
+    let lesOrder = 0;
+    
+    for (const item of items) {
+      if (item.type === 'section') {
+        currentSectionId = item.section!._id;
+        sectionsToUpdate.push({ _id: currentSectionId, order: secOrder++ });
+        lesOrder = 0;
+      } else if (item.type === 'lesson') {
+        lessonsToUpdate.push({ _id: item.lesson!._id, sectionId: currentSectionId, order: lesOrder++ });
+      }
+    }
+    
+    setLoading(true);
+    try {
+      await courseApi.reorderAll(course._id, sectionsToUpdate, lessonsToUpdate);
+      await fetchCourse();
+    } catch {
+      alert("Failed to reorder");
+      setLoading(false);
     }
   };
+
+  // ── Ping timer for progress ─────────────────────────────────────
+  useEffect(() => {
+    if (!activeLesson || activeLesson.type !== "video") return;
+    const interval = setInterval(() => {
+      authApi.updateProgress(course?._id, "in-progress", 60).catch(()=>null);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [activeLesson, course?._id]);
 
   useEffect(() => { fetchCourse(); }, [fetchCourse]);
 
@@ -341,58 +366,74 @@ export const CourseViewerPage = () => {
             </div>
           </div>
 
-              {/* Unsectioned lessons (flat import, no sections) */}
-              {course.unsectioned && course.unsectioned.length > 0 && (
-                <div className="border-b border-zinc-100 dark:border-zinc-800/60">
-                  <div className="px-4 py-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">All Lessons</span>
-                  </div>
-                  <div className="pb-1">
-                    {course.unsectioned.map((lesson, i) => (
-                      <LessonItem
-                        key={lesson._id}
-                        lesson={lesson}
-                        isActive={activeLesson?._id === lesson._id}
-                        index={i}
-                        onSelect={() => setActiveLesson(lesson)}
-                        onMutate={fetchCourse}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-          {/* Sectioned content */}
+          {/* Sectioned content flat list */}
           <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="sections-list" type="section">
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef}>
-                  {course.sections?.filter((s) => s.lessons?.length > 0).map((section, index) => (
-                    <Draggable key={section._id} draggableId={section._id} index={index} isDragDisabled={!isAdmin || !showReorderHandle}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className={snapshot.isDragging ? "opacity-90 shadow-lg z-50 ring-2 ring-indigo-500 rounded-xl bg-white dark:bg-zinc-900" : ""}
-                        >
-                          <LessonAccordion
-                            section={section}
-                            activeLesson={activeLesson}
-                            onSelectLesson={setActiveLesson}
-                            onMutate={fetchCourse}
-                            dragHandleProps={showReorderHandle ? provided.dragHandleProps : null}
-                            showLessonGrips={showReorderHandle}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                  {(!course.sections || course.sections.length === 0) && (!course.unsectioned || course.unsectioned.length === 0) && (
-                    <p className="px-4 py-8 text-sm text-zinc-400 italic text-center">No content yet</p>
-                  )}
-                </div>
-              )}
+            <Droppable droppableId="course-playlist" type="item">
+              {(provided) => {
+                // Flatten items inline
+                type FlatItem = { type: 'section' | 'lesson'; id: string; section?: Section; lesson?: Lesson };
+                const items: FlatItem[] = [];
+                (course.unsectioned || []).forEach(l => items.push({ type: 'lesson', id: `lesson-${l._id}`, lesson: l }));
+                (course.sections || []).forEach(s => {
+                  items.push({ type: 'section', id: `section-${s._id}`, section: s });
+                  (s.lessons || []).forEach(l => items.push({ type: 'lesson', id: `lesson-${l._id}`, lesson: l }));
+                });
+
+                return (
+                  <div {...provided.droppableProps} ref={provided.innerRef} className="pb-24">
+                    {items.map((item, index) => (
+                      <Draggable key={item.id} draggableId={item.id} index={index} isDragDisabled={!isAdmin || !showReorderHandle}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className={snapshot.isDragging ? "opacity-90 shadow-lg z-50 ring-2 ring-indigo-500 rounded-xl bg-white dark:bg-zinc-900" : ""}
+                          >
+                            {item.type === 'section' ? (
+                              <div className="sticky top-0 z-40 bg-zinc-50 dark:bg-zinc-800/80 backdrop-blur-sm border-y border-zinc-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between group">
+                                <div className="flex items-center gap-2">
+                                  {isAdmin && showReorderHandle && (
+                                    <div {...provided.dragHandleProps} className="cursor-grab text-zinc-400 hover:text-indigo-500">
+                                      <GripVertical className="w-4 h-4" />
+                                    </div>
+                                  )}
+                                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+                                    {item.section?.title}
+                                  </h4>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center group/lesson bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800/50">
+                                {isAdmin && showReorderHandle && (
+                                  <div {...provided.dragHandleProps} className="p-2 cursor-grab text-zinc-300 hover:text-indigo-500 opacity-0 group-hover/lesson:opacity-100 transition-opacity">
+                                    <GripVertical className="w-4 h-4" />
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <LessonItem
+                                    lesson={item.lesson!}
+                                    isActive={activeLesson?._id === item.lesson?._id}
+                                    index={index}
+                                    onSelect={() => {
+                                      setActiveLesson(item.lesson!);
+                                      authApi.updateProgress(course?._id, "in-progress").catch(()=>null);
+                                    }}
+                                    onMutate={fetchCourse}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                    {items.length === 0 && (
+                      <p className="px-4 py-8 text-sm text-zinc-400 italic text-center">No content yet</p>
+                    )}
+                  </div>
+                );
+              }}
             </Droppable>
           </DragDropContext>
         </div>

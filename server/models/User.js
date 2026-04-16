@@ -51,6 +51,16 @@ const userSchema = new mongoose.Schema(
         ref: "Lesson",
       },
     ],
+    courseProgress: [
+      {
+        courseId: { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
+        status: { type: String, enum: ["in-progress", "completed"], default: "in-progress" },
+      }
+    ],
+    totalLearningSeconds: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

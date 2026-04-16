@@ -122,6 +122,8 @@ router.get("/me", verifyToken, async (req, res) => {
       role: req.user.role,
       favoriteCourses: req.user.favoriteCourses,
       favoriteLessons: req.user.favoriteLessons,
+      courseProgress: req.user.courseProgress || [],
+      totalLearningSeconds: req.user.totalLearningSeconds || 0,
       createdAt: req.user.createdAt,
     },
   });

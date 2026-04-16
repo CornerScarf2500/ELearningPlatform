@@ -41,6 +41,9 @@ export const authApi = {
     api.post<ApiResponse>("/auth/login", { accessCode }),
   logout: () => api.post<ApiResponse>("/auth/logout"),
   me: () => api.get<ApiResponse<never> & { user: User }>("/auth/me"),
+  updateProgress: (courseId?: string, status?: string, secondsToAdd?: number) =>
+    api.post<ApiResponse & { courseProgress: any[]; totalLearningSeconds: number }>("/users/me/progress", { courseId, status, secondsToAdd }),
+  clearStats: () => api.delete<ApiResponse>("/users/me/stats"),
 };
 
 /* ── Courses ──────────────────────────────────────────────── */
@@ -59,6 +62,8 @@ export const courseApi = {
   delete: (id: string) => api.delete<ApiResponse>(`/courses/${id}`),
   bulkSetPlatform: (courseIds: string[], platformName: string, platformLogoUrl?: string) =>
     api.put<ApiResponse>("/courses/bulk-platform", { courseIds, platformName, platformLogoUrl }),
+  reorderAll: (id: string, sections: { _id: string; order: number }[], lessons: { _id: string; order: number; sectionId: string | null }[]) =>
+    api.post<ApiResponse>(`/courses/${id}/reorder-all`, { sections, lessons }),
 };
 
 /* ── Sections ─────────────────────────────────────────────── */
