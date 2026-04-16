@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight, Play, Heart, Edit3 } from "lucide-react";
+import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight, Play, Heart } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
 import { PageTransition } from "../components/ui/PageTransition";
@@ -13,8 +13,6 @@ import { ExternalLinkModal } from "../components/ui/ExternalLinkModal";
 import { useAdmin } from "../hooks/useAdmin";
 import { useAuthStore } from "../store/authStore";
 import { courseApi, sectionApi, lessonApi } from "../api";
-import { useDownloads } from "../hooks/useDownloads";
-import { Modal } from "../components/ui/Modal";
 import type { Course, Section, Lesson } from "../types";
 
 // ── YouTube helpers ─────────────────────────────────────────────
@@ -32,7 +30,6 @@ function isExternalUrl(url: string) {
 export const CourseViewerPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
   const isAdmin = useAdmin();
   const { user, toggleFavoriteLesson } = useAuthStore();
   const [course, setCourse] = useState<(Course & { sections: Section[]; unsectioned: Lesson[] }) | null>(null);
@@ -41,7 +38,6 @@ export const CourseViewerPage = () => {
   const [addSectionOpen, setAddSectionOpen] = useState(false);
   const [addVideoOpen, setAddVideoOpen] = useState(false);
   const [addChoiceOpen, setAddChoiceOpen] = useState(false);
-  const [editActiveLessonOpen, setEditActiveLessonOpen] = useState(false);
   const [showReorderHandle, setShowReorderHandle] = useState(() => {
     try { return localStorage.getItem("reorder-handle") !== "false"; }
     catch { return true; }
@@ -49,19 +45,7 @@ export const CourseViewerPage = () => {
 
   // Resizable sidebar
   const [sidebarWidth, setSidebarWidth] = useState(320);
-  const [showSidebar, setShowSidebar] = useState(true);
   const isResizing = useRef(false);
-
-  const sectionStartIndices = React.useMemo(() => {
-    if (!course) return [];
-    const indices: number[] = [];
-    let current = course.unsectioned?.length || 0;
-    (course.sections || []).forEach(sec => {
-      indices.push(current);
-      current += sec.lessons?.length || 0;
-    });
-    return indices;
-  }, [course]);
 
   const startResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -82,62 +66,25 @@ export const CourseViewerPage = () => {
   // "External link" confirmation modal
   const [externalOpen, setExternalOpen] = useState(false);
   const [externalTarget, setExternalTarget] = useState<{ url: string; title: string } | null>(null);
-  
-  // Downloads
-  const { saveInApp } = useDownloads();
-  const [downloadVideoOpen, setDownloadVideoOpen] = useState(false);
-  const [downloadTarget, setDownloadTarget] = useState<{ url: string; title: string; size?: number | null } | null>(null);
-  const [downloadChecking, setDownloadChecking] = useState(false);
-
-  const [downloadMaterialOpen, setDownloadMaterialOpen] = useState(false);
-  const [downloadMaterialTarget, setDownloadMaterialTarget] = useState<{ url: string; title: string } | null>(null);
 
   const confirmExternalOpen = (url: string, title: string) => {
     setExternalTarget({ url, title });
     setExternalOpen(true);
   };
 
-  const triggerVideoDownload = async (url: string, title: string) => {
-    if (isExternalUrl(url)) {
-      setDownloadTarget({ url, title, size: null });
-      setDownloadVideoOpen(true);
-      return;
-    }
-    
-    setDownloadChecking(true);
-    setDownloadTarget({ url, title, size: null });
-    setDownloadVideoOpen(true);
-    try {
-      const resp = await fetch(url, { method: "HEAD" });
-      const len = resp.headers.get("content-length");
-      setDownloadTarget({ url, title, size: len ? Number(len) : null });
-    } catch {
-      setDownloadTarget({ url, title, size: null });
-    } finally {
-      setDownloadChecking(false);
-    }
-  };
-
-  const confirmMaterialDownload = (url: string, filename: string) => {
+  const triggerMaterialDownload = (url: string, filename: string) => {
     if (isExternalUrl(url)) {
       confirmExternalOpen(url, filename);
       return;
     }
-    setDownloadMaterialTarget({ url, title: filename });
-    setDownloadMaterialOpen(true);
-  };
-
-  const executeMaterialDownload = () => {
-    if (!downloadMaterialTarget) return;
     const a = document.createElement("a");
-    a.href = downloadMaterialTarget.url;
-    a.download = downloadMaterialTarget.title;
+    a.href = url;
+    a.download = filename;
     a.target = "_blank";
     a.rel = "noopener";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setDownloadMaterialOpen(false);
   };
 
   const fetchCourse = useCallback(async () => {
@@ -146,51 +93,15 @@ export const CourseViewerPage = () => {
       const { data } = await courseApi.get(id);
       const c = data.data as Course & { sections: Section[]; unsectioned: Lesson[] };
       setCourse(c);
-
-      // Restore active lesson from URL, localStorage, or first item
       if (!activeLesson) {
-        let defaultLesson: Lesson | null = null;
-        
-        // 1. Try URL param ?lesson=
-        const queryParams = new URLSearchParams(location.search);
-        const lessonQuery = queryParams.get("lesson");
-        
-        // 2. Try localStorage latest watched for this course
-        const storedId = localStorage.getItem(`lastWatched_${id}`);
-        const targetId = lessonQuery || storedId;
-
-        if (targetId) {
-          defaultLesson = c.unsectioned?.find(l => l._id === targetId) || null;
-          if (!defaultLesson && c.sections) {
-            for (const s of c.sections) {
-              const found = s.lessons?.find(l => l._id === targetId);
-              if (found) { defaultLesson = found; break; }
-            }
-          }
+        if (c.unsectioned?.length) setActiveLesson(c.unsectioned[0]);
+        else if (c.sections?.length) {
+          for (const s of c.sections) { if (s.lessons?.length) { setActiveLesson(s.lessons[0]); break; } }
         }
-
-        // 3. Fallback to very first lesson
-        if (!defaultLesson) {
-          if (c.unsectioned?.length) defaultLesson = c.unsectioned[0];
-          else if (c.sections?.length) {
-            for (const s of c.sections) {
-              if (s.lessons?.length) { defaultLesson = s.lessons[0]; break; }
-            }
-          }
-        }
-
-        if (defaultLesson) setActiveLesson(defaultLesson);
       }
     } catch { /* handle */ }
     finally { setLoading(false); }
-  }, [id, location.search, activeLesson]);
-
-  // Save progress
-  useEffect(() => {
-    if (id && activeLesson) {
-      localStorage.setItem(`lastWatched_${id}`, activeLesson._id);
-    }
-  }, [id, activeLesson]);
+  }, [id]);
 
   const handleDragEnd = async (result: DropResult) => {
     if (!isAdmin || !course) return;
@@ -275,28 +186,19 @@ export const CourseViewerPage = () => {
   };
 
   return (
-    <PageTransition className="h-[100dvh] w-full overflow-hidden flex flex-col bg-white dark:bg-zinc-950">
-      <div className="flex flex-col md:flex-row flex-1 h-full min-h-0 w-full">
+    <PageTransition className="h-full">
+      <div className="flex flex-col md:flex-row md:h-screen">
 
         {/* ── Left: Player ─────────────────────────────── */}
-        <div className={`flex flex-col bg-white dark:bg-zinc-950 transition-all duration-300 ${showSidebar ? "md:flex-1" : "flex-1"} ${!showSidebar && "md:w-full"}`} style={showSidebar ? { flex: "1 1 0", minWidth: 0 } : { minWidth: 0 }}>
+        <div className="flex flex-col" style={{ flex: "1 1 0", minWidth: 0 }}>
           {/* Top bar */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sticky top-0 z-50 md:static">
             <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
               <ArrowLeft className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
             </button>
-            <div className="min-w-0 flex-1 flex items-center justify-between">
-              <div className="truncate">
-                <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">{course.title}</h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{activeLesson?.title || "Select a lesson"}</p>
-              </div>
-              <button
-                onClick={() => setShowSidebar(!showSidebar)}
-                className="hidden md:flex p-1.5 ml-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition flex-shrink-0"
-                title={showSidebar ? "Hide Sidebar" : "Show Sidebar"}
-              >
-                {showSidebar ? <ToggleRight className="w-5 h-5 text-indigo-500" /> : <ToggleLeft className="w-5 h-5 text-zinc-400" />}
-              </button>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">{course.title}</h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{activeLesson?.title || "Select a lesson"}</p>
             </div>
           </div>
 
@@ -309,7 +211,7 @@ export const CourseViewerPage = () => {
 
           {/* Action Row below Player */}
           {activeLesson && (
-            <div className="flex items-center justify-center gap-8 px-4 py-5 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 relative z-40 lg:pb-5 pb-8">
+            <div className="flex items-center justify-center gap-6 px-4 py-6 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
               {/* Favorite Button */}
               {(() => {
                 const isFav = user?.favoriteLessons.includes(activeLesson._id) ?? false;
@@ -320,53 +222,20 @@ export const CourseViewerPage = () => {
                     onClick={() => toggleFavoriteLesson(activeLesson._id)}
                     className="flex flex-col items-center gap-1.5 transition-all group"
                   >
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all border ${
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center shadow-md transition-all ${
                       isFav 
-                        ? "bg-red-50/80 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-900/50" 
-                        : "bg-white dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                        ? "bg-red-50 dark:bg-red-900/20 text-red-500" 
+                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                     }`}>
                       <Heart className={`w-5 h-5 ${isFav ? "fill-current" : ""}`} />
                     </div>
-                    <span className={`text-[11px] font-semibold ${isFav ? "text-red-500" : "text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200"}`}>
+                    <span className={`text-[11px] font-medium ${isFav ? "text-red-500" : "text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200"}`}>
                       Favorite
                     </span>
                   </motion.button>
                 );
               })()}
 
-              {/* Download Button */}
-              {activeLesson.videoUrl && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => triggerVideoDownload(activeLesson.videoUrl!, activeLesson.title)}
-                  className="flex flex-col items-center gap-1.5 transition-all group"
-                >
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all border bg-white dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700">
-                    <Download className="w-5 h-5 group-hover:text-zinc-700 dark:group-hover:text-zinc-200" />
-                  </div>
-                  <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200">
-                    Download
-                  </span>
-                </motion.button>
-              )}
-
-              {/* Edit Button (Admin only) */}
-              {isAdmin && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setEditActiveLessonOpen(true)}
-                  className="flex flex-col items-center gap-1.5 transition-all group"
-                >
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm transition-all border bg-white dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:border-indigo-200 hover:text-indigo-500">
-                    <Edit3 className="w-5 h-5" />
-                  </div>
-                  <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                    Edit
-                  </span>
-                </motion.button>
-              )}
             </div>
           )}
 
@@ -385,7 +254,7 @@ export const CourseViewerPage = () => {
                       key={i}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.97 }}
-                      onClick={() => confirmMaterialDownload(url, filename)}
+                      onClick={() => triggerMaterialDownload(url, filename)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:border-indigo-400 transition-colors"
                     >
                       {isExt ? <ExternalLink className="w-3 h-3 text-amber-500 shrink-0" /> : <FileText className="w-3 h-3 text-amber-500 shrink-0" />}
@@ -400,22 +269,18 @@ export const CourseViewerPage = () => {
         </div>
 
         {/* Resize handle (desktop only) */}
-        {showSidebar && (
-          <div
-            onMouseDown={startResize}
-            className="hidden md:flex w-1 cursor-col-resize hover:bg-indigo-400 bg-zinc-200 dark:bg-zinc-800 transition-colors active:bg-indigo-500 items-center justify-center flex-shrink-0"
-          >
-            <GripVertical className="w-3 h-3 text-zinc-400 opacity-0 hover:opacity-100 transition-opacity" />
-          </div>
-        )}
+        <div
+          onMouseDown={startResize}
+          className="hidden md:flex w-1 cursor-col-resize hover:bg-indigo-400 bg-zinc-200 dark:bg-zinc-800 transition-colors active:bg-indigo-500 items-center justify-center"
+        >
+          <GripVertical className="w-3 h-3 text-zinc-400 opacity-0 hover:opacity-100 transition-opacity" />
+        </div>
 
         {/* ── Right: Lesson list ────────────────────── */}
         <div
-          className={`w-full md:w-[var(--sidebar-width)] flex-1 md:flex-none flex flex-col border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-all duration-300 ${!showSidebar ? "hidden" : "flex"} overflow-hidden`}
-          style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
+          className="w-full md:h-screen md:overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 scroll-snap-y"
+          style={{ width: `${sidebarWidth}px`, flexShrink: 0 }}
         >
-          {/* Scrollable list container */}
-          <div className="flex-1 overflow-y-auto scroll-snap-y pb-20 md:pb-0">
           {/* Sidebar header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Content</h3>
@@ -502,7 +367,7 @@ export const CourseViewerPage = () => {
             <Droppable droppableId="sections-list" type="section">
               {(provided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef}>
-                  {course.sections?.filter((s) => isAdmin || s.lessons?.length > 0).map((section, index) => (
+                  {course.sections?.filter((s) => s.lessons?.length > 0).map((section, index) => (
                     <Draggable key={section._id} draggableId={section._id} index={index} isDragDisabled={!isAdmin || !showReorderHandle}>
                       {(provided, snapshot) => (
                         <div
@@ -512,13 +377,11 @@ export const CourseViewerPage = () => {
                         >
                           <LessonAccordion
                             section={section}
-                            courseId={course._id}
                             activeLesson={activeLesson}
                             onSelectLesson={setActiveLesson}
                             onMutate={fetchCourse}
                             dragHandleProps={showReorderHandle ? provided.dragHandleProps : null}
                             showLessonGrips={showReorderHandle}
-                            startIndex={sectionStartIndices[index]}
                           />
                         </div>
                       )}
@@ -532,7 +395,6 @@ export const CourseViewerPage = () => {
               )}
             </Droppable>
           </DragDropContext>
-          </div>
         </div>
       </div>
 
@@ -540,11 +402,7 @@ export const CourseViewerPage = () => {
       {isAdmin && (
         <AdminEditModal open={addSectionOpen} onClose={() => setAddSectionOpen(false)} title="New Section"
           fields={[{ label: "Title", key: "title", value: "", placeholder: "Section title" }]}
-          onSave={async (vals) => { 
-            await sectionApi.create({ title: vals.title, courseId: course._id }); 
-            fetchCourse(); 
-            setAddSectionOpen(false); 
-          }}
+          onSave={async (vals) => { await sectionApi.create({ title: vals.title, courseId: course._id }); fetchCourse(); }}
         />
       )}
 
@@ -605,151 +463,6 @@ export const CourseViewerPage = () => {
         title="Open External Link?"
         message={`" ${externalTarget?.title} " is an external link. Click confirm to open it in a new window.`}
       />
-
-      <Modal open={downloadVideoOpen} onClose={() => setDownloadVideoOpen(false)}>
-        <div className="p-5 text-center">
-          <Download className="w-10 h-10 mx-auto text-indigo-500 mb-3" />
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Download Video</h2>
-          {downloadTarget && isExternalUrl(downloadTarget.url) ? (
-            <>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
-                Cannot download this video directly because it is hosted externally.
-              </p>
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => {
-                    window.open(downloadTarget.url, "_blank", "noopener,noreferrer");
-                    setDownloadVideoOpen(false);
-                  }}
-                  className="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
-                >
-                  Open in New Tab
-                </button>
-                <button onClick={() => setDownloadVideoOpen(false)} className="w-full py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium transition">
-                  Cancel
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
-                Do you want to download this video in-app for offline playback, or save it to your device?
-              </p>
-              {downloadChecking ? (
-                <div className="flex items-center justify-center gap-2 mb-6 mt-4 opacity-70">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-xs">Checking file size...</span>
-                </div>
-              ) : (
-                <p className="text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-6 mt-2">
-                  File size: {downloadTarget?.size ? `${(downloadTarget.size / (1024 * 1024)).toFixed(1)} MB` : "Unknown size"}
-                </p>
-              )}
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => {
-                    if (downloadTarget) saveInApp(downloadTarget.title, downloadTarget.url);
-                    setDownloadVideoOpen(false);
-                  }}
-                  className="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
-                >
-                  Download In-App
-                </button>
-                <button
-                  onClick={() => {
-                    if (downloadTarget) confirmMaterialDownload(downloadTarget.url, downloadTarget.title);
-                    setDownloadVideoOpen(false);
-                  }}
-                  className="w-full py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 transition"
-                >
-                  Local Download
-                </button>
-                <button onClick={() => setDownloadVideoOpen(false)} className="w-full py-2 text-xs font-medium text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition">
-                  Cancel
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </Modal>
-
-      <Modal open={downloadMaterialOpen} onClose={() => setDownloadMaterialOpen(false)}>
-        <div className="p-5 text-center">
-          <FileText className="w-10 h-10 mx-auto text-amber-500 mb-3" />
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Download File</h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
-            Do you want to download <span className="font-semibold text-zinc-700 dark:text-zinc-200">"{downloadMaterialTarget?.title}"</span> to your device?
-          </p>
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={executeMaterialDownload}
-              className="w-full py-2.5 rounded-xl bg-amber-500 text-white font-medium hover:bg-amber-600 transition shadow-sm"
-            >
-              Download
-            </button>
-            <button onClick={() => setDownloadMaterialOpen(false)} className="w-full py-2 text-xs font-medium text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition">
-              Cancel
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Edit Active Lesson */}
-      {isAdmin && activeLesson && (() => {
-        // Compute visual order (index + 1) for the active lesson to match what is shown in the list
-        let visualOrder = (activeLesson.order ?? 0) + 1;
-        if (course) {
-          const allLessons = [
-            ...(course.unsectioned || []),
-            ...(course.sections || []).flatMap((s) => s.lessons || []),
-          ];
-          const foundIdx = allLessons.findIndex(l => l._id === activeLesson._id);
-          if (foundIdx !== -1) visualOrder = foundIdx + 1;
-        }
-
-        return (
-          <AdminEditModal
-            open={editActiveLessonOpen}
-            onClose={() => setEditActiveLessonOpen(false)}
-            title="Edit Lesson"
-            fields={[
-              { label: "Title", key: "title", value: activeLesson.title },
-              { label: "Video URL", key: "videoUrl", value: activeLesson.videoUrl || "", placeholder: "https:// or YouTube URL" },
-              {
-                label: "Materials",
-                key: "fileUrls",
-                type: "list",
-                value: (activeLesson.fileUrls || []).join("\n") || activeLesson.fileUrl || "",
-                placeholder: "https://… (PDF, YouTube, link…)",
-                addLabel: "+ Add Material",
-              },
-              { label: "Order (Visual)", key: "order", value: String(visualOrder) },
-            ]}
-            onSave={async (vals) => {
-              const fileUrls = String(vals.fileUrls || "").split("\n").map((u: string) => u.trim()).filter(Boolean);
-              // Calculate actual zero-indexed order if they meant to change it 
-              const newVisualOrder = Number(vals.order);
-              let dbOrder = Number.isNaN(newVisualOrder) ? activeLesson.order : newVisualOrder - 1;
-              if (dbOrder! < 0) dbOrder = 0;
-
-              await lessonApi.update(activeLesson._id, {
-                ...vals,
-                fileUrls,
-                fileUrl: fileUrls[0] || "",
-                order: dbOrder,
-              } as Partial<Lesson>);
-              fetchCourse();
-              setEditActiveLessonOpen(false);
-            }}
-          onDelete={async () => {
-            await lessonApi.delete(activeLesson._id);
-            setActiveLesson(null);
-            fetchCourse();
-            setEditActiveLessonOpen(false);
-          }}
-        />
-        );
-      })()}
     </PageTransition>
   );
 };

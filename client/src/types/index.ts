@@ -4,7 +4,6 @@ export type Role = "user" | "admin";
 /* ── User ─────────────────────────────────────────────────── */
 export interface User {
   id: string;
-  name?: string;
   role: Role;
   favoriteCourses: string[];
   favoriteLessons: string[];
@@ -25,7 +24,7 @@ export interface Lesson {
   videoUrl: string;
   fileUrl: string;
   fileUrls?: string[];   // multiple material files (PDFs, docs, etc.)
-  sectionId?: string;    // provided by favorites/search responses for context
+  sectionId: string;
   order: number;
   type: "video" | "pdf";
   _type?: "lesson";
@@ -35,7 +34,7 @@ export interface Lesson {
 export interface Section {
   _id: string;
   title: string;
-  courseId?: string;    // only present in non-embedded contexts
+  courseId: string;
   order: number;
   lessons: Lesson[];
 }

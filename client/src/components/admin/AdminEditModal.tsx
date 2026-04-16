@@ -130,12 +130,6 @@ export const AdminEditModal = ({ open, onClose, title, fields, onSave, onDelete 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    if (open) {
-      setValues(Object.fromEntries(fields.map((f) => [f.key, f.value])));
-    }
-  }, [open, fields]);
-
   const handleSave = async () => {
     setSaving(true);
     try { await onSave(values); onClose(); }

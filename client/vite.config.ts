@@ -9,19 +9,15 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "pwa-192x192.png", "pwa-512x512.png"],
+      includeAssets: ["favicon.svg"],
       manifest: {
-        id: "/",
         name: "ELearn — Learning Platform",
         short_name: "ELearn",
         description: "A minimalist Progressive Web App Learning Management System",
         theme_color: "#18181b",
         background_color: "#09090b",
         display: "standalone",
-        scope: "/",
         start_url: "/",
-        orientation: "any",
-        categories: ["education"],
         icons: [
           { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
           { src: "pwa-512x512.png", sizes: "512x512", type: "image/png" },

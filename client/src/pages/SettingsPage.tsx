@@ -12,8 +12,6 @@ import {
   Plus,
   UserX,
   Archive,
-  Edit3,
-  Database,
 } from "lucide-react";
 import { PageTransition } from "../components/ui/PageTransition";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
@@ -32,13 +30,25 @@ const BackupButton = () => {
     if (!token) return;
     setDownloading(true);
     try {
-      // Trigger native browser download using query token
-      const baseUrl = import.meta.env.VITE_API_URL || "";
-      const url = `${baseUrl}/api/admin/backup?token=${encodeURIComponent(token)}`;
-      window.location.href = url;
+      const resp = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/admin/backup`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!resp.ok) throw new Error("Backup failed");
+      const data = await resp.json();
+      // Download as JSON file
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Backup failed. Please try again.");
     } finally {
-      // Small delay to simulate load for UI feedback
-      setTimeout(() => setDownloading(false), 2000);
+      setDownloading(false);
     }
   };
 
@@ -53,51 +63,6 @@ const BackupButton = () => {
       {downloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Archive className="w-4 h-4" />}
       {downloading ? "Creating backup…" : "Download Backup JSON"}
     </motion.button>
-  );
-};
-
-// ── Storage Progress Bar ──────────────────────────────────────
-const TOTAL_MB = 512;
-
-const StorageProgressBar = ({ usedMB }: { usedMB: number }) => {
-  const pct = Math.min(100, (usedMB / TOTAL_MB) * 100);
-  const freeMB = Math.max(0, TOTAL_MB - usedMB);
-
-  // Color gradient: green → yellow → red
-  const getBarColor = (p: number) => {
-    if (p < 50) return "from-emerald-500 to-emerald-400";
-    if (p < 75) return "from-amber-500 to-yellow-400";
-    return "from-red-500 to-red-400";
-  };
-
-  const getTextColor = (p: number) => {
-    if (p < 50) return "text-emerald-600 dark:text-emerald-400";
-    if (p < 75) return "text-amber-600 dark:text-amber-400";
-    return "text-red-600 dark:text-red-400";
-  };
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
-          {usedMB.toFixed(2)} MB / {TOTAL_MB} MB
-        </span>
-        <span className={`text-xs font-bold tabular-nums ${getTextColor(pct)}`}>
-          {pct.toFixed(1)}%
-        </span>
-      </div>
-      <div className="relative h-3 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className={`absolute h-full rounded-full bg-gradient-to-r ${getBarColor(pct)} shadow-sm`}
-        />
-      </div>
-      <p className="text-[11px] text-zinc-400">
-        {freeMB.toFixed(2)} MB free
-      </p>
-    </div>
   );
 };
 
@@ -118,34 +83,24 @@ export const SettingsPage = () => {
     }
   }, []);
 
-  const [dbUsedMB, setDbUsedMB] = useState<number | null>(null);
-  const [dbCollections, setDbCollections] = useState<number>(0);
-  const [dbError, setDbError] = useState(false);
+  const [dbUsed, setDbUsed] = useState<string>("Calculating…");
 
   const fetchDbStats = useCallback(async () => {
     if (!isAdmin) return;
     try {
       const token = useAuthStore.getState().token;
-      const baseUrl = import.meta.env.VITE_API_URL || "/api";
-      const resp = await fetch(`${baseUrl}/admin/stats`, {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/admin/stats`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!resp.ok) {
-        setDbError(true);
-        return;
-      }
       const data = await resp.json();
       if (data.success) {
-        const bytes = data.usedBytes ?? 0;
-        const mb = bytes / 1024 / 1024;
-        setDbUsedMB(mb);
-        setDbCollections(data.stats?.collections || 0);
-        setDbError(false);
+        const mb = (data.usedBytes / 1024 / 1024).toFixed(2);
+        setDbUsed(`${mb} MB (${data.stats.collections} collections)`);
       } else {
-        setDbError(true);
+        setDbUsed("Unavailable");
       }
     } catch {
-      setDbError(true);
+      setDbUsed("Unavailable");
     }
   }, [isAdmin]);
 
@@ -192,8 +147,7 @@ export const SettingsPage = () => {
     role: "admin" | "user";
     isCoursesRestricted: boolean;
     allowedCourses: string[];
-    accessCode: string;
-  }>({ name: "", role: "user", isCoursesRestricted: false, allowedCourses: [], accessCode: "" });
+  }>({ name: "", role: "user", isCoursesRestricted: false, allowedCourses: [] });
   const [updatingUser, setUpdatingUser] = useState(false);
 
   const fetchCourses = useCallback(async () => {
@@ -307,6 +261,19 @@ export const SettingsPage = () => {
                 </p>
               </div>
             </div>
+            {isAdmin && (
+              <div className="flex items-center gap-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                <Archive className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                <div>
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    Database Storage
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {dbUsed}
+                  </p>
+                </div>
+              </div>
+            )}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -317,35 +284,6 @@ export const SettingsPage = () => {
             </motion.button>
           </div>
         </section>
-
-        {/* ── Admin: Database Storage ─────────────────── */}
-        {isAdmin && (
-          <section>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3 flex items-center gap-2">
-              <Database className="w-4 h-4" />
-              Database Storage (MongoDB)
-            </h2>
-            <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-4">
-              {dbError ? (
-                <p className="text-sm text-zinc-400">Storage data unavailable</p>
-              ) : dbUsedMB === null ? (
-                <div className="flex items-center gap-2 text-zinc-400">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Loading storage data…</span>
-                </div>
-              ) : (
-                <>
-                  <StorageProgressBar usedMB={dbUsedMB} />
-                  {dbCollections > 0 && (
-                    <p className="text-[11px] text-zinc-400">
-                      {dbCollections} collection{dbCollections !== 1 ? "s" : ""}
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-          </section>
-        )}
 
         {/* ── Admin: User Management ──────────────────── */}
         {isAdmin && (
@@ -446,7 +384,7 @@ export const SettingsPage = () => {
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -457,27 +395,32 @@ export const SettingsPage = () => {
                               role: u.role as "admin" | "user",
                               isCoursesRestricted: u.isCoursesRestricted ?? false,
                               allowedCourses: (u.allowedCourses || []).map(c => c._id || c),
-                              accessCode: "",
                             });
                           }}
-                          className="p-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
-                          title="Edit User"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
                         >
-                          <Edit3 className="w-4 h-4" />
+                          Edit
                         </motion.button>
                         {u.role !== "admin" && (
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => toggleBan(u.id)}
-                            className={`p-1.5 rounded-lg border transition-colors ${
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                               u.isBanned
                                 ? "border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
                                 : "border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
                             }`}
-                            title={u.isBanned ? "Unban User" : "Ban User"}
                           >
-                            {u.isBanned ? <Shield className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
+                            {u.isBanned ? (
+                              <>
+                                <Shield className="w-3.5 h-3.5" /> Unban
+                              </>
+                            ) : (
+                              <>
+                                <ShieldAlert className="w-3.5 h-3.5" /> Ban
+                              </>
+                            )}
                           </motion.button>
                         )}
                         {u.activeSessions > 0 && (
@@ -485,10 +428,10 @@ export const SettingsPage = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => revokeSessions(u.id)}
-                            className="p-1.5 rounded-lg border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors"
-                            title="Revoke Sessions"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Revoke All
                           </motion.button>
                         )}
                         {u.role !== "admin" && (
@@ -496,10 +439,10 @@ export const SettingsPage = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleDeleteUser(u.id, u.name || "User")}
-                            className="p-1.5 rounded-lg border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                             title="Delete User"
                           >
-                            <UserX className="w-4 h-4" />
+                            <UserX className="w-3.5 h-3.5" />
                           </motion.button>
                         )}
                       </div>
@@ -516,8 +459,8 @@ export const SettingsPage = () => {
                             <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
                               <Smartphone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                               <div className="truncate text-[11px] flex-1 min-w-0">
-                                <p className="text-zinc-500 dark:text-zinc-500 truncate">
-                                  {s.device || "Unknown Device"} &bull; Login: {new Date(s.loginAt).toLocaleString()}
+                                <p className="text-zinc-500 dark:text-zinc-500">
+                                  Login: {new Date(s.loginAt).toLocaleString()}
                                 </p>
                                 {s.lastAccessedAt && (
                                   <p className="text-emerald-600 dark:text-emerald-500/80">
@@ -607,19 +550,6 @@ export const SettingsPage = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">
-                  Access Code
-                </label>
-                <input
-                  type="text"
-                  value={editForm.accessCode}
-                  onChange={(e) => setEditForm((prev) => ({ ...prev, accessCode: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-                  placeholder="Leave blank to keep unchanged"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">
                   Role
                 </label>
                 <select
@@ -647,44 +577,30 @@ export const SettingsPage = () => {
                   </label>
 
                   {editForm.isCoursesRestricted && (
-                    <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-lg p-3 max-h-64 overflow-y-auto space-y-4">
-                      {Object.entries(
-                        courses.reduce((acc, c) => {
-                          const pName = (c as any).platformId?.name || (c as any).platformName || "Other / Unassigned";
-                          if (!acc[pName]) acc[pName] = [];
-                          acc[pName].push(c);
-                          return acc;
-                        }, {} as Record<string, Course[]>)
-                      ).map(([platformName, platformCourses]) => (
-                        <div key={platformName} className="space-y-2">
-                          <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{platformName}</p>
-                          <div className="space-y-1">
-                            {platformCourses.map((course) => {
-                              const checked = editForm.allowedCourses.includes(course._id);
-                              return (
-                                <label key={course._id} className="flex items-center gap-2 cursor-pointer py-1">
-                                  <input
-                                    type="checkbox"
-                                    checked={checked}
-                                    onChange={(e) => {
-                                      setEditForm((prev) => {
-                                        const list = e.target.checked
-                                          ? [...prev.allowedCourses, course._id]
-                                          : prev.allowedCourses.filter((id) => id !== course._id);
-                                        return { ...prev, allowedCourses: list };
-                                      });
-                                    }}
-                                    className="w-4 h-4 text-indigo-600 rounded border-zinc-300 focus:ring-indigo-500"
-                                  />
-                                  <span className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
-                                    {course.title}
-                                  </span>
-                                </label>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ))}
+                    <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
+                      {courses.map((course) => {
+                        const checked = editForm.allowedCourses.includes(course._id);
+                        return (
+                          <label key={course._id} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                setEditForm((prev) => {
+                                  const list = e.target.checked
+                                    ? [...prev.allowedCourses, course._id]
+                                    : prev.allowedCourses.filter((id) => id !== course._id);
+                                  return { ...prev, allowedCourses: list };
+                                });
+                              }}
+                              className="w-4 h-4 text-indigo-600 rounded border-zinc-300 focus:ring-indigo-500"
+                            />
+                            <span className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
+                              {course.title}
+                            </span>
+                          </label>
+                        );
+                      })}
                       {courses.length === 0 && (
                         <p className="text-xs text-zinc-400">No courses available.</p>
                       )}

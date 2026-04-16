@@ -134,29 +134,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   /* ── Toggle favourite course ─────────────────────────────── */
   toggleFavoriteCourse: async (courseId) => {
-    try {
-      const { data } = await favoriteApi.toggleCourse(courseId);
-      if (data.favoriteCourses) {
-        set((s) => ({
-          user: s.user ? { ...s.user, favoriteCourses: data.favoriteCourses.map((id: any) => id.toString()) } : null,
-        }));
-      }
-    } catch (err) {
-      console.error("Failed to toggle favorite course:", err);
+    const { data } = await favoriteApi.toggleCourse(courseId);
+    if (data.favoriteCourses) {
+      set((s) => ({
+        user: s.user ? { ...s.user, favoriteCourses: data.favoriteCourses } : null,
+      }));
     }
   },
 
   /* ── Toggle favourite lesson ─────────────────────────────── */
   toggleFavoriteLesson: async (lessonId) => {
-    try {
-      const { data } = await favoriteApi.toggleLesson(lessonId);
-      if (data.favoriteLessons) {
-        set((s) => ({
-          user: s.user ? { ...s.user, favoriteLessons: data.favoriteLessons.map((id: any) => id.toString()) } : null,
-        }));
-      }
-    } catch (err) {
-      console.error("Failed to toggle favorite lesson:", err);
+    const { data } = await favoriteApi.toggleLesson(lessonId);
+    if (data.favoriteLessons) {
+      set((s) => ({
+        user: s.user ? { ...s.user, favoriteLessons: data.favoriteLessons } : null,
+      }));
     }
   },
 }));

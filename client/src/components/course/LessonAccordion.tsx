@@ -11,24 +11,20 @@ import type { Section, Lesson } from "../../types";
 
 interface Props {
   section: Section;
-  courseId: string;
   activeLesson: Lesson | null;
   onSelectLesson: (lesson: Lesson) => void;
   onMutate: () => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   showLessonGrips?: boolean;
-  startIndex?: number;
 }
 
 export const LessonAccordion = ({
   section,
-  courseId,
   activeLesson,
   onSelectLesson,
   onMutate,
   dragHandleProps,
   showLessonGrips = true,
-  startIndex = 0,
 }: Props) => {
   const [open, setOpen] = useState(true);
   const isAdmin = useAdmin();
@@ -133,7 +129,7 @@ export const LessonAccordion = ({
                                   key={lesson._id}
                                   lesson={lesson}
                                   isActive={activeLesson?._id === lesson._id}
-                                  index={startIndex + i}
+                                  index={i}
                                   onSelect={() => onSelectLesson(lesson)}
                                   onMutate={onMutate}
                                 />
@@ -190,7 +186,7 @@ export const LessonAccordion = ({
             onSave={async (vals) => {
               await lessonApi.create({
                 ...vals,
-                courseId,
+                courseId: section.courseId,
                 sectionId: section._id,
                 type: (vals.type as "video" | "pdf") || "video",
               } as Partial<Lesson> & { courseId: string; sectionId: string });

@@ -217,7 +217,7 @@ router.delete("/:id", verifyToken, requireAdmin, async (req, res, next) => {
 // ──────────────────────────────────────────────────────────────
 router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const { name, role, isCoursesRestricted, allowedCourses, accessCode } = req.body;
+    const { name, role, isCoursesRestricted, allowedCourses } = req.body;
     const userToUpdate = await User.findById(req.params.id);
 
     if (!userToUpdate) {
@@ -235,17 +235,6 @@ router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
     if (role) userToUpdate.role = role;
     if (typeof isCoursesRestricted === "boolean") userToUpdate.isCoursesRestricted = isCoursesRestricted;
     if (Array.isArray(allowedCourses)) userToUpdate.allowedCourses = allowedCourses;
-
-    // Access code change
-    if (accessCode && accessCode.trim()) {
-      const trimmed = accessCode.trim();
-      // Check uniqueness (exclude current user)
-      const duplicate = await User.findOne({ accessCode: trimmed, _id: { $ne: userToUpdate._id } });
-      if (duplicate) {
-        return res.status(400).json({ success: false, message: "Access code already in use by another user." });
-      }
-      userToUpdate.accessCode = trimmed;
-    }
 
     await userToUpdate.save();
 

@@ -9,11 +9,9 @@ import {
   Minimize,
   SkipBack,
   SkipForward,
-  FastForward,
-  X,
 } from "lucide-react";
 
-const SPEED_PRESETS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4];
+const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 4];
 
 function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -34,7 +32,6 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hideControlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const speedPopupRef = useRef<HTMLDivElement>(null);
 
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -45,14 +42,14 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
   const [fullscreen, setFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [speed, setSpeed] = useState(1);
-  const [showSpeedPopup, setShowSpeedPopup] = useState(false);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
 
   const scheduleHide = useCallback(() => {
     if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
     hideControlsTimer.current = setTimeout(() => {
-      if (playing && !showSpeedPopup) setShowControls(false);
+      if (playing) setShowControls(false);
     }, 3000);
-  }, [playing, showSpeedPopup]);
+  }, [playing]);
 
   const handleMouseMove = useCallback(() => {
     setShowControls(true);
@@ -60,25 +57,13 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
   }, [scheduleHide]);
 
   useEffect(() => {
-    if (playing && !showSpeedPopup) scheduleHide();
+    if (playing) scheduleHide();
     else {
       if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
       setShowControls(true);
     }
     return () => { if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current); };
-  }, [playing, scheduleHide, showSpeedPopup]);
-
-  // Close speed popup on click outside
-  useEffect(() => {
-    if (!showSpeedPopup) return;
-    const handler = (e: MouseEvent) => {
-      if (speedPopupRef.current && !speedPopupRef.current.contains(e.target as Node)) {
-        setShowSpeedPopup(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [showSpeedPopup]);
+  }, [playing, scheduleHide]);
 
   const togglePlay = () => {
     const v = videoRef.current;
@@ -100,16 +85,15 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
   };
 
   const changeSpeed = (dir: 1 | -1) => {
-    const next = Math.max(0.5, Math.min(4, speed + (dir * 0.25)));
+    const idx = SPEEDS.indexOf(speed);
+    const next = SPEEDS[Math.max(0, Math.min(SPEEDS.length - 1, idx + dir))];
     applySpeed(next);
   };
 
   const applySpeed = (s: number) => {
-    // Snap to nearest 0.25
-    const snapped = Math.round(s * 4) / 4;
-    const clamped = Math.max(0.5, Math.min(4, snapped));
-    setSpeed(clamped);
-    if (videoRef.current) videoRef.current.playbackRate = clamped;
+    setSpeed(s);
+    if (videoRef.current) videoRef.current.playbackRate = s;
+    setShowSpeedMenu(false);
   };
 
   const toggleFullscreen = () => {
@@ -136,68 +120,17 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
     setBuffered(v.buffered.end(v.buffered.length - 1));
   };
 
+  const seek = (e: React.MouseEvent<HTMLDivElement>) => {
+    const v = videoRef.current;
+    const bar = e.currentTarget;
+    if (!v) return;
+    const rect = bar.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    v.currentTime = pct * v.duration;
+  };
+
   const progressPct = duration ? (currentTime / duration) * 100 : 0;
   const bufferedPct = duration ? (buffered / duration) * 100 : 0;
-
-  // YouTube-style scrubbing: live dragging with visual feedback
-  const dragRef = useRef(false);
-  const progressBarRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragPct, setDragPct] = useState(0);
-  const [hoverPct, setHoverPct] = useState<number | null>(null);
-
-  const displayPct = isDragging ? dragPct : progressPct;
-
-  const calcPct = useCallback((clientX: number) => {
-    const bar = progressBarRef.current;
-    if (!bar) return 0;
-    const rect = bar.getBoundingClientRect();
-    let pct = (clientX - rect.left) / rect.width;
-    return Math.max(0, Math.min(1, pct));
-  }, []);
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    dragRef.current = true;
-    setIsDragging(true);
-    const pct = calcPct(e.clientX);
-    setDragPct(pct * 100);
-    // Seek immediately for live scrubbing
-    if (videoRef.current && duration) {
-      videoRef.current.currentTime = pct * duration;
-    }
-
-    const onPointerMove = (ev: PointerEvent) => {
-      if (!dragRef.current) return;
-      const p = calcPct(ev.clientX);
-      setDragPct(p * 100);
-      if (videoRef.current && duration) {
-        videoRef.current.currentTime = p * duration;
-      }
-    };
-    const onPointerUp = (ev: PointerEvent) => {
-      if (!dragRef.current) return;
-      dragRef.current = false;
-      const p = calcPct(ev.clientX);
-      if (videoRef.current && duration) {
-        videoRef.current.currentTime = p * duration;
-      }
-      setIsDragging(false);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-    };
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", onPointerUp);
-  };
-
-  const handleBarHover = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isDragging) return;
-    setHoverPct(calcPct(e.clientX) * 100);
-  };
-
-  const hoverTime = hoverPct !== null && duration
-    ? formatTime((hoverPct / 100) * duration)
-    : null;
 
   return (
     <div
@@ -205,7 +138,7 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onMouseMove={handleMouseMove}
-      onMouseLeave={() => { if (playing && !showSpeedPopup) setShowControls(false); }}
+      onMouseLeave={() => { if (playing) setShowControls(false); setShowSpeedMenu(false); }}
       className={`relative bg-black rounded-xl overflow-hidden outline-none select-none ${className}`}
       style={{ aspectRatio: "16/9" }}
     >
@@ -213,7 +146,6 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
         ref={videoRef}
         src={src}
         muted={muted}
-        playsInline
         className="w-full h-full object-contain"
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
@@ -264,42 +196,17 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
               <p className="text-xs text-white/70 mb-2 truncate font-medium">{title}</p>
             )}
 
-            {/* Progress bar — YouTube-style */}
+            {/* Progress bar */}
             <div
-              ref={progressBarRef}
-              className={`relative rounded-full bg-white/20 cursor-pointer mb-3 group/bar touch-none transition-all duration-150 ${
-                isDragging ? "h-3" : "h-1.5 hover:h-3"
-              }`}
-              onPointerDown={handlePointerDown}
-              onMouseMove={handleBarHover}
-              onMouseLeave={() => setHoverPct(null)}
+              className="relative h-1.5 rounded-full bg-white/20 cursor-pointer mb-3 group/bar"
+              onClick={seek}
             >
-              {/* Buffered */}
-              <div className="absolute h-full rounded-full bg-white/25 pointer-events-none" style={{ width: `${bufferedPct}%` }} />
-              {/* Hover preview (gray bar) */}
-              {hoverPct !== null && !isDragging && (
-                <div className="absolute h-full rounded-full bg-white/20 pointer-events-none" style={{ width: `${hoverPct}%` }} />
-              )}
-              {/* Played / drag progress */}
-              <div className="absolute h-full rounded-full bg-indigo-500 pointer-events-none" style={{ width: `${displayPct}%` }} />
-              {/* Thumb */}
+              <div className="absolute h-full rounded-full bg-white/30" style={{ width: `${bufferedPct}%` }} />
+              <div className="absolute h-full rounded-full bg-indigo-500" style={{ width: `${progressPct}%` }} />
               <div
-                className={`absolute top-1/2 -translate-y-1/2 rounded-full bg-white shadow-md pointer-events-none transition-all duration-100 ${
-                  isDragging
-                    ? "w-4 h-4 opacity-100 scale-110"
-                    : "w-3 h-3 opacity-0 group-hover/bar:opacity-100"
-                }`}
-                style={{ left: `calc(${displayPct}% - ${isDragging ? 8 : 6}px)` }}
+                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow opacity-0 group-hover/bar:opacity-100 transition-opacity"
+                style={{ left: `calc(${progressPct}% - 6px)` }}
               />
-              {/* Hover time tooltip */}
-              {hoverTime && !isDragging && hoverPct !== null && (
-                <div
-                  className="absolute -top-8 -translate-x-1/2 px-1.5 py-0.5 rounded bg-black/80 text-white text-[10px] font-semibold tabular-nums pointer-events-none whitespace-nowrap"
-                  style={{ left: `${hoverPct}%` }}
-                >
-                  {hoverTime}
-                </div>
-              )}
             </div>
 
             {/* Button row */}
@@ -354,73 +261,36 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
                 className="w-14 accent-indigo-500 cursor-pointer"
               />
 
-              {/* Speed button (opens popup) */}
-              <div className="relative md:ml-2" ref={speedPopupRef}>
+              {/* Speed selector */}
+              <div className="relative">
                 <button
-                  onClick={() => setShowSpeedPopup((v) => !v)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 transition-colors text-white/90 hover:text-white"
-                  title="Playback speed"
+                  onClick={() => setShowSpeedMenu((s) => !s)}
+                  className="text-white/80 hover:text-white px-1.5 py-0.5 rounded text-xs font-mono font-bold min-w-[2.5rem] text-center bg-white/10 hover:bg-white/20 transition-colors"
+                  title="Playback speed (< >)"
                 >
-                  <FastForward className="w-3.5 h-3.5" />
-                  <span className="text-[11px] font-semibold tabular-nums">{speed}x</span>
+                  {speed === 1 ? "1×" : `${speed}×`}
                 </button>
-
-                {/* Speed popup */}
                 <AnimatePresence>
-                  {showSpeedPopup && (
+                  {showSpeedMenu && (
                     <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      initial={{ opacity: 0, y: 6, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute bottom-full right-0 mb-2 w-52 bg-zinc-900/95 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl p-3 z-50"
+                      exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                      className="absolute bottom-full right-0 mb-2 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden shadow-2xl min-w-[80px] z-50"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[11px] font-semibold text-white/60 uppercase tracking-wider">Speed</span>
+                      {SPEEDS.map((s) => (
                         <button
-                          onClick={() => setShowSpeedPopup(false)}
-                          className="p-0.5 text-white/40 hover:text-white/80 transition-colors"
+                          key={s}
+                          onClick={() => applySpeed(s)}
+                          className={`w-full text-center px-4 py-1.5 text-xs font-mono transition-colors ${
+                            speed === s
+                              ? "bg-indigo-600 text-white"
+                              : "text-zinc-200 hover:bg-zinc-800"
+                          }`}
                         >
-                          <X className="w-3.5 h-3.5" />
+                          {s}×
                         </button>
-                      </div>
-
-                      {/* Preset chips */}
-                      <div className="grid grid-cols-5 gap-1 mb-3">
-                        {SPEED_PRESETS.map((s) => (
-                          <button
-                            key={s}
-                            onClick={() => { applySpeed(s); }}
-                            className={`py-1.5 rounded-md text-[11px] font-semibold tabular-nums transition-all ${
-                              speed === s
-                                ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
-                                : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
-                            }`}
-                          >
-                            {s}x
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Slider with snap */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-white/40 tabular-nums">0.5</span>
-                        <input
-                          type="range"
-                          min={0.5}
-                          max={4}
-                          step={0.25}
-                          value={speed}
-                          onChange={(e) => applySpeed(parseFloat(e.target.value))}
-                          className="flex-1 accent-indigo-500 cursor-pointer"
-                        />
-                        <span className="text-[10px] text-white/40 tabular-nums">4x</span>
-                      </div>
-
-                      {/* Current speed display */}
-                      <div className="text-center mt-2">
-                        <span className="text-sm font-bold text-white tabular-nums">{speed}x</span>
-                      </div>
+                      ))}
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -1,44 +1,8 @@
 const router = require("express").Router();
 const User = require("../models/User");
 const Course = require("../models/Course");
+const Lesson = require("../models/Lesson");
 const verifyToken = require("../middleware/auth");
-
-// ── Helper: find a lesson by _id across all courses ──────────
-async function findLesson(lessonId) {
-  // Check in sections
-  let course = await Course.findOne({ "sections.lessons._id": lessonId }).lean();
-  if (course) {
-    for (const sec of course.sections) {
-      const lesson = sec.lessons.find((l) => l._id.toString() === lessonId.toString());
-      if (lesson) {
-        return {
-          lesson,
-          courseId: course._id,
-          courseTitle: course.title,
-          sectionTitle: sec.title,
-          platformName: course.platformName,
-          platformLogoUrl: course.platformLogoUrl,
-        };
-      }
-    }
-  }
-  // Check in unsectioned
-  course = await Course.findOne({ "unsectioned._id": lessonId }).lean();
-  if (course) {
-    const lesson = course.unsectioned.find((l) => l._id.toString() === lessonId.toString());
-    if (lesson) {
-      return {
-        lesson,
-        courseId: course._id,
-        courseTitle: course.title,
-        sectionTitle: null,
-        platformName: course.platformName,
-        platformLogoUrl: course.platformLogoUrl,
-      };
-    }
-  }
-  return null;
-}
 
 // ──────────────────────────────────────────────────────────────
 // POST /api/favorites/course/:id — toggle course favorite
@@ -46,13 +10,19 @@ async function findLesson(lessonId) {
 router.post("/course/:id", verifyToken, async (req, res, next) => {
   try {
     const courseId = req.params.id;
+
+    // Verify the course exists
     const courseExists = await Course.exists({ _id: courseId });
     if (!courseExists) {
-      return res.status(404).json({ success: false, message: "Course not found." });
+      return res
+        .status(404)
+        .json({ success: false, message: "Course not found." });
     }
 
     const user = req.user;
-    const index = user.favoriteCourses.findIndex((id) => id.toString() === courseId);
+    const index = user.favoriteCourses.findIndex(
+      (id) => id.toString() === courseId
+    );
 
     let action;
     if (index === -1) {
@@ -64,7 +34,12 @@ router.post("/course/:id", verifyToken, async (req, res, next) => {
     }
 
     await user.save({ validateModifiedOnly: true });
-    res.json({ success: true, action, favoriteCourses: user.favoriteCourses });
+
+    res.json({
+      success: true,
+      action,
+      favoriteCourses: user.favoriteCourses,
+    });
   } catch (error) {
     next(error);
   }
@@ -77,14 +52,18 @@ router.post("/lesson/:id", verifyToken, async (req, res, next) => {
   try {
     const lessonId = req.params.id;
 
-    // Verify the lesson exists in some course
-    const found = await findLesson(lessonId);
-    if (!found) {
-      return res.status(404).json({ success: false, message: "Lesson not found." });
+    // Verify the lesson exists
+    const lessonExists = await Lesson.exists({ _id: lessonId });
+    if (!lessonExists) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Lesson not found." });
     }
 
     const user = req.user;
-    const index = user.favoriteLessons.findIndex((id) => id.toString() === lessonId);
+    const index = user.favoriteLessons.findIndex(
+      (id) => id.toString() === lessonId
+    );
 
     let action;
     if (index === -1) {
@@ -96,90 +75,41 @@ router.post("/lesson/:id", verifyToken, async (req, res, next) => {
     }
 
     await user.save({ validateModifiedOnly: true });
-    res.json({ success: true, action, favoriteLessons: user.favoriteLessons });
+
+    res.json({
+      success: true,
+      action,
+      favoriteLessons: user.favoriteLessons,
+    });
   } catch (error) {
     next(error);
   }
 });
 
 // ──────────────────────────────────────────────────────────────
-// GET /api/favorites — get user's favorites (with context)
+// GET /api/favorites — get user's favorites (populated)
 // ──────────────────────────────────────────────────────────────
 router.get("/", verifyToken, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id).lean();
-
-    // ── Favorite courses ─────────────────────────────────────
-    const favCourseIds = (user.favoriteCourses || []).filter(Boolean);
-    const courses = favCourseIds.length > 0
-      ? await Course.find({ _id: { $in: favCourseIds } })
-          .select("-sections -unsectioned")
-          .lean()
-      : [];
-
-    // ── Favorite lessons ─────────────────────────────────────
-    const favLessonIds = (user.favoriteLessons || []).filter(Boolean);
-    const lessons = [];
-
-    if (favLessonIds.length > 0) {
-      // Find all courses that contain any of these lesson _ids
-      const coursesWithLessons = await Course.find({
-        $or: [
-          { "sections.lessons._id": { $in: favLessonIds } },
-          { "unsectioned._id": { $in: favLessonIds } },
-        ],
-      }).lean();
-
-      const idSet = new Set(favLessonIds.map((id) => id.toString()));
-
-      for (const c of coursesWithLessons) {
-        // Check sections
-        for (const sec of (c.sections || [])) {
-          for (const l of (sec.lessons || [])) {
-            if (idSet.has(l._id.toString())) {
-              lessons.push({
-                ...l,
-                // Provide context matching the old populate shape
-                sectionId: {
-                  _id: sec._id,
-                  title: sec.title,
-                  courseId: {
-                    _id: c._id,
-                    title: c.title,
-                    platformId: { name: c.platformName, logoUrl: c.platformLogoUrl },
-                  },
-                },
-                courseId: {
-                  _id: c._id,
-                  title: c.title,
-                  platformId: { name: c.platformName, logoUrl: c.platformLogoUrl },
-                },
-              });
-            }
-          }
-        }
-        // Check unsectioned
-        for (const l of (c.unsectioned || [])) {
-          if (idSet.has(l._id.toString())) {
-            lessons.push({
-              ...l,
-              sectionId: null,
-              courseId: {
-                _id: c._id,
-                title: c.title,
-                platformId: { name: c.platformName, logoUrl: c.platformLogoUrl },
-              },
-            });
-          }
-        }
-      }
-    }
+    const user = await User.findById(req.user._id)
+      .populate({
+        path: "favoriteCourses",
+      })
+      .populate({
+        path: "favoriteLessons",
+        populate: {
+          path: "sectionId",
+          select: "title courseId",
+          populate: { path: "courseId", select: "title" },
+        },
+      })
+      .lean();
 
     res.json({
       success: true,
       data: {
-        courses: courses.filter(Boolean),
-        lessons,
+        courses: user.favoriteCourses || [],
+        lessons: user.favoriteLessons || [],
       },
     });
   } catch (error) {

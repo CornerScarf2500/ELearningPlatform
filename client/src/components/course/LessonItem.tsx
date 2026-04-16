@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, FileText } from "lucide-react";
+import { Play, FileText, Edit3 } from "lucide-react";
 import { useAdmin } from "../../hooks/useAdmin";
 import { AdminEditModal } from "../admin/AdminEditModal";
 import { lessonApi } from "../../api";
@@ -24,47 +24,74 @@ export const LessonItem = ({ lesson, isActive, index, onSelect, onMutate }: Prop
   const [editOpen, setEditOpen] = useState(false);
 
   const isVideo = lesson.type === "video";
+  const materials: string[] = lesson.fileUrls?.length
+    ? lesson.fileUrls
+    : lesson.fileUrl ? [lesson.fileUrl] : [];
 
   return (
     <>
       <motion.div variants={itemVariants}>
         {/* ── Main lesson row — click to select ──────────── */}
         <div
-          className={`px-3 py-2.5 mx-2 md:ml-3 md:mr-2 rounded-lg cursor-pointer transition-colors duration-150 ${
+          className={`px-3 py-2 ml-3 mr-2 rounded-lg cursor-pointer transition-colors duration-150 ${
             isActive
-              ? "bg-indigo-50/80 dark:bg-indigo-500/20 border-indigo-200 dark:border-indigo-500/30"
+              ? "bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20"
               : "hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
           }`}
           onClick={onSelect}
         >
           {/* Top row: number + icon + title (scrollable) */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
             {/* Order number */}
-            <span className={`shrink-0 text-[13px] font-bold tabular-nums w-5 text-center ${
-              isActive ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-400"
+            <span className={`shrink-0 text-[10px] font-bold tabular-nums w-5 text-center ${
+              isActive ? "text-indigo-500" : "text-zinc-400"
             }`}>
               {index + 1}
             </span>
 
             {/* Type icon */}
-            <div className={`shrink-0 w-7 h-7 rounded-md flex items-center justify-center ${
+            <div className={`shrink-0 w-6 h-6 rounded-md flex items-center justify-center ${
               isActive
-                ? "bg-indigo-600 dark:bg-indigo-500 text-white shadow-sm"
+                ? "bg-indigo-600 dark:bg-indigo-500 text-white"
                 : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
             }`}>
-              {isVideo ? <Play className="w-[16px] h-[16px]" fill="currentColor" /> : <FileText className="w-[16px] h-[16px]" />}
+              {isVideo ? <Play className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
             </div>
 
             {/* Title — scrolls horizontally if long (mobile) */}
             <div 
-              className="min-w-0 flex-1 overflow-x-auto scrollbar-none"
+              className="min-w-0 flex-1 overflow-x-auto scrollbar-none lesson-title-scroll"
               title={lesson.title}
             >
-              <span className={`text-[13px] leading-[1.4] whitespace-nowrap block pr-2 ${
-                isActive ? "font-semibold text-indigo-700 dark:text-indigo-300" : "font-medium text-zinc-700 dark:text-zinc-300"
+              <span className={`text-sm whitespace-nowrap block pr-2 ${
+                isActive ? "font-semibold text-indigo-700 dark:text-indigo-300" : "text-zinc-700 dark:text-zinc-300"
               }`}>
                 {lesson.title}
               </span>
+            </div>
+
+            {/* Actions (Edit / Materials) */}
+            <div
+              className="flex items-center gap-1 shrink-0 bg-white/50 dark:bg-zinc-900/50 rounded"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {isAdmin && (
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setEditOpen(true)}
+                  className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
+                  title="Edit lesson"
+                >
+                  <Edit3 className={`w-3.5 h-3.5 ${isActive ? "text-indigo-500/80" : ""}`} />
+                </motion.button>
+              )}
+
+              {materials.length > 0 && (
+                <span className="text-[10px] text-amber-500 font-medium whitespace-nowrap">
+                  {materials.length} file{materials.length !== 1 ? "s" : ""}
+                </span>
+              )}
             </div>
           </div>
         </div>

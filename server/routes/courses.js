@@ -1,43 +1,42 @@
 const router = require("express").Router();
 const Course = require("../models/Course");
+const Section = require("../models/Section");
+const Lesson = require("../models/Lesson");
 const Platform = require("../models/Platform");
 const verifyToken = require("../middleware/auth");
 const requireAdmin = require("../middleware/admin");
 
 // ──────────────────────────────────────────────────────────────
-// GET /api/courses — list all courses (without full embedded content for perf)
+// GET /api/courses — list all courses (populate platform)
 // ──────────────────────────────────────────────────────────────
 router.get("/", verifyToken, async (req, res, next) => {
   try {
     const query = req.user.role === "admin" ? {} : req.user.isCoursesRestricted ? { _id: { $in: req.user.allowedCourses } } : {};
-    const courses = await Course.find(query)
-      .select("-sections -unsectioned") // exclude heavy embedded data for list view
-      .sort({ createdAt: -1 })
-      .lean();
+    const courses = await Course.find(query).sort({ createdAt: -1 }).lean();
     res.json({ success: true, data: courses });
   } catch (error) { next(error); }
 });
 
 // ──────────────────────────────────────────────────────────────
-// GET /api/courses/:id — full course with embedded sections & lessons
+// GET /api/courses/:id — full course with sections & lessons
 // ──────────────────────────────────────────────────────────────
 router.get("/:id", verifyToken, async (req, res, next) => {
   try {
     const course = await Course.findById(req.params.id).lean();
     if (!course) return res.status(404).json({ success: false, message: "Course not found." });
 
-    // Sort sections by order, sort lessons within each section by order
-    if (course.sections) {
-      course.sections.sort((a, b) => (a.order || 0) - (b.order || 0));
-      for (const sec of course.sections) {
-        if (sec.lessons) sec.lessons.sort((a, b) => (a.order || 0) - (b.order || 0));
-      }
-    }
-    if (course.unsectioned) {
-      course.unsectioned.sort((a, b) => (a.order || 0) - (b.order || 0));
-    }
+    // Sections with their lessons
+    const sections = await Section.find({ courseId: course._id }).sort({ order: 1 }).lean();
+    const sectionIds = sections.map((s) => s._id);
+    const sectioned = await Lesson.find({ sectionId: { $in: sectionIds } }).sort({ order: 1 }).lean();
+    const lessonMap = {};
+    for (const l of sectioned) { const k = l.sectionId.toString(); if (!lessonMap[k]) lessonMap[k] = []; lessonMap[k].push(l); }
+    const sectionsWithLessons = sections.map((s) => ({ ...s, lessons: lessonMap[s._id.toString()] || [] }));
 
-    res.json({ success: true, data: course });
+    // Sectionless lessons (order by order asc)
+    const unsectioned = await Lesson.find({ courseId: course._id, sectionId: null }).sort({ order: 1 }).lean();
+
+    res.json({ success: true, data: { ...course, sections: sectionsWithLessons, unsectioned } });
   } catch (error) {
     next(error);
   }
@@ -45,6 +44,9 @@ router.get("/:id", verifyToken, async (req, res, next) => {
 
 // ──────────────────────────────────────────────────────────────
 // POST /api/courses/import — import a course from sample JSON (Admin)
+// JSON shape: { title, grade, subject, teacher, platform, videos[], pdfs[] }
+// Each video becomes one lesson. PDFs with matching title → fileUrls[].
+// Admin organises sections manually afterwards.
 // ──────────────────────────────────────────────────────────────
 router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
   try {
@@ -54,12 +56,23 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
       platformLogoUrl: incomingLogoUrl,
       videos = [],
       pdfs = [],
-      sections: incomingSections,
+      sections,
       importedFilename,
     } = req.body;
 
     const platformName = (incomingPlatformName || "Unknown").trim();
     const platformLogoUrl = (incomingLogoUrl || "").trim();
+
+    // ── Create course ───────────────────────────────────────────
+    const course = await Course.create({
+      title: title || "Untitled Course",
+      subject: subject || "Unknown",
+      teacher: teacher || "Unknown",
+      grade: grade || "Unknown",
+      platformName,
+      platformLogoUrl,
+      importedFilename: importedFilename || "",
+    });
 
     // ── Build a PDF title → url[] map for quick lookup ──────────
     const pdfMap = {};
@@ -69,13 +82,11 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
       if (p.url) pdfMap[key].push(p.url);
     }
 
-    let embeddedSections = [];
-    let embeddedUnsectioned = [];
-
     if (videos.length > 0) {
-      // Flat lessons — no sections
+      // NO sections created — flat lessons stored directly on course.
+      // Admin can create and reorganise sections manually.
       const sortedVideos = [...videos].sort((a, b) => (a.order || 0) - (b.order || 0));
-      embeddedUnsectioned = sortedVideos.map((v, idx) => {
+      const lessonDocs = sortedVideos.map((v, idx) => {
         const lessonTitle = (v.title || `Video ${idx + 1}`).trim();
         const matchedUrls = pdfMap[lessonTitle] || [];
         return {
@@ -83,53 +94,44 @@ router.post("/import", verifyToken, requireAdmin, async (req, res, next) => {
           videoUrl: v.url || "",
           fileUrl: matchedUrls[0] || "",
           fileUrls: matchedUrls,
+          sectionId: null,
+          courseId: course._id,
           order: idx,
           type: "video",
         };
       });
-    } else if (incomingSections && Array.isArray(incomingSections)) {
-      // Structured sections with lessons
-      embeddedSections = incomingSections.map((secData, i) => {
-        const lessons = (secData.lessons || []).map((ld, j) => {
-          const videoUrl = ld.url || "";
-          const fileUrls = Array.isArray(ld.files) ? ld.files : (ld.files ? [ld.files] : []);
-          return {
-            title: ld.title || `Lesson ${j + 1}`,
-            videoUrl,
-            fileUrl: fileUrls[0] || "",
-            fileUrls,
-            order: j,
-            type: videoUrl ? "video" : "pdf",
-          };
-        });
-        return {
-          title: secData.title || `Section ${i + 1}`,
-          order: i,
-          lessons,
-        };
-      });
+      if (lessonDocs.length > 0) await Lesson.insertMany(lessonDocs);
+
+    } else if (sections && Array.isArray(sections)) {
+      // Legacy sections[] backwards compat (existing data)
+      for (let i = 0; i < sections.length; i++) {
+        const secData = sections[i];
+        const section = await Section.create({ title: secData.title || `Section ${i + 1}`, courseId: course._id, order: i });
+        if (secData.lessons && Array.isArray(secData.lessons)) {
+          const lessonDocs = secData.lessons.map((ld, j) => {
+            const videoUrl = ld.url || "";
+            const fileUrls = Array.isArray(ld.files) ? ld.files : (ld.files ? [ld.files] : []);
+            return { title: ld.title || `Lesson ${j + 1}`, videoUrl, fileUrl: fileUrls[0] || "", fileUrls, sectionId: section._id, courseId: course._id, order: j, type: videoUrl ? "video" : "pdf" };
+          });
+          if (lessonDocs.length > 0) await Lesson.insertMany(lessonDocs);
+        }
+      }
     }
 
-    const course = await Course.create({
-      title: title || "Untitled Course",
-      subject: subject || "Unknown",
-      teacher: teacher || "Unknown",
-      grade: grade || "Unknown",
-      platformName,
-      platformLogoUrl,
-      importedFilename: importedFilename || "",
-      sections: embeddedSections,
-      unsectioned: embeddedUnsectioned,
-    });
-
-    res.status(201).json({ success: true, data: course });
+    const populated = await Course.findById(course._id).populate("platformId", "name logoUrl");
+    res.status(201).json({ success: true, data: populated });
   } catch (error) {
     next(error);
   }
 });
 
+
+
+
+
 // ──────────────────────────────────────────────────────────────
 // PUT /api/courses/bulk-platform — set platform on many courses
+// Body: { courseIds: [], platformName, platformLogoUrl }
 // ──────────────────────────────────────────────────────────────
 router.put("/bulk-platform", verifyToken, requireAdmin, async (req, res, next) => {
   try {
@@ -147,17 +149,16 @@ router.put("/bulk-platform", verifyToken, requireAdmin, async (req, res, next) =
   }
 });
 
+
+
 // ──────────────────────────────────────────────────────────────
 // POST /api/courses — create course (Admin)
 // ──────────────────────────────────────────────────────────────
 router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
   try {
     const { title, subject, teacher, grade, platformName, platformLogoUrl } = req.body;
-    const course = await Course.create({
-      title, subject, teacher, grade, platformName, platformLogoUrl,
-      sections: [],
-      unsectioned: [],
-    });
+    const course = await Course.create({ title, subject, teacher, grade, platformName, platformLogoUrl });
+
     res.status(201).json({ success: true, data: course });
   } catch (error) {
     next(error);
@@ -175,9 +176,13 @@ router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
       { title, subject, teacher, grade, platformName, platformLogoUrl },
       { new: true, runValidators: true }
     );
+
     if (!course) {
-      return res.status(404).json({ success: false, message: "Course not found." });
+      return res
+        .status(404)
+        .json({ success: false, message: "Course not found." });
     }
+
     res.json({ success: true, data: course });
   } catch (error) {
     next(error);
@@ -185,15 +190,25 @@ router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
 });
 
 // ──────────────────────────────────────────────────────────────
-// DELETE /api/courses/:id — delete course (Admin)
-// Cascade is automatic — sections and lessons are embedded
+// DELETE /api/courses/:id — delete course + cascade (Admin)
 // ──────────────────────────────────────────────────────────────
 router.delete("/:id", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const course = await Course.findByIdAndDelete(req.params.id);
+    const course = await Course.findById(req.params.id);
     if (!course) {
-      return res.status(404).json({ success: false, message: "Course not found." });
+      return res
+        .status(404)
+        .json({ success: false, message: "Course not found." });
     }
+
+    // Cascade: delete all sections and their lessons
+    const sections = await Section.find({ courseId: course._id });
+    const sectionIds = sections.map((s) => s._id);
+
+    await Lesson.deleteMany({ sectionId: { $in: sectionIds } });
+    await Section.deleteMany({ courseId: course._id });
+    await Course.findByIdAndDelete(course._id);
+
     res.json({ success: true, message: "Course deleted." });
   } catch (error) {
     next(error);

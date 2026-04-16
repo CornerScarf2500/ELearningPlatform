@@ -19,12 +19,7 @@ export const FavoritesPage = () => {
   const fetchFavorites = useCallback(async () => {
     try {
       const res = await favoriteApi.list();
-      const raw = res.data.data || { courses: [], lessons: [] };
-      // Filter out any null/undefined entries (deleted items)
-      setData({
-        courses: (raw.courses || []).filter(Boolean),
-        lessons: (raw.lessons || []).filter(Boolean),
-      });
+      setData(res.data.data || { courses: [], lessons: [] });
     } catch { /* handle */ }
     finally { setLoading(false); }
   }, []);
@@ -80,17 +75,13 @@ export const FavoritesPage = () => {
                 onClick={() => navigate(`/course/${course._id}`)}
                 className="flex items-center gap-3 px-4 py-3.5 rounded-xl cursor-pointer border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-indigo-300 dark:hover:border-indigo-500/30 transition-all"
               >
-                <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0 overflow-hidden">
-                  {(course as any).platformId?.logoUrl ? (
-                    <img src={(course as any).platformId.logoUrl} alt="" className="w-full h-full object-contain p-1" />
-                  ) : (
-                    <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                  )}
+                <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
+                  <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">{course.title}</p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
-                    {[course.grade, course.subject, course.teacher, (course as any).platformId?.name].filter(Boolean).join(" · ")}
+                    {[course.grade, course.subject, course.teacher].filter(Boolean).join(" · ")}
                   </p>
                 </div>
                 {/* Unfavorite */}
@@ -113,15 +104,12 @@ export const FavoritesPage = () => {
         data?.lessons.length ? (
           <div className="space-y-2">
             {data.lessons.map((lesson, i) => {
-              // Try sectionId -> courseId first, then fall back to direct courseId
               const section = lesson.sectionId as unknown as {
                 _id: string; title: string;
                 courseId: { _id: string; title: string };
               };
-              const directCourse = (lesson as any).courseId as { _id: string; title: string } | undefined;
-
-              const courseTitle = section?.courseId?.title || directCourse?.title || "";
-              const courseId = section?.courseId?._id || directCourse?._id || "";
+              const courseTitle = section?.courseId?.title || "";
+              const courseId = section?.courseId?._id || "";
 
               return (
                 <motion.div
@@ -148,7 +136,10 @@ export const FavoritesPage = () => {
                   >
                     <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">{lesson.title}</p>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
-                      {[lesson.type === "video" ? "Video" : "PDF", courseTitle, (section?.courseId as any)?.platformId?.name || (directCourse as any)?.platformId?.name].filter(Boolean).join(" · ")}
+                      {lesson.type === "video" ? "Video" : "PDF"}
+                      {courseTitle && (
+                        <span className="ml-1 text-indigo-500 dark:text-indigo-400">· {courseTitle}</span>
+                      )}
                     </p>
                   </div>
 
