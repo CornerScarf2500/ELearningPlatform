@@ -1,7 +1,6 @@
 const router = require("express").Router();
 const User = require("../models/User");
 const Course = require("../models/Course");
-const Lesson = require("../models/Lesson");
 const verifyToken = require("../middleware/auth");
 
 // ──────────────────────────────────────────────────────────────
@@ -11,18 +10,13 @@ router.post("/course/:id", verifyToken, async (req, res, next) => {
   try {
     const courseId = req.params.id;
 
-    // Verify the course exists
     const courseExists = await Course.exists({ _id: courseId });
     if (!courseExists) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Course not found." });
+      return res.status(404).json({ success: false, message: "Course not found." });
     }
 
     const user = req.user;
-    const index = user.favoriteCourses.findIndex(
-      (id) => id.toString() === courseId
-    );
+    const index = user.favoriteCourses.findIndex((id) => id.toString() === courseId);
 
     let action;
     if (index === -1) {
@@ -52,18 +46,20 @@ router.post("/lesson/:id", verifyToken, async (req, res, next) => {
   try {
     const lessonId = req.params.id;
 
-    // Verify the lesson exists
-    const lessonExists = await Lesson.exists({ _id: lessonId });
-    if (!lessonExists) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Lesson not found." });
+    // Verify the lesson exists within any course
+    const course = await Course.findOne({
+      $or: [
+        { "unsectioned._id": lessonId },
+        { "sections.lessons._id": lessonId }
+      ]
+    });
+    
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Lesson not found." });
     }
 
     const user = req.user;
-    const index = user.favoriteLessons.findIndex(
-      (id) => id.toString() === lessonId
-    );
+    const index = user.favoriteLessons.findIndex((id) => id.toString() === lessonId);
 
     let action;
     if (index === -1) {
@@ -87,29 +83,58 @@ router.post("/lesson/:id", verifyToken, async (req, res, next) => {
 });
 
 // ──────────────────────────────────────────────────────────────
-// GET /api/favorites — get user's favorites (populated)
+// GET /api/favorites — get user's favorites
 // ──────────────────────────────────────────────────────────────
 router.get("/", verifyToken, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id)
-      .populate({
-        path: "favoriteCourses",
-      })
-      .populate({
-        path: "favoriteLessons",
-        populate: {
-          path: "sectionId",
-          select: "title courseId",
-          populate: { path: "courseId", select: "title" },
-        },
-      })
-      .lean();
+    const user = await User.findById(req.user._id).populate("favoriteCourses").lean();
+
+    // Find all courses containing the favorite lessons natively
+    const coursesWithLessons = await Course.find({
+      $or: [
+        { "unsectioned._id": { $in: user.favoriteLessons } },
+        { "sections.lessons._id": { $in: user.favoriteLessons } }
+      ]
+    }).lean();
+
+    const flatFavLessons = [];
+    user.favoriteLessons.forEach(favIdStr => {
+      const favId = favIdStr.toString();
+      for (const course of coursesWithLessons) {
+        // Check unsectioned
+        const unsecMatch = course.unsectioned?.find(u => u._id.toString() === favId);
+        if (unsecMatch) {
+          flatFavLessons.push({
+            ...unsecMatch, // include title, videoUrl, fileUrl
+            sectionId: { title: "Unsectioned", courseId: { _id: course._id, title: course.title } }
+          });
+          break;
+        }
+        
+        // Check sections
+        let found = false;
+        if (course.sections) {
+          for (const section of course.sections) {
+            const lessonMatch = section.lessons?.find(l => l._id.toString() === favId);
+            if (lessonMatch) {
+              flatFavLessons.push({
+                ...lessonMatch,
+                sectionId: { _id: section._id, title: section.title, courseId: { _id: course._id, title: course.title } }
+              });
+              found = true;
+              break;
+            }
+          }
+        }
+        if (found) break;
+      }
+    });
 
     res.json({
       success: true,
       data: {
         courses: user.favoriteCourses || [],
-        lessons: user.favoriteLessons || [],
+        lessons: flatFavLessons,
       },
     });
   } catch (error) {

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { X, Plus } from "lucide-react";
 import { Modal } from "../ui/Modal";
 
-type FieldType = "text" | "list" | "suggest";
+type FieldType = "text" | "list" | "suggest" | "select";
 
 interface Field {
   label: string;
@@ -12,6 +12,7 @@ interface Field {
   placeholder?: string;
   addLabel?: string;
   suggestions?: string[];   // for type="suggest"
+  options?: { label: string; value: string }[]; // for type="select"
 }
 
 interface Props {
@@ -166,6 +167,29 @@ export const AdminEditModal = ({ open, onClose, title, fields, onSave, onDelete 
               value={values[field.key] || ""}
               onChange={(v) => setValues((prev) => ({ ...prev, [field.key]: v }))}
             />
+          ) : field.type === "select" ? (
+            <div key={field.key}>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                {field.label}
+              </label>
+              <select
+                value={values[field.key] || ""}
+                onChange={(e) => {
+                  setValues((prev) => ({ ...prev, [field.key]: e.target.value }));
+                  // Optional side-effect hook if we pass an onChange explicitly, but AdminEditModal manages state internally.
+                  // For side-effects like Platform Logo URL, we can handle it at the HomePage level or embed an `onFieldChange(key, val, setValues)` prop.
+                  // Since we didn't add an explicit onFieldChange, we'll let HomePage handle side effects during onSave, or we'll add onFieldChange!
+                }}
+                className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-shadow"
+              >
+                <option value="">{field.placeholder || "Select an option..."}</option>
+                {field.options?.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           ) : (
             <div key={field.key}>
               <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">

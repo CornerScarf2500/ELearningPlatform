@@ -1,5 +1,49 @@
 const mongoose = require("mongoose");
 
+const lessonSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, "Lesson title is required"],
+    trim: true,
+  },
+  videoUrl: {
+    type: String,
+    trim: true,
+  },
+  fileUrl: {
+    type: String,
+    trim: true,
+  },
+  fileUrls: [
+    {
+      type: String,
+      trim: true,
+    },
+  ],
+  order: {
+    type: Number,
+    required: true,
+  },
+  type: {
+    type: String,
+    enum: ["video", "pdf"],
+    default: "video",
+  },
+});
+
+const sectionSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, "Section title is required"],
+    trim: true,
+  },
+  order: {
+    type: Number,
+    required: true,
+  },
+  lessons: [lessonSchema],
+});
+
 const courseSchema = new mongoose.Schema(
   {
     title: {
@@ -37,6 +81,8 @@ const courseSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    sections: [sectionSchema],
+    unsectioned: [lessonSchema],
   },
   {
     timestamps: true,

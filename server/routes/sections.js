@@ -1,6 +1,5 @@
 const router = require("express").Router();
-const Section = require("../models/Section");
-const Lesson = require("../models/Lesson");
+const Course = require("../models/Course");
 const verifyToken = require("../middleware/auth");
 const requireAdmin = require("../middleware/admin");
 
@@ -11,19 +10,23 @@ router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
   try {
     const { title, courseId, order } = req.body;
 
-    // Auto-assign order if not provided
-    let assignedOrder = order;
-    if (assignedOrder === undefined || assignedOrder === null) {
-      const count = await Section.countDocuments({ courseId });
-      assignedOrder = count;
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found." });
     }
 
-    const section = await Section.create({
+    const newSection = {
       title,
-      courseId,
-      order: assignedOrder,
-    });
-    res.status(201).json({ success: true, data: section });
+      order: order !== undefined ? order : course.sections.length,
+      lessons: [],
+    };
+
+    course.sections.push(newSection);
+    await course.save();
+
+    const createdSection = course.sections[course.sections.length - 1];
+
+    res.status(201).json({ success: true, data: { ...createdSection.toObject(), courseId } });
   } catch (error) {
     next(error);
   }
@@ -34,18 +37,19 @@ router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
 // ──────────────────────────────────────────────────────────────
 router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
   try {
+    const sectionId = req.params.id;
     const { title, order } = req.body;
-    const section = await Section.findByIdAndUpdate(
-      req.params.id,
-      { title, order },
-      { new: true, runValidators: true }
-    );
 
-    if (!section) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Section not found." });
+    const course = await Course.findOne({ "sections._id": sectionId });
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Section not found." });
     }
+
+    const section = course.sections.id(sectionId);
+    if (title !== undefined) section.title = title;
+    if (order !== undefined) section.order = order;
+
+    await course.save();
 
     res.json({ success: true, data: section });
   } catch (error) {
@@ -58,45 +62,17 @@ router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
 // ──────────────────────────────────────────────────────────────
 router.delete("/:id", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const section = await Section.findById(req.params.id);
-    if (!section) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Section not found." });
+    const sectionId = req.params.id;
+
+    const course = await Course.findOne({ "sections._id": sectionId });
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Section not found." });
     }
 
-    // Cascade: delete all lessons in this section
-    await Lesson.deleteMany({ sectionId: section._id });
-    await Section.findByIdAndDelete(section._id);
+    course.sections.pull({ _id: sectionId });
+    await course.save();
 
     res.json({ success: true, message: "Section deleted." });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// ──────────────────────────────────────────────────────────────
-// PUT /api/sections/reorder — bulk reorder sections (Admin)
-// Body: { orderedIds: ["id1", "id2", "id3"] }
-// ──────────────────────────────────────────────────────────────
-router.put("/reorder", verifyToken, requireAdmin, async (req, res, next) => {
-  try {
-    const { orderedIds } = req.body;
-    if (!Array.isArray(orderedIds)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "orderedIds must be an array." });
-    }
-
-    const bulkOps = orderedIds.map((id, index) => ({
-      updateOne: {
-        filter: { _id: id },
-        update: { $set: { order: index } },
-      },
-    }));
-
-    await Section.bulkWrite(bulkOps);
-    res.json({ success: true, message: "Sections reordered." });
   } catch (error) {
     next(error);
   }

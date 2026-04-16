@@ -408,11 +408,21 @@ export const HomePage = () => {
             { label: "Subject", key: "subject", value: "", placeholder: "Mathematics…", type: "suggest", suggestions: [...new Set(courses.map((c) => c.subject).filter(Boolean))] as string[] },
             { label: "Teacher", key: "teacher", value: "", placeholder: "Teacher name", type: "suggest", suggestions: [...new Set(courses.map((c) => c.teacher).filter(Boolean))] as string[] },
             { label: "Grade", key: "grade", value: "", placeholder: "Grade 10", type: "suggest", suggestions: [...new Set(courses.map((c) => c.grade).filter(Boolean))] as string[] },
-            { label: "Platform Name", key: "platformName", value: "", placeholder: "YouTube…", type: "suggest", suggestions: platformNames },
-            { label: "Platform Logo URL (optional)", key: "platformLogoUrl", value: "", placeholder: "https://" },
+            { 
+              label: "Platform", 
+              key: "platformName", 
+              value: "", 
+              placeholder: "Select Platform", 
+              type: "select", 
+              options: platforms.map((p) => ({ label: p.name, value: p.name })) 
+            },
           ]}
           onSave={async (vals) => {
-            await courseApi.create(vals);
+            const platform = platforms.find((p) => p.name === vals.platformName);
+            await courseApi.create({
+              ...vals,
+              platformLogoUrl: platform?.logoUrl || "",
+            });
             fetchCoursesAndPlatforms();
           }}
         />
