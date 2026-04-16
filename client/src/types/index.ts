@@ -1,9 +1,9 @@
 /* ── Role ─────────────────────────────────────────────────── */
 export type Role = "user" | "admin";
 
-/* ── User ─────────────────────────────────────────────────── */
 export interface User {
   id: string;
+  name?: string;
   role: Role;
   favoriteCourses: string[];
   favoriteLessons: string[];
@@ -100,6 +100,7 @@ export interface SessionInfo {
 export interface AdminUser {
   id: string;
   name?: string;
+  accessCode?: string;
   role: string;
   isBanned: boolean;
   isCoursesRestricted?: boolean;

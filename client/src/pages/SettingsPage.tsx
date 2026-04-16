@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Loader2,
-  Trash2,
   HardDrive,
   Users,
   Shield,
@@ -12,6 +11,7 @@ import {
   Plus,
   UserX,
   Archive,
+  Edit3,
 } from "lucide-react";
 import { PageTransition } from "../components/ui/PageTransition";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
@@ -145,9 +145,10 @@ export const SettingsPage = () => {
   const [editForm, setEditForm] = useState<{
     name: string;
     role: "admin" | "user";
+    accessCode: string;
     isCoursesRestricted: boolean;
     allowedCourses: string[];
-  }>({ name: "", role: "user", isCoursesRestricted: false, allowedCourses: [] });
+  }>({ name: "", role: "user", accessCode: "", isCoursesRestricted: false, allowedCourses: [] });
   const [updatingUser, setUpdatingUser] = useState(false);
 
   const fetchCourses = useCallback(async () => {
@@ -266,7 +267,7 @@ export const SettingsPage = () => {
                 <Archive className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                 <div>
                   <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                    Database Storage
+                    Database Storage (MongoDB)
                   </p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     {dbUsed}
@@ -392,35 +393,30 @@ export const SettingsPage = () => {
                             setEditingUser(u);
                             setEditForm({
                               name: u.name || "",
+                              accessCode: u.accessCode || "",
                               role: u.role as "admin" | "user",
                               isCoursesRestricted: u.isCoursesRestricted ?? false,
                               allowedCourses: (u.allowedCourses || []).map(c => c._id || c),
                             });
                           }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                          title="Edit User"
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
                         >
-                          Edit
+                          <Edit3 className="w-3.5 h-3.5" />
                         </motion.button>
                         {u.role !== "admin" && (
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => toggleBan(u.id)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                            title={u.isBanned ? "Unban User" : "Ban User"}
+                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                               u.isBanned
                                 ? "border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
                                 : "border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
                             }`}
                           >
-                            {u.isBanned ? (
-                              <>
-                                <Shield className="w-3.5 h-3.5" /> Unban
-                              </>
-                            ) : (
-                              <>
-                                <ShieldAlert className="w-3.5 h-3.5" /> Ban
-                              </>
-                            )}
+                            {u.isBanned ? <Shield className="w-3.5 h-3.5" /> : <ShieldAlert className="w-3.5 h-3.5" />}
                           </motion.button>
                         )}
                         {u.activeSessions > 0 && (
@@ -428,10 +424,10 @@ export const SettingsPage = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => revokeSessions(u.id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                            title="Revoke All Sessions"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-orange-200 dark:border-orange-800 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            Revoke All
+                            <LogOut className="w-3.5 h-3.5" />
                           </motion.button>
                         )}
                         {u.role !== "admin" && (
@@ -465,6 +461,11 @@ export const SettingsPage = () => {
                                 {s.lastAccessedAt && (
                                   <p className="text-emerald-600 dark:text-emerald-500/80">
                                     Last Access: {new Date(s.lastAccessedAt).toLocaleString()}
+                                  </p>
+                                )}
+                                {s.device && (
+                                  <p className="text-zinc-400 dark:text-zinc-500 text-[10px] mt-0.5 truncate" title={s.device}>
+                                    User Agent: {s.device}
                                   </p>
                                 )}
                               </div>
@@ -550,6 +551,19 @@ export const SettingsPage = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">
+                  Access Code
+                </label>
+                <input
+                  type="text"
+                  value={editForm.accessCode}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, accessCode: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  placeholder="Leave empty to use existing code"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">
                   Role
                 </label>
                 <select
@@ -577,30 +591,49 @@ export const SettingsPage = () => {
                   </label>
 
                   {editForm.isCoursesRestricted && (
-                    <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-lg p-3 max-h-48 overflow-y-auto space-y-2">
-                      {courses.map((course) => {
-                        const checked = editForm.allowedCourses.includes(course._id);
-                        return (
-                          <label key={course._id} className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={(e) => {
-                                setEditForm((prev) => {
-                                  const list = e.target.checked
-                                    ? [...prev.allowedCourses, course._id]
-                                    : prev.allowedCourses.filter((id) => id !== course._id);
-                                  return { ...prev, allowedCourses: list };
-                                });
-                              }}
-                              className="w-4 h-4 text-indigo-600 rounded border-zinc-300 focus:ring-indigo-500"
-                            />
-                            <span className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
-                              {course.title}
-                            </span>
-                          </label>
-                        );
-                      })}
+                    <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-lg p-3 max-h-48 overflow-y-auto space-y-4">
+                      {(() => {
+                        const grouped = courses.reduce((acc, c) => {
+                          const p = c.platformName || "No Platform";
+                          if (!acc[p]) acc[p] = [];
+                          acc[p].push(c);
+                          return acc;
+                        }, {} as Record<string, Course[]>);
+                        return Object.entries(grouped)
+                          .sort(([a], [b]) => a.localeCompare(b))
+                          .map(([platformName, platformCourses]) => (
+                            <div key={platformName} className="space-y-1.5">
+                              <div className="sticky top-0 bg-zinc-50 dark:bg-zinc-800 py-1 z-10 border-b border-zinc-200 dark:border-zinc-700 mb-2">
+                                <h4 className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                                  {platformName}
+                                </h4>
+                              </div>
+                              {platformCourses.map(course => {
+                                const checked = editForm.allowedCourses.includes(course._id);
+                                return (
+                                  <label key={course._id} className="flex items-center gap-2 cursor-pointer ml-1 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 p-1 -mx-1 rounded transition-colors">
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      onChange={(e) => {
+                                        setEditForm((prev) => {
+                                          const list = e.target.checked
+                                            ? [...prev.allowedCourses, course._id]
+                                            : prev.allowedCourses.filter((id) => id !== course._id);
+                                          return { ...prev, allowedCourses: list };
+                                        });
+                                      }}
+                                      className="w-4 h-4 text-indigo-600 rounded border-zinc-300 focus:ring-indigo-500"
+                                    />
+                                    <span className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
+                                      {course.title}
+                                    </span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          ));
+                      })()}
                       {courses.length === 0 && (
                         <p className="text-xs text-zinc-400">No courses available.</p>
                       )}

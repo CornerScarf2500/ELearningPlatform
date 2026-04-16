@@ -10,7 +10,7 @@ const requireAdmin = require("../middleware/admin");
 router.get("/", verifyToken, requireAdmin, async (_req, res, next) => {
   try {
     const users = await User.find()
-      .select("-accessCode -favoriteLessons")
+      .select("-favoriteLessons")
       .populate("allowedCourses", "title")
       .lean();
 
@@ -18,6 +18,7 @@ router.get("/", verifyToken, requireAdmin, async (_req, res, next) => {
     const sanitised = users.map((u) => ({
       id: u._id,
       name: u.name,
+      accessCode: u.accessCode,
       role: u.role,
       isBanned: u.isBanned,
       isCoursesRestricted: u.isCoursesRestricted,
@@ -217,7 +218,7 @@ router.delete("/:id", verifyToken, requireAdmin, async (req, res, next) => {
 // ──────────────────────────────────────────────────────────────
 router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const { name, role, isCoursesRestricted, allowedCourses } = req.body;
+    const { name, role, isCoursesRestricted, allowedCourses, accessCode } = req.body;
     const userToUpdate = await User.findById(req.params.id);
 
     if (!userToUpdate) {
@@ -235,6 +236,14 @@ router.put("/:id", verifyToken, requireAdmin, async (req, res, next) => {
     if (role) userToUpdate.role = role;
     if (typeof isCoursesRestricted === "boolean") userToUpdate.isCoursesRestricted = isCoursesRestricted;
     if (Array.isArray(allowedCourses)) userToUpdate.allowedCourses = allowedCourses;
+
+    if (accessCode !== undefined && accessCode.trim() !== "" && accessCode !== userToUpdate.accessCode) {
+      const existing = await User.findOne({ accessCode: accessCode.trim() });
+      if (existing && existing._id.toString() !== userToUpdate._id.toString()) {
+        return res.status(400).json({ success: false, message: "Access code already exists." });
+      }
+      userToUpdate.accessCode = accessCode.trim();
+    }
 
     await userToUpdate.save();
 

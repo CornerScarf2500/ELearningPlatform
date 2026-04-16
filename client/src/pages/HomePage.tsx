@@ -6,6 +6,7 @@ import { CourseCard } from "../components/course/CourseCard";
 import { AdminEditModal } from "../components/admin/AdminEditModal";
 import { Modal } from "../components/ui/Modal";
 import { useAdmin } from "../hooks/useAdmin";
+import { useAuthStore } from "../store/authStore";
 import { courseApi } from "../api";
 import { BackendStatus } from "../components/ui/BackendStatus";
 import { platformApi } from "../api";
@@ -20,6 +21,7 @@ interface QueuedFile {
 
 export const HomePage = () => {
   const isAdmin = useAdmin();
+  const user = useAuthStore((s) => s.user);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
@@ -188,8 +190,30 @@ export const HomePage = () => {
   const statusLabel = (s: QueuedFile["status"]) =>
     s === "done" ? "✓" : s === "error" ? "✗" : s === "importing" ? "…" : "Queued";
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
   return (
     <PageTransition className="max-w-3xl mx-auto px-4 md:px-8 py-8">
+      {/* Greeting */}
+      {user && (
+        <motion.div 
+          initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            {getGreeting()}, <span className="text-indigo-600 dark:text-indigo-400">{user.name || "User"}</span>! 👋
+          </h2>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            Ready to learn something new today?
+          </p>
+        </motion.div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <div>
