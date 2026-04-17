@@ -16,7 +16,7 @@ import { CourseViewerPage } from "./pages/CourseViewerPage";
 import { FavoritesPage } from "./pages/FavoritesPage";
 import { SearchPage } from "./pages/SearchPage";
 import { SettingsPage } from "./pages/SettingsPage";
-import { DownloadsPage } from "./pages/DownloadsPage";
+
 import { ProfilePage } from "./pages/ProfilePage";
 
 /* ── Route guard ──────────────────────────────────────────── */
@@ -68,7 +68,7 @@ const AnimatedRoutes = () => {
           <Route path="course/:id" element={<CourseViewerPage />} />
           <Route path="favorites" element={<FavoritesPage />} />
           <Route path="search" element={<SearchPage />} />
-          <Route path="downloads" element={<DownloadsPage />} />
+
           <Route path="settings" element={<SettingsPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>

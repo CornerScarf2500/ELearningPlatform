@@ -1,0 +1,28 @@
+{
+  "title": "ភូមិវិទ្យា ថ្នាក់ទី៩",
+  "subject": "ភូមិវិទ្យា",
+  "teacher": "រ៉េន សុខខេន",
+  "grade": "ថ្នាក់ទី ៩",
+  "platformName": "E-School",
+  "platformLogoUrl": "https://play-lh.googleusercontent.com/6l2NMdljcmljXoRbubOs67JqRDoGnVoQL2oNQTZ2C5zdL4YxkUjRppUcf-EZlVHVLPc",
+  "importedFilename": "",
+  "sections": [
+    {
+      "title": "Chapter 1",
+      "order": 0,
+      "lessons": [
+        {
+          "title": "*វត្ថុបំណងនៃមេរៀន *ពន្យល់ពាក្យ​ *ខ្លឹមសារ ១.ប្រវត្តិនៃការស្រាវជ្រាវ ២.មណ្ឌលរ៉ែ *សំណួរស្រាវជ្រាវ",
+          "videoUrl": "https://eschool-video.sabay.com/video/G9/Geography/6194cc9037283960cd62ecf4-1_720.mp4",
+          "fileUrl": "Material Name|https://space.e-schoolcambodia.com/sys/202111/5e0a94f6efa118f081535fc9f044d897.pdf",
+          "fileUrls": [
+            "Material Name|https://space.e-schoolcambodia.com/sys/202111/5e0a94f6efa118f081535fc9f044d897.pdf"
+          ],
+          "order": 1,
+          "type": "video"
+        }
+      ]
+    }
+  ],
+  "unsectioned": []
+}

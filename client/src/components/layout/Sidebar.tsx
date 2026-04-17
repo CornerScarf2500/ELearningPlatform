@@ -1,11 +1,10 @@
 import { NavLink } from "react-router-dom";
-import { Home, Search, Heart, Settings, BookOpen, HardDrive, User, ChevronLeft } from "lucide-react";
+import { Home, Search, Heart, Settings, BookOpen, User, ChevronLeft } from "lucide-react";
 import { useUIStore } from "../../store/uiStore";
 const links = [
   { to: "/", icon: Home, label: "Home" },
   { to: "/search", icon: Search, label: "Search" },
   { to: "/favorites", icon: Heart, label: "Favorites" },
-  { to: "/downloads", icon: HardDrive, label: "Downloads" },
   { to: "/settings", icon: Settings, label: "Settings" },
   { to: "/profile", icon: User, label: "Profile" },
 ];

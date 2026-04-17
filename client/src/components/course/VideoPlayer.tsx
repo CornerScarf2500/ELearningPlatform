@@ -9,6 +9,7 @@ import {
   Minimize,
   SkipBack,
   SkipForward,
+  Download,
 } from "lucide-react";
 
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 4];
@@ -93,6 +94,26 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
   const applySpeed = (s: number) => {
     setSpeed(s);
     if (videoRef.current) videoRef.current.playbackRate = s;
+  };
+
+  const handleNativeDownload = async () => {
+    try {
+      const response = await fetch(src);
+      if (!response.ok) throw new Error("Network/CORS error");
+      const blob = await response.blob();
+      const objUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objUrl;
+      a.download = `${title || "video"}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(objUrl);
+    } catch {
+      if (window.confirm("Direct download unsupported due to Cross-Origin rules. Open link in a new tab to download natively?")) {
+        window.open(src, "_blank");
+      }
+    }
   };
 
   const toggleFullscreen = () => {
@@ -313,6 +334,11 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
                   )}
                 </AnimatePresence>
               </div>
+
+              {/* Download */}
+              <button onClick={handleNativeDownload} className="text-white/80 hover:text-white p-1" title="Download Video">
+                <Download className="w-4 h-4" />
+              </button>
 
               {/* Fullscreen */}
               <button onClick={toggleFullscreen} className="text-white/80 hover:text-white p-1">

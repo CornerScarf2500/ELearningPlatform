@@ -84,6 +84,7 @@ export const SettingsPage = () => {
   }, []);
 
   const [dbUsed, setDbUsed] = useState<string>("Calculating…");
+  const [dbUsedBytes, setDbUsedBytes] = useState<number>(0);
 
   const fetchDbStats = useCallback(async () => {
     if (!isAdmin) return;
@@ -95,7 +96,8 @@ export const SettingsPage = () => {
       const data = await resp.json();
       if (data.success) {
         const mb = (data.usedBytes / 1024 / 1024).toFixed(2);
-        setDbUsed(`${mb} MB (${data.stats.collections} collections)`);
+        setDbUsed(`${mb} MB (${data.stats.collections || data.stats.objects || '?'} items)`);
+        setDbUsedBytes(data.usedBytes);
       } else {
         setDbUsed("Unavailable");
       }
@@ -263,16 +265,38 @@ export const SettingsPage = () => {
               </div>
             </div>
             {isAdmin && (
-              <div className="flex items-center gap-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                <Archive className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                <div>
-                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                    Database Storage (MongoDB)
-                  </p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {dbUsed}
-                  </p>
+              <div className="flex flex-col gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                <div className="flex items-center gap-3">
+                  <Archive className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                      Database Storage (MongoDB)
+                    </p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {dbUsed}
+                    </p>
+                  </div>
                 </div>
+                {/* Progress bar (512MB max) */}
+                {dbUsedBytes > 0 && (() => {
+                  const maxBytes = 512 * 1024 * 1024;
+                  const percentage = Math.min(100, (dbUsedBytes / maxBytes) * 100);
+                  const isNearLimit = percentage > 80;
+                  return (
+                    <div className="mt-1">
+                      <div className="flex items-center justify-between text-[10px] text-zinc-500 mb-1 font-mono">
+                        <span>Used: {(dbUsedBytes / 1024 / 1024).toFixed(2)} MB</span>
+                        <span>Capacity: 512.00 MB</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full transition-all duration-1000 ${isNearLimit ? 'bg-red-500' : 'bg-indigo-500'}`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
             <motion.button
