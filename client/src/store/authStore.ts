@@ -6,7 +6,7 @@ import { authApi, favoriteApi } from "../api";
 
 const COOKIE_KEY = "el_token";
 const ENC_SECRET = import.meta.env.VITE_ENC_SECRET || "el_platform_secret_2024";
-const COOKIE_EXPIRES = 30; // days
+const COOKIE_EXPIRES = 3650; // days (effectively no expiration)
 
 function encryptToken(token: string): string {
   return CryptoJS.AES.encrypt(token, ENC_SECRET).toString();
@@ -32,6 +32,7 @@ function saveToken(token: string) {
 function clearToken() {
   Cookies.remove(COOKIE_KEY);
   localStorage.removeItem("token");
+  localStorage.removeItem("cachedUser");
 }
 
 function readToken(): string | null {
@@ -105,19 +106,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { data } = await authApi.me();
       if (data.user) {
+        const userPayload = {
+          ...data.user,
+          favoriteCourses: (data.user.favoriteCourses || []).map((id: any) => id.toString()),
+          favoriteLessons: (data.user.favoriteLessons || []).map((id: any) => id.toString()),
+        };
+        localStorage.setItem("lastOnlineAuth", Date.now().toString());
+        localStorage.setItem("cachedUser", JSON.stringify(userPayload));
         set({
-          user: {
-            ...data.user,
-            favoriteCourses: (data.user.favoriteCourses || []).map((id: any) => id.toString()),
-            favoriteLessons: (data.user.favoriteLessons || []).map((id: any) => id.toString()),
-          },
+          user: userPayload,
           isAdmin: data.user.role === "admin",
           loading: false,
         });
       }
-    } catch {
-      clearToken();
-      set({ token: null, user: null, isAdmin: false, loading: false });
+    } catch (err: any) {
+      if (!navigator.onLine || !err.response) {
+        const lastAuth = parseInt(localStorage.getItem("lastOnlineAuth") || "0", 10);
+        const threeDays = 3 * 24 * 60 * 60 * 1000;
+        if (Date.now() - lastAuth > threeDays) {
+          clearToken();
+          set({ token: null, user: null, isAdmin: false, loading: false });
+        } else {
+          const cachedUserStr = localStorage.getItem("cachedUser");
+          const cachedUser = cachedUserStr ? JSON.parse(cachedUserStr) : null;
+          set({ user: cachedUser, isAdmin: cachedUser?.role === "admin", loading: false });
+        }
+      } else {
+        clearToken();
+        set({ token: null, user: null, isAdmin: false, loading: false });
+      }
     }
   },
 

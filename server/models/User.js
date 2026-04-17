@@ -61,6 +61,18 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    isTemporary: {
+      type: Boolean,
+      default: false,
+    },
+    codeUsed: {
+      type: Boolean,
+      default: false,
+    },
+    expiresAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -79,5 +91,6 @@ userSchema.methods.compareAccessCode = async function (candidateCode) {
 // ---------------------------------------------------------------------------
 userSchema.index({ favoriteCourses: 1 });
 userSchema.index({ favoriteLessons: 1 });
+userSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 module.exports = mongoose.model("User", userSchema);

@@ -73,14 +73,18 @@ router.get("/stats", verifyToken, requireAdmin, async (_req, res, next) => {
       const usedBytes = stats.dataSize + stats.indexSize;
       res.json({ success: true, usedBytes, stats });
     } catch (err) {
-      // Fallback for environments lacking db.stats() permission (e.g. Atlas Shared)
-      const collections = await mongoose.connection.db.listCollections().toArray();
+      // Fallback for environments lacking db.stats() permission (e.g. Atlas Shared/M0)
       let totalDocs = 0;
-      for (const coll of collections) {
-        totalDocs += await mongoose.connection.db.collection(coll.name).estimatedDocumentCount();
+      const models = mongoose.modelNames();
+      for (const modelName of models) {
+        try {
+          totalDocs += await mongoose.model(modelName).estimatedDocumentCount();
+        } catch (e) {
+          // Ignore if a specific uninitialized model fails
+        }
       }
       // Estimate 2KB per document
-      res.json({ success: true, usedBytes: totalDocs * 2048, stats: { collections: collections.length, fallback: true } });
+      res.json({ success: true, usedBytes: totalDocs * 2048, stats: { collections: models.length, fallback: true } });
     }
   } catch (error) {
     next(error);

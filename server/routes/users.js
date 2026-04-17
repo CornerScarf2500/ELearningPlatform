@@ -78,6 +78,9 @@ router.get("/", verifyToken, requireAdmin, async (_req, res, next) => {
         loginAt: s.loginAt,
         lastAccessedAt: s.lastAccessedAt || s.loginAt,
       })),
+      isTemporary: u.isTemporary,
+      expiresAt: u.expiresAt,
+      codeUsed: u.codeUsed,
       createdAt: u.createdAt,
     }));
 
@@ -92,7 +95,7 @@ router.get("/", verifyToken, requireAdmin, async (_req, res, next) => {
 // ──────────────────────────────────────────────────────────────
 router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
   try {
-    const { name, accessCode, role } = req.body;
+    const { name, accessCode, role, isTemporary } = req.body;
     
     if (!accessCode) {
       return res.status(400).json({ success: false, message: "Access code is required." });
@@ -103,11 +106,18 @@ router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Access code already exists. Please choose a unique code." });
     }
 
-    const newUser = await User.create({
+    const userData = {
       name: name || "Student",
       accessCode,
       role: role === "admin" ? "admin" : "user",
-    });
+    };
+    
+    if (isTemporary) {
+      userData.isTemporary = true;
+      userData.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    }
+
+    const newUser = await User.create(userData);
 
     res.status(201).json({ 
       success: true, 
@@ -117,6 +127,8 @@ router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
         name: newUser.name,
         role: newUser.role,
         isBanned: newUser.isBanned,
+        isTemporary: newUser.isTemporary,
+        expiresAt: newUser.expiresAt,
         activeSessions: 0,
         createdAt: newUser.createdAt,
       }
@@ -125,6 +137,33 @@ router.post("/", verifyToken, requireAdmin, async (req, res, next) => {
     next(error);
   }
 });
+
+// ──────────────────────────────────────────────────────────────
+// PATCH /api/users/:id/make-permanent — clear temp status (Admin)
+// ──────────────────────────────────────────────────────────────
+router.patch(
+  "/:id/make-permanent",
+  verifyToken,
+  requireAdmin,
+  async (req, res, next) => {
+    try {
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found." });
+      }
+
+      user.isTemporary = false;
+      user.expiresAt = null;
+      await user.save({ validateModifiedOnly: true });
+
+      res.json({ success: true, message: "User is now permanent." });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 // ──────────────────────────────────────────────────────────────
 // DELETE /api/users/:id/sessions — revoke ALL sessions (Admin)

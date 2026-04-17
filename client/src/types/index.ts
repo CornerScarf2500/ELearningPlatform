@@ -109,5 +109,8 @@ export interface AdminUser {
   allowedCourses?: any[];
   activeSessions: number;
   sessions: SessionInfo[];
+  isTemporary?: boolean;
+  codeUsed?: boolean;
+  expiresAt?: string;
   createdAt: string;
 }

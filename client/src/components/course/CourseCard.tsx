@@ -20,6 +20,7 @@ interface Props {
     subjects: string[];
     grades: string[];
     platformNames: string[];
+    platforms?: { name: string; logoUrl?: string }[];
   };
   readonly?: boolean;
 }
@@ -141,11 +142,21 @@ export const CourseCard = ({ course, index, onMutate, isSelectMode, selected, on
             { label: "Subject", key: "subject", value: course.subject, type: "suggest", suggestions: suggestions?.subjects, placeholder: "Mathematics…" },
             { label: "Teacher", key: "teacher", value: course.teacher, type: "suggest", suggestions: suggestions?.teachers, placeholder: "Teacher name" },
             { label: "Grade", key: "grade", value: course.grade || "", type: "suggest", suggestions: suggestions?.grades, placeholder: "Grade 10" },
-            { label: "Platform Name", key: "platformName", value: course.platformName || "", type: "suggest", suggestions: suggestions?.platformNames, placeholder: "YouTube…" },
-            { label: "Platform Logo URL", key: "platformLogoUrl", value: course.platformLogoUrl || "", placeholder: "https://…" },
+            { 
+              label: "Platform", 
+              key: "platformName", 
+              value: course.platformName || "", 
+              placeholder: "Select Platform", 
+              type: "select", 
+              options: suggestions?.platforms?.map((p) => ({ label: p.name, value: p.name })) || []
+            },
           ]}
           onSave={async (vals) => {
-            await courseApi.update(course._id, vals);
+            const selectedPlatform = suggestions?.platforms?.find(p => p.name === vals.platformName);
+            await courseApi.update(course._id, {
+              ...vals,
+              platformLogoUrl: selectedPlatform?.logoUrl || ""
+            });
             onMutate();
           }}
           onDelete={async () => {

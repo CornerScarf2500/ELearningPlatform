@@ -66,18 +66,26 @@ router.post("/login", async (req, res, next) => {
         .json({ success: false, message: "Your account has been banned." });
     }
 
+    if (matchedUser.isTemporary && matchedUser.codeUsed) {
+      return res
+        .status(401)
+        .json({ success: false, message: "This temporary access code has already been used." });
+    }
+
     // Capture device information
     const device = req.headers["user-agent"] || "Unknown Device";
 
     // Issue JWT
     const token = jwt.sign(
       { userId: matchedUser._id, role: matchedUser.role },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+      process.env.JWT_SECRET
     );
 
     // Push token object to sessionTokens for server-side revocation + tracking
     matchedUser.sessionTokens.push({ token, device });
+    if (matchedUser.isTemporary) {
+      matchedUser.codeUsed = true;
+    }
     await matchedUser.save({ validateModifiedOnly: true });
 
     res.json({

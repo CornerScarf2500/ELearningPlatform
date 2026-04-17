@@ -34,13 +34,11 @@ const BackupButton = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!resp.ok) throw new Error("Backup failed");
-      const data = await resp.json();
-      // Download as JSON file
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const blob = await resp.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `backup_${new Date().toISOString().slice(0, 10)}.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -61,7 +59,7 @@ const BackupButton = () => {
       className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 hover:bg-green-50 dark:hover:bg-green-500/10 transition-colors disabled:opacity-60"
     >
       {downloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Archive className="w-4 h-4" />}
-      {downloading ? "Creating backup…" : "Download Backup JSON"}
+      {downloading ? "Creating backup…" : "Download Backup Archive"}
     </motion.button>
   );
 };
@@ -140,7 +138,13 @@ export const SettingsPage = () => {
   const [newUserName, setNewUserName] = useState("");
   const [newUserCode, setNewUserCode] = useState("");
   const [newUserRole, setNewUserRole] = useState<"admin" | "user">("user");
+  const [newUserTemp, setNewUserTemp] = useState(false);
   const [addingUser, setAddingUser] = useState(false);
+
+  const generateOTP = () => {
+    const code = Math.floor(10000000 + Math.random() * 90000000).toString();
+    setNewUserCode(code);
+  };
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
@@ -170,9 +174,11 @@ export const SettingsPage = () => {
         name: newUserName,
         accessCode: newUserCode,
         role: newUserRole,
+        isTemporary: newUserTemp,
       });
       setNewUserName("");
       setNewUserCode("");
+      setNewUserTemp(false);
       setShowAddUser(false);
       fetchUsers();
     } catch (err: any) {
@@ -227,6 +233,16 @@ export const SettingsPage = () => {
       fetchUsers();
     } catch (err: any) {
       alert(err.response?.data?.message || "Failed to delete user");
+    }
+  };
+
+  const handleMakePermanent = async (userId: string) => {
+    if (!confirm("Make this temporary user permanent? They will no longer expire.")) return;
+    try {
+      await userApi.makePermanent(userId);
+      fetchUsers();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to edit user limits");
     }
   };
 
@@ -353,22 +369,33 @@ export const SettingsPage = () => {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <select
-                    value={newUserRole}
-                    onChange={(e) => setNewUserRole(e.target.value as "admin" | "user")}
-                    className="px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-                  >
-                    <option value="user">Student / User</option>
-                    <option value="admin">Administrator</option>
-                  </select>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    disabled={addingUser || !newUserCode.trim()}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors flex items-center gap-2"
-                  >
-                    {addingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create"}
-                  </motion.button>
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={newUserRole}
+                      onChange={(e) => setNewUserRole(e.target.value as "admin" | "user")}
+                      className="px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                    >
+                      <option value="user">Student / User</option>
+                      <option value="admin">Administrator</option>
+                    </select>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={newUserTemp} onChange={(e) => setNewUserTemp(e.target.checked)} className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500" />
+                      <span className="text-sm text-zinc-600 dark:text-zinc-400">Temporary (24H)</span>
+                    </label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={generateOTP} className="px-3 py-2 text-sm text-indigo-600 font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-lg transition-colors">
+                      Generate 8-Digit OTP
+                    </button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      disabled={addingUser || !newUserCode.trim()}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors flex items-center gap-2"
+                    >
+                      {addingUser ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create"}
+                    </motion.button>
+                  </div>
                 </div>
               </motion.form>
             )}
@@ -402,6 +429,11 @@ export const SettingsPage = () => {
                               BANNED
                             </span>
                           )}
+                          {u.isTemporary && (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-semibold">
+                              TEMP ({u.expiresAt ? new Date(u.expiresAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '24H'})
+                            </span>
+                          )}
                         </p>
                         <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                           {u.activeSessions} active session
@@ -428,6 +460,17 @@ export const SettingsPage = () => {
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </motion.button>
+                        {u.isTemporary && (
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleMakePermanent(u.id)}
+                            title="Make Permanent"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
+                          >
+                            Permanent
+                          </motion.button>
+                        )}
                         {u.role !== "admin" && (
                           <motion.button
                             whileHover={{ scale: 1.05 }}

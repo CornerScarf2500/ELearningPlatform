@@ -13,8 +13,6 @@ import { AppLayout } from "./components/layout/AppLayout";
 import { LoginPage } from "./pages/LoginPage";
 import { HomePage } from "./pages/HomePage";
 import { CourseViewerPage } from "./pages/CourseViewerPage";
-import { FavoritesPage } from "./pages/FavoritesPage";
-import { SearchPage } from "./pages/SearchPage";
 import { SettingsPage } from "./pages/SettingsPage";
 
 import { ProfilePage } from "./pages/ProfilePage";
@@ -66,8 +64,6 @@ const AnimatedRoutes = () => {
         >
           <Route index element={<HomePage />} />
           <Route path="course/:id" element={<CourseViewerPage />} />
-          <Route path="favorites" element={<FavoritesPage />} />
-          <Route path="search" element={<SearchPage />} />
 
           <Route path="settings" element={<SettingsPage />} />
           <Route path="profile" element={<ProfilePage />} />

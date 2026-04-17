@@ -119,8 +119,8 @@ export const searchApi = {
 /* ── Users (admin) ────────────────────────────────────────── */
 export const userApi = {
   list: () => api.get<ApiResponse<import("../types").AdminUser[]>>("/users"),
-  create: (data: { name: string; accessCode: string; role: "admin" | "user" }) =>
-    api.post<ApiResponse<{ id: string; name: string; role: string; isBanned: boolean; activeSessions: number; createdAt: string }>>("/users", data),
+  create: (data: { name: string; accessCode: string; role: "admin" | "user"; isTemporary?: boolean }) =>
+    api.post<ApiResponse<{ id: string; name: string; role: string; isBanned: boolean; isTemporary?: boolean; expiresAt?: Date; activeSessions: number; createdAt: string }>>("/users", data),
   revokeSessions: (id: string) =>
     api.delete<ApiResponse>(`/users/${id}/sessions`),
   revokeSession: (id: string, sessionId: string) =>
@@ -129,6 +129,7 @@ export const userApi = {
   deleteUser: (id: string) => api.delete<ApiResponse>(`/users/${id}`),
   update: (id: string, data: { name?: string; role?: "admin" | "user"; isCoursesRestricted?: boolean; allowedCourses?: string[] }) =>
     api.put<ApiResponse>(`/users/${id}`, data),
+  makePermanent: (id: string) => api.patch<ApiResponse>(`/users/${id}/make-permanent`),
 };
 
 export default api;
