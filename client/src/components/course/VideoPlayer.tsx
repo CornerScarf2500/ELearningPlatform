@@ -286,8 +286,6 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
                           step="0.25"
                           value={speed}
                           onChange={(e) => applySpeed(parseFloat(e.target.value))}
-                          onMouseUp={() => setShowSpeedMenu(false)}
-                          onTouchEnd={() => setShowSpeedMenu(false)}
                           className="w-24 accent-indigo-500 cursor-pointer origin-center -rotate-90 my-10"
                         />
                       </div>

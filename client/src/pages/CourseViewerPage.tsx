@@ -121,26 +121,32 @@ export const CourseViewerPage = () => {
     // Swap
     const [moved] = items.splice(source.index, 1);
     items.splice(destination.index, 0, moved);
-    
-    let currentSectionId: string | null = null;
+
     let secOrder = 0;
-    const sectionsToUpdate: any[] = [];
-    const lessonsToUpdate: any[] = [];
     let lesOrder = 0;
     
+    const newSections: Section[] = [];
+    const newUnsectioned: Lesson[] = [];
+    let currentSection: Section | null = null;
+
     for (const item of items) {
       if (item.type === 'section') {
-        currentSectionId = item.section!._id;
-        sectionsToUpdate.push({ _id: currentSectionId, order: secOrder++ });
+        currentSection = { ...item.section!, order: secOrder++, lessons: [] };
+        newSections.push(currentSection);
         lesOrder = 0;
       } else if (item.type === 'lesson') {
-        lessonsToUpdate.push({ _id: item.lesson!._id, sectionId: currentSectionId, order: lesOrder++ });
+        const lesson = { ...item.lesson!, order: lesOrder++ };
+        if (currentSection) {
+          currentSection.lessons!.push(lesson);
+        } else {
+          newUnsectioned.push(lesson);
+        }
       }
     }
     
     setLoading(true);
     try {
-      await courseApi.reorderAll(course._id, sectionsToUpdate, lessonsToUpdate);
+      await courseApi.reorderAll(course._id, newSections, newUnsectioned);
       await fetchCourse();
     } catch {
       alert("Failed to reorder");
@@ -321,8 +327,8 @@ export const CourseViewerPage = () => {
 
         {/* ── Right: Lesson list ────────────────────── */}
         <div
-          className="w-full md:h-screen md:overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 scroll-snap-y"
-          style={{ width: `${sidebarWidth}px`, flexShrink: 0 }}
+          className="w-full md:w-auto md:h-screen md:overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 scroll-snap-y"
+          style={window.innerWidth >= 768 ? { width: `${sidebarWidth}px`, flexShrink: 0 } : { flexShrink: 0 }}
         >
           {/* Sidebar header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">

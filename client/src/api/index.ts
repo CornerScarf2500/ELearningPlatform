@@ -62,8 +62,8 @@ export const courseApi = {
   delete: (id: string) => api.delete<ApiResponse>(`/courses/${id}`),
   bulkSetPlatform: (courseIds: string[], platformName: string, platformLogoUrl?: string) =>
     api.put<ApiResponse>("/courses/bulk-platform", { courseIds, platformName, platformLogoUrl }),
-  reorderAll: (id: string, sections: { _id: string; order: number }[], lessons: { _id: string; order: number; sectionId: string | null }[]) =>
-    api.post<ApiResponse>(`/courses/${id}/reorder-all`, { sections, lessons }),
+  reorderAll: (id: string, sections: Section[], unsectioned: Lesson[]) =>
+    api.post<ApiResponse>(`/courses/${id}/reorder-all`, { sections, unsectioned }),
 };
 
 /* ── Sections ─────────────────────────────────────────────── */
