@@ -19,8 +19,17 @@
   }
 
   /* Scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #d4d4d8 transparent;
+  }
+  .dark * {
+    scrollbar-color: #3f3f46 transparent;
+  }
+
   ::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
+    height: 4px;
   }
   ::-webkit-scrollbar-track {
     @apply bg-transparent;
@@ -47,8 +56,8 @@
 
   /* Thin unobtrusive scrollbar */
   .scrollbar-thin::-webkit-scrollbar {
-    height: 3px;
-    width: 3px;
+    height: 4px;
+    width: 4px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
     @apply bg-zinc-300 dark:bg-zinc-700 rounded-full;

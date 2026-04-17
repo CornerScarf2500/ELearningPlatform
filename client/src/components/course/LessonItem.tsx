@@ -1,9 +1,5 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { Play, FileText, Edit3 } from "lucide-react";
-import { useAdmin } from "../../hooks/useAdmin";
-import { AdminEditModal } from "../admin/AdminEditModal";
-import { lessonApi } from "../../api";
+import { Play, FileText } from "lucide-react";
 import type { Lesson } from "../../types";
 
 interface Props {
@@ -19,14 +15,8 @@ const itemVariants = {
   visible: { opacity: 1, x: 0 },
 };
 
-export const LessonItem = ({ lesson, isActive, index, onSelect, onMutate }: Props) => {
-  const isAdmin = useAdmin();
-  const [editOpen, setEditOpen] = useState(false);
-
+export const LessonItem = ({ lesson, isActive, index, onSelect }: Props) => {
   const isVideo = lesson.type === "video";
-  const materials: string[] = lesson.fileUrls?.length
-    ? lesson.fileUrls
-    : lesson.fileUrl ? [lesson.fileUrl] : [];
 
   return (
     <>
@@ -70,67 +60,17 @@ export const LessonItem = ({ lesson, isActive, index, onSelect, onMutate }: Prop
               </span>
             </div>
 
-            {/* Actions (Edit / Materials) */}
+            {/* Actions */}
             <div
               className="flex items-center gap-1 shrink-0 bg-white/50 dark:bg-zinc-900/50 rounded"
               onClick={(e) => e.stopPropagation()}
             >
-              {isAdmin && (
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setEditOpen(true)}
-                  className="p-1 rounded text-zinc-400 hover:text-indigo-500 transition-colors"
-                  title="Edit lesson"
-                >
-                  <Edit3 className={`w-3.5 h-3.5 ${isActive ? "text-indigo-500/80" : ""}`} />
-                </motion.button>
-              )}
-
-              {materials.length > 0 && (
-                <span className="text-[10px] text-amber-500 font-medium whitespace-nowrap">
-                  {materials.length} file{materials.length !== 1 ? "s" : ""}
-                </span>
-              )}
             </div>
           </div>
         </div>
 
         {/* Materials are shown in the player area (CourseViewerPage), not here */}
       </motion.div>
-
-      {/* Admin edit modal */}
-      {isAdmin && (
-        <AdminEditModal
-          open={editOpen}
-          onClose={() => setEditOpen(false)}
-          title="Edit Lesson"
-          fields={[
-            { label: "Title", key: "title", value: lesson.title },
-            { label: "Video URL", key: "videoUrl", value: lesson.videoUrl || "", placeholder: "https:// or YouTube URL" },
-            {
-              label: "Materials",
-              key: "fileUrls",
-              type: "list",
-              value: (lesson.fileUrls || []).join("\n") || lesson.fileUrl || "",
-              placeholder: "https://… (PDF, YouTube, link…)",
-              addLabel: "+ Add Material",
-            },
-            { label: "Order", key: "order", value: String(lesson.order ?? index) },
-          ]}
-          onSave={async (vals) => {
-            const fileUrls = String(vals.fileUrls || "").split("\n").map((u: string) => u.trim()).filter(Boolean);
-            await lessonApi.update(lesson._id, {
-              ...vals,
-              fileUrls,
-              fileUrl: fileUrls[0] || "",
-              order: Number(vals.order) || 0,
-            } as Partial<Lesson>);
-            onMutate();
-          }}
-          onDelete={async () => { await lessonApi.delete(lesson._id); onMutate(); }}
-        />
-      )}
     </>
   );
 };

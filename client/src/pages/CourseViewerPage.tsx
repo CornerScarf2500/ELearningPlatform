@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight, Play, Heart } from "lucide-react";
+import { ArrowLeft, Plus, Loader2, FolderDown, FileText, Download, ExternalLink, GripVertical, ToggleLeft, ToggleRight, Play, Heart, Edit3 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
 import { PageTransition } from "../components/ui/PageTransition";
@@ -37,6 +37,7 @@ export const CourseViewerPage = () => {
   const [addSectionOpen, setAddSectionOpen] = useState(false);
   const [addVideoOpen, setAddVideoOpen] = useState(false);
   const [addChoiceOpen, setAddChoiceOpen] = useState(false);
+  const [editLessonOpen, setEditLessonOpen] = useState(false);
   const [showReorderHandle, setShowReorderHandle] = useState(() => {
     try { return localStorage.getItem("reorder-handle") !== "false"; }
     catch { return true; }
@@ -261,6 +262,23 @@ export const CourseViewerPage = () => {
                 );
               })()}
 
+              {/* Edit Lesson Button */}
+              {isAdmin && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setEditLessonOpen(true)}
+                  className="flex flex-col items-center gap-1.5 transition-all group"
+                >
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center shadow-md transition-all bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700">
+                    <Edit3 className="w-5 h-5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200">
+                    Edit Lesson
+                  </span>
+                </motion.button>
+              )}
+
             </div>
           )}
 
@@ -441,9 +459,55 @@ export const CourseViewerPage = () => {
 
       {/* Admin add section modal */}
       {isAdmin && (
-        <AdminEditModal open={addSectionOpen} onClose={() => setAddSectionOpen(false)} title="New Section"
-          fields={[{ label: "Title", key: "title", value: "", placeholder: "Section title" }]}
-          onSave={async (vals) => { await sectionApi.create({ title: vals.title, courseId: course._id }); fetchCourse(); }}
+        <AdminEditModal
+          open={addSectionOpen}
+          onClose={() => setAddSectionOpen(false)}
+          title="New Section"
+          fields={[
+            { label: "Section Title", key: "title", value: "", placeholder: "Chapter 1…" },
+          ]}
+          onSave={async (vals) => {
+            await sectionApi.create({ title: vals.title, courseId: course._id });
+            fetchCourse();
+          }}
+        />
+      )}
+
+      {/* Admin edit lesson modal */}
+      {isAdmin && activeLesson && (
+        <AdminEditModal
+          open={editLessonOpen}
+          onClose={() => setEditLessonOpen(false)}
+          title="Edit Lesson"
+          fields={[
+            { label: "Title", key: "title", value: activeLesson.title },
+            { label: "Video URL", key: "videoUrl", value: activeLesson.videoUrl || "", placeholder: "https:// or YouTube URL" },
+            {
+              label: "Materials",
+              key: "fileUrls",
+              type: "list",
+              value: (activeLesson.fileUrls || []).join("\n") || activeLesson.fileUrl || "",
+              placeholder: "https://… (PDF, YouTube, link…)",
+              addLabel: "+ Add Material",
+            },
+          ]}
+          onSave={async (vals) => {
+            const fileUrls = String(vals.fileUrls || "").split("\n").map((u: string) => u.trim()).filter(Boolean);
+            await lessonApi.update(activeLesson._id, {
+              ...vals,
+              fileUrls,
+              fileUrl: fileUrls[0] || "",
+            } as Partial<Lesson>);
+            fetchCourse();
+            
+            // Re-fetch or update active lesson state manually here for UI responsiveness
+            setActiveLesson((prev) => prev ? { ...prev, ...vals, fileUrls, fileUrl: fileUrls[0] || "" } : null);
+          }}
+          onDelete={async () => { 
+            await lessonApi.delete(activeLesson._id); 
+            setActiveLesson(null);
+            fetchCourse(); 
+          }}
         />
       )}
 

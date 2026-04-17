@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { Home, Search, Heart, Settings, BookOpen, HardDrive, User } from "lucide-react";
+import { Home, Search, Heart, Settings, BookOpen, HardDrive, User, ChevronLeft } from "lucide-react";
+import { useUIStore } from "../../store/uiStore";
 const links = [
   { to: "/", icon: Home, label: "Home" },
   { to: "/search", icon: Search, label: "Search" },
@@ -10,16 +11,25 @@ const links = [
 ];
 
 export const Sidebar = () => {
+  const { toggleSidebar } = useUIStore();
+
   return (
     <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 z-40 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-6 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="w-9 h-9 rounded-lg bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center">
+        <div className="w-9 h-9 rounded-lg bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center shrink-0">
           <BookOpen className="w-5 h-5 text-white" />
         </div>
-        <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+        <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 flex-1 truncate">
           ELearn
         </span>
+        <button 
+          onClick={toggleSidebar}
+          className="p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors"
+          title="Hide sidebar"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Navigation */}

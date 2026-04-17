@@ -93,7 +93,6 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
   const applySpeed = (s: number) => {
     setSpeed(s);
     if (videoRef.current) videoRef.current.playbackRate = s;
-    setShowSpeedMenu(false);
   };
 
   const toggleFullscreen = () => {
@@ -278,19 +277,20 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
                       exit={{ opacity: 0, y: 6, scale: 0.95 }}
                       className="absolute bottom-full right-0 mb-2 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden shadow-2xl min-w-[80px] z-50"
                     >
-                      {SPEEDS.map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => applySpeed(s)}
-                          className={`w-full text-center px-4 py-1.5 text-xs font-mono transition-colors ${
-                            speed === s
-                              ? "bg-indigo-600 text-white"
-                              : "text-zinc-200 hover:bg-zinc-800"
-                          }`}
-                        >
-                          {s}×
-                        </button>
-                      ))}
+                      <div className="px-4 py-3 flex flex-col items-center gap-2">
+                        <span className="text-xs text-zinc-300 font-mono">{speed}×</span>
+                        <input
+                          type="range"
+                          min="0.5"
+                          max="4"
+                          step="0.25"
+                          value={speed}
+                          onChange={(e) => applySpeed(parseFloat(e.target.value))}
+                          onMouseUp={() => setShowSpeedMenu(false)}
+                          onTouchEnd={() => setShowSpeedMenu(false)}
+                          className="w-24 accent-indigo-500 cursor-pointer origin-center -rotate-90 my-10"
+                        />
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
