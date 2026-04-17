@@ -43,21 +43,44 @@ const ListField = ({
         {label}
       </label>
       <div className="space-y-2">
-        {items.map((val, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <input
-              type="text"
-              value={val}
-              placeholder={placeholder}
-              onChange={(e) => { const n = [...items]; n[i] = e.target.value; update(n); }}
-              className="flex-1 px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-shadow"
-            />
-            <button onClick={() => update(items.filter((_, idx) => idx !== i))} type="button"
-              className="p-1.5 text-red-400 hover:text-red-600 transition-colors shrink-0" title="Remove">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
+        {items.map((val, i) => {
+          const hasPipe = val.includes("|");
+          const name = hasPipe ? val.split("|")[0] : "";
+          const url = hasPipe ? val.substring(val.indexOf("|") + 1) : val;
+
+          return (
+            <div key={i} className="flex flex-row items-center gap-2">
+              <input
+                type="text"
+                value={name}
+                placeholder="Name (optional)"
+                onChange={(e) => {
+                  const n = [...items];
+                  const newName = e.target.value;
+                  n[i] = newName ? `${newName}|${url}` : url.replace(/^\|/, "");
+                  update(n);
+                }}
+                className="w-1/3 px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-shadow truncate"
+              />
+              <input
+                type="text"
+                value={url}
+                placeholder={placeholder || "https://..."}
+                onChange={(e) => {
+                  const n = [...items];
+                  const newUrl = e.target.value;
+                  n[i] = name ? `${name}|${newUrl}` : newUrl;
+                  update(n);
+                }}
+                className="flex-1 px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-shadow"
+              />
+              <button onClick={() => update(items.filter((_, idx) => idx !== i))} type="button"
+                className="p-1.5 text-red-400 hover:text-red-600 transition-colors shrink-0" title="Remove">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        })}
       </div>
       <button onClick={() => update([...items, ""])} type="button"
         className="mt-2 flex items-center gap-1 text-sm text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">

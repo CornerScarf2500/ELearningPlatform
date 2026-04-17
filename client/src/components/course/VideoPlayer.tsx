@@ -275,10 +275,14 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
                       initial={{ opacity: 0, y: 6, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                      className="absolute bottom-full right-0 mb-2 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden shadow-2xl min-w-[80px] z-50"
+                      className="absolute bottom-full right-0 mb-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl w-[220px] z-50 p-3 flex flex-col gap-3"
                     >
-                      <div className="px-4 py-3 flex flex-col items-center gap-2">
-                        <span className="text-xs text-zinc-300 font-mono">{speed}×</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-zinc-400 font-medium tracking-wide uppercase">Speed</span>
+                        <span className="text-xs text-indigo-400 font-mono font-bold">{speed}×</span>
+                      </div>
+                      
+                      <div className="relative flex items-center justify-center">
                         <input
                           type="range"
                           min="0.5"
@@ -286,8 +290,24 @@ export const VideoPlayer = ({ src, title, className = "" }: VideoPlayerProps) =>
                           step="0.25"
                           value={speed}
                           onChange={(e) => applySpeed(parseFloat(e.target.value))}
-                          className="w-24 accent-indigo-500 cursor-pointer origin-center -rotate-90 my-10"
+                          className="w-full h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
                         />
+                      </div>
+
+                      <div className="flex items-center justify-between gap-1 overflow-x-auto scrollbar-none pb-0.5">
+                        {[0.5, 0.75, 1, 1.25, 1.5, 2].map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => applySpeed(s)}
+                            className={`px-2 py-1 rounded text-[10px] font-mono font-bold transition-colors shrink-0 ${
+                              speed === s
+                                ? "bg-indigo-600 text-white"
+                                : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200"
+                            }`}
+                          >
+                            {s}×
+                          </button>
+                        ))}
                       </div>
                     </motion.div>
                   )}

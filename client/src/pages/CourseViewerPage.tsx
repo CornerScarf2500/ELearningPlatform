@@ -219,10 +219,13 @@ export const CourseViewerPage = () => {
 
   return (
     <PageTransition className="h-full">
-      <div className="flex flex-col md:flex-row md:h-screen">
+      <div 
+        className="flex flex-col md:flex-row md:h-screen w-full relative"
+        style={{"--sidebar-width": `${sidebarWidth}px`} as any}
+      >
 
         {/* ── Left: Player ─────────────────────────────── */}
-        <div className="flex flex-col" style={{ flex: "1 1 0", minWidth: 0 }}>
+        <div className="flex flex-col w-full md:w-auto flex-1 min-w-0 relative">
           {/* Top bar */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sticky top-0 z-50 md:static">
             <button onClick={() => navigate("/")} className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
@@ -295,9 +298,13 @@ export const CourseViewerPage = () => {
                 Materials ({materialUrls.length})
               </p>
               <div className="flex flex-wrap gap-2">
-                {materialUrls.map((url, i) => {
-                  const filename = url.split("/").pop()?.split("?")[0] || `File ${i + 1}`;
+                {materialUrls.map((rawUrl, i) => {
+                  const hasPipe = rawUrl.includes("|");
+                  const url = hasPipe ? rawUrl.substring(rawUrl.indexOf("|") + 1) : rawUrl;
+                  const customName = hasPipe ? rawUrl.split("|")[0] : "";
+                  const filename = customName || (url.split("/").pop()?.split("?")[0] || `File ${i + 1}`);
                   const isExt = /youtube\.com|youtu\.be|vimeo\.com/i.test(url);
+                  
                   return (
                     <motion.button
                       key={i}
@@ -307,7 +314,7 @@ export const CourseViewerPage = () => {
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:border-indigo-400 transition-colors"
                     >
                       {isExt ? <ExternalLink className="w-3 h-3 text-amber-500 shrink-0" /> : <FileText className="w-3 h-3 text-amber-500 shrink-0" />}
-                      <span className="truncate max-w-[120px]">{filename}</span>
+                      <span className="truncate max-w-[150px]">{filename}</span>
                       <Download className="w-3 h-3 text-zinc-400 shrink-0" />
                     </motion.button>
                   );
@@ -320,15 +327,14 @@ export const CourseViewerPage = () => {
         {/* Resize handle (desktop only) */}
         <div
           onMouseDown={startResize}
-          className="hidden md:flex w-1 cursor-col-resize hover:bg-indigo-400 bg-zinc-200 dark:bg-zinc-800 transition-colors active:bg-indigo-500 items-center justify-center"
+          className="hidden md:flex w-1 cursor-col-resize hover:bg-indigo-400 bg-zinc-200 dark:bg-zinc-800 transition-colors active:bg-indigo-500 items-center justify-center shrink-0"
         >
           <GripVertical className="w-3 h-3 text-zinc-400 opacity-0 hover:opacity-100 transition-opacity" />
         </div>
 
         {/* ── Right: Lesson list ────────────────────── */}
         <div
-          className="w-full md:w-auto md:h-screen md:overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 scroll-snap-y"
-          style={window.innerWidth >= 768 ? { width: `${sidebarWidth}px`, flexShrink: 0 } : { flexShrink: 0 }}
+          className="w-full md:w-[var(--sidebar-width)] md:h-screen md:overflow-y-auto border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 scroll-snap-y shrink-0"
         >
           {/* Sidebar header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
@@ -499,15 +505,18 @@ export const CourseViewerPage = () => {
           ]}
           onSave={async (vals) => {
             const fileUrls = String(vals.fileUrls || "").split("\n").map((u: string) => u.trim()).filter(Boolean);
+            const firstFile = fileUrls[0] || "";
+            const fileUrl = firstFile.includes("|") ? firstFile.substring(firstFile.indexOf("|") + 1) : firstFile;
+            
             await lessonApi.update(activeLesson._id, {
               ...vals,
               fileUrls,
-              fileUrl: fileUrls[0] || "",
+              fileUrl,
             } as Partial<Lesson>);
             fetchCourse();
             
             // Re-fetch or update active lesson state manually here for UI responsiveness
-            setActiveLesson((prev) => prev ? { ...prev, ...vals, fileUrls, fileUrl: fileUrls[0] || "" } : null);
+            setActiveLesson((prev) => prev ? { ...prev, ...vals, fileUrls, fileUrl } : null);
           }}
           onDelete={async () => { 
             await lessonApi.delete(activeLesson._id); 
@@ -542,11 +551,14 @@ export const CourseViewerPage = () => {
             ];
             const nextOrder = allLessons.length;
             const fileUrls = String(vals.fileUrls || "").split("\n").map((u) => u.trim()).filter(Boolean);
+            const firstFile = fileUrls[0] || "";
+            const fileUrl = firstFile.includes("|") ? firstFile.substring(firstFile.indexOf("|") + 1) : firstFile;
+
             await lessonApi.create({
               title: vals.title || "Untitled",
               videoUrl: vals.videoUrl || "",
               fileUrls,
-              fileUrl: fileUrls[0] || "",
+              fileUrl,
               courseId: course._id,
               sectionId: undefined,
               order: nextOrder,
